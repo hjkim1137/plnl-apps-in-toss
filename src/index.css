@@ -1,0 +1,31 @@
+:root {
+  --blue: #3182f6;
+  --grey900: #191f28;
+  --grey700: #4e5968;
+  --grey500: #8b95a1;
+  --grey100: #f2f4f6;
+  --green: #15b877;
+  --red: #f04452;
+}
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", Pretendard,
+    "Malgun Gothic", sans-serif;
+  background: #f9fafb;
+  color: var(--grey900);
+  -webkit-font-smoothing: antialiased;
+}
+#root {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
