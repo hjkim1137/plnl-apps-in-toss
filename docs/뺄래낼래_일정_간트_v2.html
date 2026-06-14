@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>뺄래 낼래 — 일정·진행현황 v2 (6/13~6/30)</title>
+<style>
+  :root{
+    --blue:#3182f6; --blue-bg:#e8f3ff;
+    --green:#15b877; --green-bg:#e7f9f1;
+    --orange:#ff8a00; --orange-bg:#fff3e0;
+    --grey900:#191f28; --grey700:#4e5968; --grey500:#8b95a1; --grey400:#b0b8c1;
+    --grey200:#e5e8eb; --grey100:#f2f4f6; --line:#eef1f4;
+    --label-w:230px;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",Pretendard,"Malgun Gothic",sans-serif;
+    background:#f4f6f8;color:var(--grey900);padding:28px 20px 60px;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1100px;margin:0 auto;background:#fff;border-radius:20px;box-shadow:0 8px 30px rgba(0,0,0,.08);overflow:hidden;}
+  .head{padding:22px 26px 18px;border-bottom:1px solid var(--line);}
+  .head h1{margin:0 0 4px;font-size:22px;font-weight:800;letter-spacing:-.5px;}
+  .head .sub{font-size:13px;color:var(--grey500);font-weight:600;}
+  .legend{display:flex;gap:16px;margin-top:14px;flex-wrap:wrap;}
+  .legend .lg{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;color:var(--grey700);}
+  .legend .sw{width:16px;height:16px;border-radius:5px;}
+
+  .chart{padding:10px 26px 26px;overflow-x:auto;}
+  .grid-min{min-width:880px;}
+
+  /* 날짜 헤더 */
+  .drow{display:flex;align-items:stretch;}
+  .rlabel{width:var(--label-w);flex:none;padding:0 12px;display:flex;align-items:center;font-size:13px;font-weight:700;color:var(--grey700);}
+  .track{flex:1;position:relative;display:flex;}
+  .dhead .dcell{flex:1;text-align:center;padding:8px 0 10px;border-left:1px solid var(--line);}
+  .dhead{position:sticky;top:0;background:#fff;z-index:3;border-bottom:2px solid var(--grey100);}
+  .dhead .rlabel{font-size:12px;color:var(--grey500);font-weight:800;}
+  .dcell .dd{font-size:13px;font-weight:800;}
+  .dcell .dw{font-size:10px;font-weight:700;color:var(--grey400);margin-top:1px;}
+  .dcell.we .dd{color:#f0808a;} .dcell.we .dw{color:#f3a3aa;}
+  .dcell.ms{background:#fff8e6;}
+  .dcell .mslab{font-size:9px;font-weight:800;color:#b07a00;margin-top:2px;}
+
+  /* 그룹 */
+  .group{margin-top:6px;}
+  .ghead{display:flex;align-items:center;gap:8px;padding:10px 12px 6px;font-size:13.5px;font-weight:800;}
+  .ghead .gdot{width:12px;height:12px;border-radius:4px;}
+  .ghead .gsum{margin-left:auto;font-size:11px;font-weight:700;color:var(--grey400);}
+
+  .task{display:flex;align-items:stretch;min-height:34px;}
+  .task .rlabel{font-size:12.5px;font-weight:600;color:var(--grey700);line-height:1.25;}
+  .task .track{align-items:center;}
+  .cell{flex:1;border-left:1px solid var(--line);height:100%;}
+  .cell.we{background:#fbfcfd;}
+  .cell.ms{box-shadow:inset 2px 0 0 #ffd980;}
+  .bar{position:absolute;height:22px;border-radius:7px;display:flex;align-items:center;padding:0 8px;
+    font-size:11px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.12);}
+  .bar .rng{margin-left:6px;font-weight:700;opacity:.85;font-size:10px;}
+
+  .foot{padding:0 26px 24px;font-size:12px;color:var(--grey500);line-height:1.7;}
+  .foot b{color:var(--grey700);}
+  .milestones{display:flex;gap:18px;margin-top:8px;flex-wrap:wrap;}
+  .milestones .m{font-size:12.5px;font-weight:800;color:#b07a00;background:#fff8e6;border:1px solid #ffe6b8;padding:5px 11px;border-radius:999px;}
+
+  /* ===== 기능 명세 ===== */
+  .spec{padding:6px 26px 44px;}
+  .spec-h{border-top:1px solid var(--line);padding-top:24px;}
+  .spec-h h2{margin:0;font-size:19px;font-weight:800;letter-spacing:-.5px;}
+  .spec-h .sh-sub{display:block;font-size:12.5px;color:var(--grey500);font-weight:600;margin-top:4px;}
+  .spec-h .sh-tip{font-size:12px;color:var(--grey500);margin-top:8px;line-height:1.6;}
+  .spec-h .sh-tip b{color:var(--grey700);}
+
+  .grp-h{display:flex;align-items:center;gap:8px;margin:26px 0 12px;font-size:13.5px;font-weight:800;color:var(--grey700);letter-spacing:-.3px;}
+  .grp-h::before{content:"";width:4px;height:16px;border-radius:3px;background:var(--ow,var(--grey400));}
+
+  .fcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(335px,1fr));gap:14px;}
+  .fcard{border:1px solid var(--grey200);border-radius:14px;padding:15px 16px 14px;background:#fff;transition:box-shadow .15s,border-color .15s;}
+  .fcard:hover{box-shadow:0 5px 18px rgba(0,0,0,.07);border-color:var(--grey400);}
+  .fcard .ftop{display:flex;align-items:center;gap:8px;}
+  .fcard .fid{font-size:11px;font-weight:800;color:var(--grey400);letter-spacing:.5px;}
+  .fcard .fname{font-size:14.5px;font-weight:800;letter-spacing:-.3px;flex:1;line-height:1.3;}
+  .fcard .fname .ico{margin-right:5px;}
+  .badges{display:flex;gap:4px;flex:none;}
+  .badge{font-size:10.5px;font-weight:800;color:#fff;border-radius:6px;padding:2px 6px;}
+  .badge.D{background:var(--blue);} .badge.A{background:var(--green);} .badge.B{background:var(--orange);}
+  .fdesc{font-size:12.5px;color:var(--grey700);font-weight:600;margin:8px 0 0;line-height:1.5;}
+  .fsched{font-size:11px;color:var(--grey500);font-weight:700;margin-top:6px;}
+  .flist{list-style:none;margin:11px 0 0;padding:0;}
+  .flist li{position:relative;padding:5px 0 5px 20px;font-size:12.5px;line-height:1.5;color:var(--grey900);border-top:1px solid var(--line);}
+  .flist li:first-child{border-top:none;}
+  .flist li::before{content:"✓";position:absolute;left:0;top:5px;color:var(--green);font-weight:900;font-size:11px;}
+  .flist li b{color:var(--blue);font-weight:800;}
+  .frules{margin-top:11px;padding:9px 11px;background:var(--grey100);border-radius:9px;font-size:11.5px;color:var(--grey700);line-height:1.55;}
+  .frules .rt{font-weight:800;color:var(--grey900);margin-right:4px;}
+  .p2{margin:10px 0 0;display:inline-block;font-size:10.5px;font-weight:800;color:#8b5cf6;background:#f3eefe;border:1px solid #e4d8fc;border-radius:999px;padding:2px 9px;}
+
+  /* 작업자 필터 */
+  .filt-bar{display:flex;gap:6px;margin:14px 0 4px;flex-wrap:wrap;}
+  .filt{border:1px solid var(--grey200);background:#fff;color:var(--grey700);font-family:inherit;font-size:12.5px;font-weight:800;padding:7px 15px;border-radius:999px;cursor:pointer;transition:.12s;}
+  .filt:hover{border-color:var(--grey400);}
+  .filt.on{background:var(--grey900);color:#fff;border-color:var(--grey900);}
+  .filt.on.fD{background:var(--blue);border-color:var(--blue);}
+  .filt.on.fA{background:var(--green);border-color:var(--green);}
+  .filt.on.fB{background:var(--orange);border-color:var(--orange);}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head">
+      <h1>🗓️ 뺄래 낼래 — 출시 일정 · 진행현황 <span style="color:#8b5cf6;font-size:15px;">v2</span></h1>
+      <div class="sub">2026.06.13(토) → 06.30(화) · 18일 · 3명(개발 1 + 비개발 2) · 마지막 업데이트 <b>2026-06-14</b></div>
+      <div class="legend">
+        <div class="lg"><span class="sw" style="background:var(--blue)"></span>현정 · 개발</div>
+        <div class="lg"><span class="sw" style="background:var(--green)"></span>인정 · UI (비개발)</div>
+        <div class="lg"><span class="sw" style="background:var(--orange)"></span>선민 · 콘텐츠·QA (비개발)</div>
+        <div class="lg"><span class="sw" style="background:#fbfcfd;border:1px solid var(--grey200)"></span>주말</div>
+      </div>
+      <div class="legend" style="margin-top:8px;">
+        <div class="lg">✅ 완료</div>
+        <div class="lg">🔶 부분 (클라 O · 백엔드/검증/UI 남음)</div>
+        <div class="lg">⬜ 미착수</div>
+      </div>
+      <div class="sub" style="margin-top:10px;font-weight:600;">📍 진행현황 정본: <b>뺄래낼래_마일스톤.md</b> (이 v2는 그 시각화 스냅샷) · <b>v1</b>(뺄래낼래_일정_간트.html)은 원본 일정 보존용</div>
+    </div>
+    <div class="chart"><div class="grid-min" id="chart"></div></div>
+    <div class="foot">
+      <div class="milestones">
+        <span class="m">📤 6/27(토) 앱인토스 검수 제출</span>
+        <span class="m">🎉 6/30(화) 출시</span>
+      </div>
+      <p style="margin-top:12px;">
+        · <b>의존성</b>: 현정의 스캐폴딩/뼈대(6/13~15)가 먼저 → 인정·선민은 그 위에서 화면·콘텐츠 병렬 진행<br/>
+        · <b>병렬</b>: 인증·광고·동기화(현정) ↔ UI(인정) ↔ 카피·칭호·QA(선민) 동시 진행 가능<br/>
+        · <b>주말(13·14·20·21·28)</b>은 버퍼 — 단, <b>6/27(토)</b>은 검수 제출 목표일로 가동<br/>
+        · 6/28~30은 <b>검수 대응 + QA + 마케팅 자산</b> 마무리 → <b>6/30(화) 출시</b>
+      </p>
+    </div>
+
+    <div class="spec" id="spec">
+      <div class="spec-h">
+        <h2>📋 기능 명세 — 작업자별</h2>
+        <span class="sh-sub">각 작업이 구현해야 할 세부 기능 (기획서 확정안 기준) · <b>주 담당자별 그룹</b> — 한 기능에 협업하면 배지로 함께 표시</span>
+        <div class="sh-tip">
+          담당 배지 &nbsp;<span class="badge D">현정</span> 개발·로직 &nbsp;<span class="badge A">인정</span> UI &nbsp;<span class="badge B">선민</span> 콘텐츠·QA
+          &nbsp;|&nbsp; <b>✓</b> = 구현 항목 &nbsp;|&nbsp; 회색 박스 = 규칙·정책
+        </div>
+      </div>
+      <div class="filt-bar" id="specFilter">
+        <button class="filt on" data-f="all">전체</button>
+        <button class="filt fD" data-f="D">🔵 현정</button>
+        <button class="filt fA" data-f="A">🟢 인정</button>
+        <button class="filt fB" data-f="B">🟠 선민</button>
+      </div>
+      <div id="specBody"></div>
+    </div>
+  </div>
+
+<script>
+  const START=13, END=30;
+  const DAYS=[]; // {d, w, we, ms}
+  const WD=['토','일','월','화','수','목','금']; // 6/13 = 토요일 기준
+  for(let d=START; d<=END; d++){
+    const w = WD[(d-START)%7];
+    DAYS.push({ d, w, we:(w==='토'||w==='일'), ms:(d===27||d===30) });
+  }
+  const N=DAYS.length;
+  const leftPct=(s)=>((s-START)/N*100);
+  const widthPct=(s,e)=>((e-s+1)/N*100);
+
+  const GROUPS=[
+    {who:'D', name:'개발 (현정) — 어려운 로직·백엔드·연동', color:'var(--blue)', dot:'#3182f6', tasks:[
+      {n:'프로젝트 스캐폴딩 + sajumon 패턴 이식', s:13, e:15},
+      {n:'토스 로그인 / 익명키 인증', s:16, e:18},
+      {n:'데이터 모델 + 동기화(기기 변경 보존)', s:17, e:20},
+      {n:'계산·포인트·스트릭·보호권 로직', s:19, e:22},
+      {n:'광고 연동 (전면형 + 보상형 30초)', s:21, e:24},
+      {n:'월말 트리거 · 결산/표창장 생성·알림', s:23, e:25},
+      {n:'통합·버그픽스 + 검수 제출', s:25, e:27},
+      {n:'검수 대응 / 버퍼', s:28, e:30},
+    ]},
+    {who:'A', name:'UI (인정 · 비개발) — 화면·TDS', color:'var(--green)', dot:'#15b877', tasks:[
+      {n:'디자인 톤 확정 + TDS 셋업', s:13, e:15},
+      {n:'오늘 탭 UI (선택·회수율·등급·스트릭·포인트)', s:16, e:20},
+      {n:'월간 현황 UI (월이동·달력·요약)', s:19, e:22},
+      {n:'광고 오버레이·잠금 UI·로그인 시트', s:22, e:24},
+      {n:'결산/표창장 UI · 온보딩', s:24, e:26},
+      {n:'반응형·디테일·QA 반영', s:27, e:29},
+    ]},
+    {who:'B', name:'콘텐츠·QA (선민 · 비개발)', color:'var(--orange)', dot:'#ff8a00', tasks:[
+      {n:'카피/UX라이팅 (구간·버튼·광고)', s:13, e:16},
+      {n:'칭호 네이밍·등급컷·아이콘', s:16, e:19},
+      {n:'표창장/결산/공유 문구·공유 이미지', s:18, e:22},
+      {n:'캐릭터 도감(P2) 컨셉·보상값 밸런싱', s:22, e:24},
+      {n:'QA 시나리오·전수 테스트', s:24, e:28},
+      {n:'앱인토스 검수 체크리스트·마케팅 자산', s:26, e:30},
+    ]},
+  ];
+
+  const $ = (s)=>document.querySelector(s);
+  const chart = $('#chart');
+
+  // ===== 작업 현황 (2026-06-14 기준) — 정본은 뺄래낼래_마일스톤.md =====
+  // ✅ done · 🔶 partial(클라 O / 백엔드·검증·UI 남음) · ⬜ todo
+  const stMark = (s)=> s==='done'?'✅':s==='partial'?'🔶':'⬜';
+  // 담당별 작업 막대 상태 (GROUPS 의 tasks 순서와 1:1)
+  const STATUS_TASK = {
+    D:['done','partial','partial','done','partial','partial','todo','todo'],
+    A:['todo','todo','todo','todo','todo','todo'],
+    B:['partial','partial','partial','todo','todo','todo'],
+  };
+  // 기능 명세 상태 — D 로직/데이터 구현 기준 (화면 UI 는 인정 작업 별도)
+  const STATUS_SPEC = {
+    F1:'done', F6:'partial', F7:'partial', F18:'partial',
+    F2:'done', F3:'done', F4:'done', F5:'done',
+    F8:'done', F9:'partial', F10:'done', F11:'partial', F12:'done', 'F12+':'todo',
+    F13:'partial', F14:'done', F15:'partial', F16:'partial', F17:'partial',
+  };
+
+  // 날짜 헤더
+  let h = `<div class="drow dhead"><div class="rlabel">담당 / 일자</div><div class="track">`;
+  DAYS.forEach(x=>{
+    h += `<div class="dcell ${x.we?'we':''} ${x.ms?'ms':''}"><div class="dd">${x.d}</div><div class="dw">${x.w}</div>${x.ms?`<div class="mslab">${x.d===27?'검수':'출시'}</div>`:''}</div>`;
+  });
+  h += `</div></div>`;
+
+  // 그룹/태스크
+  GROUPS.forEach(g=>{
+    const span = Math.min(...g.tasks.map(t=>t.s)) + '~' + Math.max(...g.tasks.map(t=>t.e));
+    const st = STATUS_TASK[g.who] || [];
+    const dn = st.filter(s=>s==='done').length, pt = st.filter(s=>s==='partial').length;
+    h += `<div class="group"><div class="ghead"><span class="gdot" style="background:${g.dot}"></span>${g.name}<span class="gsum">✅${dn} 🔶${pt} / ${g.tasks.length}</span></div>`;
+    g.tasks.forEach((t,i)=>{
+      let cells='';
+      DAYS.forEach(x=>{ cells += `<div class="cell ${x.we?'we':''} ${x.ms?'ms':''}"></div>`; });
+      const mk = stMark(st[i]);
+      const bar = `<div class="bar" style="left:${leftPct(t.s)}%;width:${widthPct(t.s,t.e)}%;background:${g.color}">${t.n}<span class="rng">${t.s}–${t.e}</span></div>`;
+      h += `<div class="task"><div class="rlabel">${mk} ${t.n}</div><div class="track">${cells}${bar}</div></div>`;
+    });
+    h += `</div>`;
+  });
+
+  chart.innerHTML = h;
+
+  /* ===== 기능 명세 데이터 ===== */
+  const SPEC = [
+   {g:'A. 진입 · 설정 · 인증 · 저장', items:[
+     {id:'F1', ico:'⚙️', name:'설정 · 온보딩', who:['A','D'], sched:'UI A 6/24~26 · 데이터 D 6/17~20',
+      desc:'모든 계산의 기준값(비용·목표)을 입력 + 첫 사용 안내',
+      feats:[
+        '운동 비용 입력 — <b>한 달 기준</b>, "헬스장"이 아닌 "운동 비용"으로 일반화',
+        '이번 달 <b>목표 운동 횟수</b> 입력',
+        '우상단 <b>⚙️ 아이콘 토글</b> — 첫 입력 후엔 숨김(거의 안 쓰는 설정)',
+        '첫 진입 온보딩 — 앱 목적·사용법 안내',
+        '입력값 변경 시 단가·회수율 즉시 재계산',
+      ],
+      rules:'미입력 시 계산 카드는 플레이스홀더/비활성. 비용·목표는 ‘진실 숫자’의 기준값.'},
+     {id:'F6', ico:'🔐', name:'토스 로그인 / 익명키', who:['D','A'], sched:'로직 D 6/16~18 · 시트 A 6/22~24',
+      desc:'비로그인으로도 핵심 기능 이용, 로그인은 기록 보존·누적용',
+      feats:[
+        '비로그인 기본 이용 — 단가·회수율·기부액·출석 체크 가능',
+        '토스 로그인 / 익명키 인증 (<b>sajumon-apps-in-toss 패턴 이식</b>)',
+        '비로그인 ↔ 로그인 상태 전환 처리',
+        '로그인 버텀시트 <b>3개 트리거</b> — ①무료 3회 소진 ②잠금 표창장/결산 ③스트릭·포인트 적립 시작',
+        '시트 메인 카피 = "<b>기기 변경 시 기록 보존</b>"',
+      ],
+      rules:'첫 진입 강제 로그인 금지 — 전환 의도가 강해지는 순간에만 노출.'},
+     {id:'F7', ico:'💾', name:'데이터 저장 · 동기화', who:['D'], sched:'D 6/17~20',
+      desc:'비로그인 로컬 → 로그인 시 서버 누적, 기기 바꿔도 보존',
+      feats:[
+        '비로그인 <b>localStorage</b> 저장(출석·설정)',
+        '로그인 시 <b>서버 누적</b> 기록으로 승격·병합',
+        '<b>기기 변경 시 보존</b> — 로그인의 핵심 목적',
+        '출석·포인트·스트릭·칭호 영속 스키마',
+        '로컬 ↔ 서버 머지 규칙(중복·충돌 처리)',
+      ],
+      rules:'데이터 모델 스키마 확정 필요(TODO). 진실 숫자 무결성 유지.'},
+     {id:'F18', ico:'🔒', name:'잠금 UI (전환 유도)', who:['A'], sched:'A 6/22~24',
+      desc:'비로그인에게 프리미엄 요소를 잠금으로 보여 호기심·로그인 유도',
+      feats:[
+        '<b>자물쇠 + 블러</b>로 노출 — 표창장 / 월간 결산 / 스트릭 / 포인트',
+        '잠금 탭 클릭 → 로그인 버텀시트로 연결',
+        '잠금 상태에서도 ‘무엇이 있는지’ 흐릿하게 미리보기',
+      ],
+      rules:'코어 기능은 잠그지 않음 — 잠금은 ‘프리미엄/누적’ 요소에 한정.'},
+   ]},
+
+   {g:'B. 오늘 탭 — 출석 · 회수율', items:[
+     {id:'F2', ico:'✅', name:'오늘의 선택 (출석 체크)', who:['A','D'], sched:'UI A 6/16~20 · 로직 D 6/19~22',
+      desc:'홈 최상단 — 오늘 갈지/말지를 출석으로 기록 → 자동 집계',
+      feats:[
+        '출석 체크 버튼 (오늘 갔다 = 체크)',
+        '<b>자동 집계</b> — 수동 횟수 입력 X, 체크/달력으로만 카운트',
+        '비로그인: <b>무료 3회</b> → 소진 후 전면형 광고 게이트 ("짧은 광고 보고 출석 체크하기")',
+        '로그인: <b>무제한</b> 체크 + 출석마다 <b>+1P</b>',
+        '결과 피드백 — 가면 <b>+{단가}원 회수</b> / 안 가면 단가만큼 회수 기회 증발',
+      ],
+      rules:'하루 1회·중복 체크 방지. 과거 날짜는 달력(F14)에서 보정 기록.'},
+     {id:'F3', ico:'🧮', name:'회수율 · 단가 계산 엔진', who:['D'], sched:'D 6/19~22',
+      desc:'앱의 심장 — 입력·출석으로 모든 ‘진실 숫자’ 산출',
+      feats:[
+        '1회 단가 = <b>월 비용 ÷ 목표횟수</b>',
+        '회수율 = <b>출석일수 ÷ 목표횟수 × 100</b>',
+        '회수한 금액 = 단가 × 출석일수',
+        '누적 기부액 = <b>max(0, 비용 − 회수금액)</b>, 100% 초과 시 <b>초과 회수액</b>',
+        '본전까지 남은 횟수 = max(0, 목표 − 출석)',
+      ],
+      rules:'<b>진실 숫자는 포인트·보상으로 절대 조작 불가</b> (불변 원칙).'},
+     {id:'F4', ico:'🎯', name:'회수율 헤드라인 · 구간 카피', who:['A','B'], sched:'UI A 6/16~20 · 카피 B 6/13~16',
+      desc:'회수율을 구간별로 도발적·위트있게 보여주는 메인 결과 화면',
+      feats:[
+        '<b>이번 달 회수율 카드 + 게이지</b> (기존 ‘본전 회수 게이지’는 이 카드로 통합)',
+        '<b>7구간 동적</b> 헤드라인·컬러·이모지 — 0% / 1~25 / 26~50 / 51~75 / 76~99 / 100 / 100%+',
+        '구간별 표창장 비주얼 변화(게임적 보상감)',
+        '"회원님께 한마디" 구간 카피',
+        '변수 치환 — {단가}·{n회}·{금액}',
+      ],
+      rules:'0% “지갑만 운동러”💳 ~ 100% “호구 졸업”🎓 ~ 100%+ “이젠 내가 갑”🤑.'},
+     {id:'F5', ico:'🔢', name:'숫자로 보기', who:['A'], sched:'A 6/16~20',
+      desc:'감정 카피 아래, 팩트 숫자만 담백하게',
+      feats:[
+        '1회 단가 표시',
+        '누적 기부액 표시',
+      ],
+      rules:'회수율 카드(F4)와 중복 최소화 — 숫자만.'},
+   ]},
+
+   {g:'C. 게이미피케이션 — 포인트 · 스트릭 · 칭호', items:[
+     {id:'F8', ico:'🪙', name:'포인트 시스템', who:['D'], sched:'D 6/19~22',
+      desc:'습관(스트릭) 경제의 보조 화폐 — 의도적으로 작게 설계',
+      feats:[
+        '적립: 로그인 출석 1회 = <b>+1P</b> (+ 마일스톤 보너스 F10)',
+        '사용처(출시): <b>스트릭 보호권 5P/개</b>',
+        '적립·차감 <b>무결성</b>(정합성) 보장',
+        '(추후) <b>토스포인트 전환</b> sink — 서비스 성공 시',
+      ],
+      rules:'포인트 과설계 금지. 회수율·기부액 등 진실 숫자는 포인트로 조작 불가.'},
+     {id:'F9', ico:'🔥', name:'연속 출석 스트릭', who:['D','A'], sched:'로직 D 6/19~22 · UI A 6/16~20',
+      desc:'연속 출석을 시각화해 매일 오게 만드는 리텐션 장치',
+      feats:[
+        '연속 출석 일수 카운트',
+        '프로그레스바 + 다음 마일스톤 표시',
+        '보호권 적용 → <b>빠진 날에도 끊김 방지</b> (Duolingo freeze 모델)',
+        '끊김 판정·리셋 로직',
+      ],
+      rules:'로그인 유저 한정. 보호권은 F11에서 별도 획득.'},
+     {id:'F10', ico:'🎁', name:'스트릭 마일스톤 보상', who:['D','A'], sched:'로직 D 6/19~22 · UI A 6/24~26',
+      desc:'3·7·14·30일 달성 시 보너스 포인트 (광고 보고 수령)',
+      feats:[
+        '보너스: 3일 <b>+2P</b> / 7일 <b>+5P</b> / 14일 <b>+10P</b> / 30일 <b>+30P</b>',
+        '<b>자동 지급 X</b> → 전면형 광고 보고 수령 ("광고보고 포인트 받기")',
+        '수령 시 축하 토스트 + 마일스톤 칩(받음/대기)',
+        '<b>중복 지급 방지</b>(claimed)',
+      ],
+      rules:'로그인 한정. 보호권은 마일스톤에서 분리(F11).'},
+     {id:'F11', ico:'🛡️', name:'스트릭 보호권', who:['D','A'], sched:'로직 D 6/19~22 · UI A 6/22~24',
+      desc:'빠진 날 스트릭이 끊기지 않게 막아주는 아이템',
+      feats:[
+        '획득 2경로: <b>포인트 5P/개</b> 또는 <b>보상형 광고 30초</b> ("📺 광고 보고 받기")',
+        '빠진 날 자동/수동 적용으로 연속 유지',
+        '<b>무과금 유저도 광고로 확보</b> + 광고 수익 발생',
+      ],
+      rules:'비용 0 · 리텐션 임팩트 큼. 마일스톤과 독립.'},
+     {id:'F12', ico:'🏆', name:'대표 칭호 (누적 레벨)', who:['D','A','B'], sched:'로직 D 6/19~22 · 콘텐츠 B 6/16~19',
+      desc:'누적 출석 기반 장기 충성도 등급 — 매달 리셋되는 구간과 분리',
+      feats:[
+        '누적 출석 기준 <b>대표 등급 1개</b> + 다음 등급까지 진행바',
+        '7단계: 새싹🌱(0)→작심삼일러🔥(3)→헬스 뉴비🏃(10)→회수 전문가🎯(25)→본전 사냥꾼💪(45)→뽕뽑기 달인🏆(80)→명예 헬창👑(120)',
+        '이달 구간(F4)과 <b>분리</b> — 구간은 리셋, 칭호는 누적',
+      ],
+      rules:'등급 컷(25/45/80/120) 밸런싱 검증 필요(TODO).'},
+     {id:'F12+', ico:'🃏', name:'캐릭터 도감 (수집·성장)', who:['B'], sched:'컨셉 B 6/22~24', p2:true,
+      desc:'평면 배지 그리드를 대체하는 수집·성장형 보상',
+      feats:[
+        '출석·연속·졸업 등 행동으로 운동 캐릭터 수집/성장',
+        '네이밍 후보: 루틴 수호자 · 헬스장 털이범 · 관장님 단골손님 · 비가 와도 감',
+        '<b>날씨 연동</b> 검토(비가 와도 감)',
+      ],
+      rules:'1차 출시 제외 — Phase 2 별도 기획.'},
+   ]},
+
+   {g:'D. 광고 · 수익화', items:[
+     {id:'F13', ico:'📣', name:'광고 시스템 (수익화)', who:['D','A'], sched:'로직 D 6/21~24 · 오버레이 A 6/22~24',
+      desc:'전면형 + 보상형 — sajumon 전면형 이식 + 보상형 신규 연동',
+      feats:[
+        '<b>전면형(5초)</b>: 출석(무료소진)·마일스톤 포인트·결산·표창장 열람',
+        '<b>보상형(30초)</b>: 스트릭 보호권 획득',
+        '시청 <b>완료 판정</b> → 보상 지급(미완료 시 미지급)',
+        '광고 오버레이 UI (전면형/보상형 분기)',
+        '결산/표창장 광고 = <b>해당 달 1회(세션)</b>, 달 바뀌면 재시청',
+      ],
+      rules:'출석은 로그인 시 무광고. 보상형 연동 가능 여부 확인 필요(TODO).'},
+   ]},
+
+   {g:'E. 월간 현황 · 결산 · 표창장 · 알림', items:[
+     {id:'F14', ico:'📅', name:'월간 현황 · 출석 달력', who:['A','D'], sched:'UI A 6/19~22 · 로직 D',
+      desc:'월별 출석을 달력으로 보고 직접 기록·보정',
+      feats:[
+        '월 이동 드롭다운 <b>‹ 2026년 N월 ▾ ›</b> (달력 바로 위), <b>2026.01~현재</b>, 미래 비활성',
+        '출석 달력 — <b>날짜 탭 = 출석 직접 기록/보정</b>',
+        '선택 달 요약 (출석·회수율)',
+      ],
+      rules:'미래 날짜 비활성. 과거 보정도 자동 집계에 반영.'},
+     {id:'F15', ico:'📊', name:'월간 결산 리포트', who:['D','A','B'], sched:'트리거 D 6/23~25 · UI A 6/24~26 · 콘텐츠 B 6/18~22',
+      desc:'월말 회고·넛지 도구 — 잘한 사람보다 못한 사람에게 더 필요',
+      feats:[
+        '게이트 = <b>로그인 + 월말</b>만 (회수율 게이팅 X)',
+        '열람 = 전면형 광고 ("광고 보고 결산 보기")',
+        '형식 = <b>C(공유 카드뉴스) + A(상세) 하이브리드</b>',
+        '회수율로 <b>톤 분기</b> — 높음→축하·표창장 / 낮음→코칭 + <b>다음 달 목표 추천</b>',
+        '마지막 슬라이드 → 표창장 연결',
+      ],
+      rules:'회수율은 게이트가 아니라 ‘내용 분기’. 형식 구체화 TODO.'},
+     {id:'F16', ico:'🏅', name:'표창장 (바이럴 핵심)', who:['D','A','B'], sched:'생성 D 6/23~25 · UI A 6/24~26 · 문구 B 6/18~22',
+      desc:'스샷 공유용 — 바이럴의 핵심 자산',
+      feats:[
+        '종류: <b>후원 표창장</b>(미달) / <b>호구 졸업장</b>(100%)',
+        '월 진행 중 = 잠금 + <b>D-N</b> + 월말 도착 예고',
+        '월말/과거달/100% = 공개 + "<b>🎉 표창장 도착</b>" 배너',
+        '스샷 <b>공유 이미지</b> 생성 (캡처 vs 렌더링 TODO)',
+      ],
+      rules:'후원 “…아낌없이 기부하셨기에 이 상장을 수여합니다 👑” / 졸업 “회수율 100% 달성, 호구 명단에서 제명 🎓”.'},
+     {id:'F17', ico:'🔔', name:'월말 트리거 · 알림', who:['D'], sched:'D 6/23~25',
+      desc:'월 경계에 결산·표창장 생성, 도착 알림·매일 푸시',
+      feats:[
+        '<b>월 경계 감지</b> → 결산·표창장 생성·광고 게이트 세팅',
+        '도착 알림 (앱인토스 <b>스마트 발송</b> 연동 검토)',
+        '매일 푸시 / 스트릭·마일스톤 카피',
+      ],
+      rules:'스마트 발송 연동·세그먼트 정의 TODO.'},
+   ]},
+  ];
+
+  /* ===== 명세 렌더 (작업자별 그룹) ===== */
+  const NM = {D:'현정', A:'인정', B:'선민'};                 // 담당 배지 표기
+  const lab = s => s.replace(/\bD\b/g,'현정').replace(/\bA\b/g,'인정').replace(/\bB\b/g,'선민'); // 일정 문구의 담당 코드 치환
+
+  // 기능별 주 담당(리드). 협업자는 카드 배지로 함께 표시.
+  const PRIMARY = {
+    F2:'D', F3:'D', F6:'D', F7:'D', F8:'D', F9:'D', F10:'D', F11:'D', F13:'D', F15:'D', F16:'D', F17:'D',
+    F1:'A', F4:'A', F5:'A', F14:'A', F18:'A',
+    F12:'B', 'F12+':'B',
+  };
+  const OWNERS = [
+    {key:'D', label:'현정 · 개발 — 로직·인증·광고·동기화·서버', color:'var(--blue)'},
+    {key:'A', label:'인정 · UI — 화면·TDS', color:'var(--green)'},
+    {key:'B', label:'선민 · 콘텐츠·QA (+카피·QA는 타 기능에도 배지로 참여)', color:'var(--orange)'},
+  ];
+
+  const cardHtml = (it)=>{
+    const badges = it.who.map(w=>`<span class="badge ${w}">${NM[w]||w}</span>`).join('');
+    const feats = it.feats.map(f=>`<li>${f}</li>`).join('');
+    return `<div class="fcard" data-who="${it.who.join(' ')}">
+        <div class="ftop"><span class="fid">${stMark(STATUS_SPEC[it.id])} ${it.id}</span><span class="fname"><span class="ico">${it.ico}</span>${it.name}</span><span class="badges">${badges}</span></div>
+        <div class="fdesc">${it.desc}</div>
+        <div class="fsched">🗓️ ${lab(it.sched)}</div>
+        <ul class="flist">${feats}</ul>
+        ${it.rules ? `<div class="frules"><span class="rt">규칙·정책</span>${it.rules}</div>` : ''}
+        ${it.p2 ? `<span class="p2">Phase 2</span>` : ''}
+      </div>`;
+  };
+
+  const allItems = SPEC.flatMap(grp=>grp.items);
+  let sp='';
+  OWNERS.forEach(o=>{
+    const items = allItems.filter(it => (PRIMARY[it.id] || it.who[0]) === o.key);
+    if(!items.length) return;
+    const dn = items.filter(it=>STATUS_SPEC[it.id]==='done').length;
+    const pt = items.filter(it=>STATUS_SPEC[it.id]==='partial').length;
+    sp += `<div class="ownsec" data-owner="${o.key}"><div class="grp-h" style="--ow:${o.color}">${o.label}<span style="margin-left:auto;font-weight:700;color:var(--grey400)">✅${dn} 🔶${pt} / ${items.length}</span></div><div class="fcards">`;
+    items.forEach(it=> sp += cardHtml(it));
+    sp += `</div></div>`;
+  });
+  document.getElementById('specBody').innerHTML = sp;
+
+  /* ===== 작업자 필터 — 이름 클릭 시 해당 인원이 참여(배지)하는 기능만 표시 ===== */
+  function applyFilter(f){
+    document.querySelectorAll('#specBody .fcard').forEach(c=>{
+      const who = c.dataset.who.split(' ');
+      c.style.display = (f==='all' || who.includes(f)) ? '' : 'none';
+    });
+    // 보이는 카드가 없는 작업자 그룹은 통째로 숨김
+    document.querySelectorAll('#specBody .ownsec').forEach(sec=>{
+      const vis = [...sec.querySelectorAll('.fcard')].some(c=>c.style.display!=='none');
+      sec.style.display = vis ? '' : 'none';
+    });
+    document.querySelectorAll('#specFilter .filt').forEach(b=>b.classList.toggle('on', b.dataset.f===f));
+  }
+  document.getElementById('specFilter').addEventListener('click', e=>{
+    const b = e.target.closest('.filt'); if(b) applyFilter(b.dataset.f);
+  });
+</script>
+</body>
+</html>
