@@ -30,12 +30,21 @@
 > 클라이언트(`src/lib/userData.ts`)는 현재 MVP 라 supabase 직접 upsert(`saveRemoteState`)를 쓴다.
 > 위 액션 라우트로 옮기면 `userData.ts` 의 TODO(하드닝) 주석대로 callBackend 경유로 교체.
 
-## 인증 라우트·라이브러리는 sajumon 에서 이식
+## 구현 현황 (F6 토스 로그인 — 이식 완료 ✅)
 
-`auth/login`·`refresh`·`me`·`disconnect` 와 `lib/aits/{tossApi,session,pii,ratelimit}.ts` 는
-**토스 공통 로직**이라 `sajumon-apps-in-toss/docs/backend/` 의 동일 파일을 거의 그대로 복사하고,
-테이블명만 `sajumon_aits_users` → `plnl_aits_users`, 세션 키 prefix 만 바꾸면 됩니다.
-사주(saju) 도메인 라우트(`/user/tap` 등)는 PLNL 액션 라우트(위 표)로 대체.
+이 폴더에 **인증 라우트·라이브러리가 plnl 용으로 이식 완료**되어 있습니다 (sajumon 패턴, `plnl_aits_users` 적응):
+
+- ✅ `api-aits-auth-login.ts` — 토스 OAuth(mTLS) → 세션 JWT 발급 (row 자동생성 안 함)
+- ✅ `api-aits-auth-me.ts` — 세션 검증 → `PlnlRow | null` 반환 (기기변경 보존 로드)
+- ✅ `api-aits-auth-refresh.ts` — refresh → access 재발급
+- ✅ `api-aits-auth-disconnect.ts` — 토스 연결 끊기 콜백(Basic Auth) → row 삭제
+- ✅ `lib-aits-{tossApi,pii,session,ratelimit}.ts` + `lib-aits-db.ts`(supabase·CORS·fetchRow)
+
+남은 백엔드 작업: `/user/*` 액션 라우트(checkin/claim-milestone/buy-freeze/settings) =
+`lib-aits-userActions.ts`(서버 권위 비즈니스 로직) — 추후 F2/F8/F11. 그 전까지 클라는 supabase 직접(MVP).
+
+> 위 파일들은 `plnl.vercel.app`(별도 Next.js 레포)의 `app/api/aits/*` · `lib/aits/*` 로 복사해 사용.
+> 실제 동작에는 mTLS 인증서·PII 키(사업자 통과 후 콘솔 발급) + Vercel 환경변수 등록 필요.
 
 ## 월말 트리거 / 알림 (기획 §7 · 업무분장 D)
 
