@@ -133,7 +133,12 @@ export function MonthlyScreen({ plnl }: { plnl: PlnlController }) {
           </div>
           <Line k="출석 / 목표" v={`${monthly.report.done} / ${monthly.report.target}회`} />
           <Line k="최장 연속 출석" v={`${monthly.report.maxStreak}일 🔥`} />
-          <Line k="회수한 금액" v={won(monthly.report.recovered)} />
+          <Line k="회수한 금액" v={won(monthly.report.recovered)} color="#15b877" />
+          {monthly.report.graduated ? (
+            <Line k="초과 회수액" v={`+${won(monthly.report.over)}`} color={monthly.bracket.barColor} />
+          ) : (
+            <Line k="기부한 금액" v={won(monthly.report.donate)} color="#f04452" />
+          )}
           <Line k="다음 달 추천 목표" v={`${monthly.report.nextTargetRecommendation}회`} />
         </Card>
       )}
@@ -172,10 +177,24 @@ export function MonthlyScreen({ plnl }: { plnl: PlnlController }) {
           <pre style={{ background: "#f9fafb", border: "1px solid #f2f4f6", borderRadius: 14, padding: 16, fontSize: 14, whiteSpace: "pre-wrap", fontFamily: "inherit", color: "#4e5968" }}>
             {monthly.certificate.text.share}
           </pre>
+          <button
+            onClick={() => copyShareText(monthly.certificate.text.share)}
+            style={fullBtn}
+          >
+            공유 문구 복사하기
+          </button>
         </Card>
       )}
     </div>
   );
+}
+
+function copyShareText(text: string) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).catch(() => alert("복사:\n\n" + text));
+  } else {
+    alert("복사:\n\n" + text);
+  }
 }
 
 const navBtn: React.CSSProperties = { border: "none", background: "#fff", width: 34, height: 34, borderRadius: 10, fontSize: 16, boxShadow: "0 1px 2px rgba(0,0,0,.06)", color: "#4e5968" };
@@ -191,11 +210,11 @@ function Stat({ k, v, color }: { k: string; v: string; color?: string }) {
   );
 }
 
-function Line({ k, v }: { k: string; v: string }) {
+function Line({ k, v, color }: { k: string; v: string; color?: string }) {
   return (
     <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5, padding: "9px 0", borderBottom: "1px solid #f2f4f6" }}>
       <span style={{ color: "#6b7684" }}>{k}</span>
-      <span style={{ fontWeight: 800 }}>{v}</span>
+      <span style={{ fontWeight: 800, color: color ?? "#191f28" }}>{v}</span>
     </div>
   );
 }
