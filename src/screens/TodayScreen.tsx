@@ -1,4 +1,9 @@
 import type { PlnlController } from "../hooks/usePlnl";
+import {
+  AD_UNLOCKED_TAG,
+  freeCheckinTagText,
+  todayCheckInStatusText,
+} from "../lib/content";
 import { won, wonN } from "../lib/format";
 
 // ── 오늘 탭 ──────────────────────────────────────────────────────────────
@@ -24,6 +29,15 @@ function Card({ children }: { children: React.ReactNode }) {
 export function TodayScreen({ plnl }: { plnl: PlnlController }) {
   const { today, checkin, game, actions, state } = plnl;
   const s = today.stats;
+  const statusMsg = todayCheckInStatusText(today.todayValue, s.unit, state.loggedIn);
+
+  // 비로그인 버튼 위 안내 태그
+  const freeTag = (() => {
+    if (state.loggedIn || today.todayValue != null) return null;
+    if (state.adUnlocked) return AD_UNLOCKED_TAG;
+    if (checkin.freeLeft > 0) return freeCheckinTagText(checkin.freeLeft);
+    return null;
+  })();
 
   return (
     <div>
@@ -32,7 +46,9 @@ export function TodayScreen({ plnl }: { plnl: PlnlController }) {
         <p style={{ fontWeight: 700, color: "#6b7684", marginTop: 0 }}>
           🔔 오늘의 선택{" "}
           {!state.loggedIn && (
-            <small>· 무료 {checkin.freeLeft}회 남음</small>
+            <small style={{ color: "#8b95a1" }}>
+              · 무료 {checkin.freeLeft}/3
+            </small>
           )}
         </p>
         <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
@@ -53,6 +69,12 @@ export function TodayScreen({ plnl }: { plnl: PlnlController }) {
             <div style={{ fontSize: 11, color: "#8b95a1" }}>회수 기회 증발 😢</div>
           </div>
         </div>
+
+        {freeTag && (
+          <div style={{ fontSize: 12, fontWeight: 700, color: state.adUnlocked ? "#15b877" : "#3182f6", textAlign: "center", marginBottom: 10 }}>
+            {freeTag}
+          </div>
+        )}
 
         {checkin.mode === "buttons" ? (
           <div style={{ display: "flex", gap: 10 }}>
@@ -78,6 +100,20 @@ export function TodayScreen({ plnl }: { plnl: PlnlController }) {
             📺 짧은 광고 보고 출석 체크하기
           </button>
         )}
+
+        {/* 출석 체크 후 상태 메시지 */}
+        <div style={{
+          marginTop: 12,
+          padding: "12px 14px",
+          borderRadius: 12,
+          fontSize: 13.5,
+          fontWeight: 600,
+          textAlign: "center",
+          background: statusMsg.kind === "done" ? "#e7f9f1" : statusMsg.kind === "missed" ? "#fdeced" : "#f2f4f6",
+          color: statusMsg.kind === "done" ? "#15b877" : statusMsg.kind === "missed" ? "#f04452" : "#6b7684",
+        }}>
+          {statusMsg.text}
+        </div>
       </Card>
 
       {/* 2) 회수율 헤드라인 */}
@@ -121,14 +157,26 @@ export function TodayScreen({ plnl }: { plnl: PlnlController }) {
         <>
           <Card>
             <p style={{ fontWeight: 700, color: "#6b7684", marginTop: 0 }}>🏅 내 등급</p>
-            <div style={{ fontSize: 18, fontWeight: 800 }}>
-              {game.title.current.emoji} {game.title.current.name}
+            <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 12 }}>
+              <div style={{ width: 46, height: 46, borderRadius: 14, background: "#eef4ff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0 }}>
+                {game.title.current.emoji}
+              </div>
+              <div>
+                <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: -0.4 }}>
+                  {game.title.current.name}
+                </div>
+                <div style={{ fontSize: 12, color: "#8b95a1", fontWeight: 600, marginTop: 2 }}>
+                  누적 출석 {game.totalDone}회 · 본전 졸업 {game.monthsGraduated}회
+                </div>
+              </div>
             </div>
-            <div style={{ fontSize: 12, color: "#8b95a1" }}>
-              누적 출석 {game.totalDone}회 · 본전 졸업 {game.monthsGraduated}회
+            <div style={{ height: 12, background: "#f2f4f6", borderRadius: 999, overflow: "hidden", marginBottom: 6 }}>
+              <div style={{ height: "100%", width: `${game.title.progressPct}%`, borderRadius: 999, background: "linear-gradient(90deg,#3182f6,#5a9cff)", transition: "width .5s" }} />
+            </div>
+            <div style={{ fontSize: 11.5, color: "#8b95a1", fontWeight: 600, textAlign: "right" }}>
               {game.title.next
-                ? ` · 다음 「${game.title.next.name}」까지 ${game.title.remainingToNext}회`
-                : " · 최고 등급 👑"}
+                ? `다음 등급 「${game.title.next.name}」까지 출석 ${game.title.remainingToNext}회`
+                : "최고 등급 달성! 👑"}
             </div>
           </Card>
           <Card>

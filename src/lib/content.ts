@@ -8,6 +8,7 @@
 import { isGraduated, resolveBracketKey, type BracketKey } from "./brackets";
 import type { MonthStats } from "./calc";
 import { won } from "./format";
+import type { LogValue } from "./model";
 
 // ── 회수율 구간 비주얼 (badge 라벨/이모지/게이지색/헤드라인 배경) ──────────
 export interface BracketVisual {
@@ -165,3 +166,41 @@ export const MONTH_LABELS = [
   "1월", "2월", "3월", "4월", "5월", "6월",
   "7월", "8월", "9월", "10월", "11월", "12월",
 ];
+
+// ── 오늘의 선택 — 출석 체크 후 상태 메시지 ─────────────────────────────────
+
+export type CheckInStatusKind = "done" | "missed" | "neutral";
+
+export interface CheckInStatus {
+  text: string;
+  kind: CheckInStatusKind;
+}
+
+/** 오늘 체크인 결과(또는 미체크) → 화면 하단 상태 메시지 + 스타일 분류. */
+export function todayCheckInStatusText(
+  todayValue: LogValue | null,
+  unit: number,
+  loggedIn: boolean,
+): CheckInStatus {
+  if (todayValue === "done") {
+    return {
+      text: `오늘 ${won(unit)} 회수 완료 💪${loggedIn ? " +1P" : ""}`,
+      kind: "done",
+    };
+  }
+  if (todayValue === "missed") {
+    return {
+      text: `오늘 ${won(unit)} 증발… 내일 가면 다시 회수 가능해요 😅`,
+      kind: "missed",
+    };
+  }
+  return { text: "오늘 출석을 체크해보세요!", kind: "neutral" };
+}
+
+/** 비로그인 광고 시청 완료 후 버튼 위 안내 문구. */
+export const AD_UNLOCKED_TAG = "광고 시청 완료! 오늘 출석을 선택하세요 ✅";
+
+/** 비로그인 무료 체크인 남은 횟수 안내 태그. */
+export function freeCheckinTagText(freeLeft: number): string {
+  return `무료 출석 체크 ${freeLeft}회 남았어요`;
+}
