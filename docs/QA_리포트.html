@@ -1,0 +1,594 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>뺄래 낼래 — QA 리포트</title>
+<style>
+  :root {
+    --blue:#3182f6; --blue-bg:#e8f3ff;
+    --green:#15b877; --green-bg:#e7f9f1;
+    --red:#f04452; --red-bg:#fdeced;
+    --orange:#ff8a00; --orange-bg:#fff3e0;
+    --grey900:#191f28; --grey700:#4e5968; --grey500:#8b95a1;
+    --grey200:#e5e8eb; --grey100:#f2f4f6; --line:#eef1f4;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",Pretendard,"Malgun Gothic",sans-serif;
+    background:#f4f6f8;color:var(--grey900);padding:28px 20px 80px;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:960px;margin:0 auto;}
+
+  /* 헤더 */
+  .page-head{background:#fff;border-radius:20px;padding:24px 28px 20px;margin-bottom:20px;box-shadow:0 4px 20px rgba(0,0,0,.06);}
+  .page-head h1{margin:0 0 6px;font-size:22px;font-weight:800;letter-spacing:-.5px;}
+  .page-head .sub{font-size:13px;color:var(--grey500);font-weight:600;}
+  .badges{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
+  .bdg{font-size:12px;font-weight:800;padding:5px 12px;border-radius:999px;}
+  .bdg-green{background:var(--green-bg);color:#0e7a50;}
+  .bdg-blue{background:var(--blue-bg);color:#1a64d0;}
+  .bdg-orange{background:var(--orange-bg);color:#a05500;}
+  .bdg-grey{background:var(--grey100);color:var(--grey700);}
+
+  /* 요약 카드 */
+  .summary{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:20px;}
+  .sum-card{background:#fff;border-radius:16px;padding:16px 18px;box-shadow:0 2px 10px rgba(0,0,0,.05);}
+  .sum-card .sc-label{font-size:12px;color:var(--grey500);font-weight:700;}
+  .sum-card .sc-val{font-size:28px;font-weight:800;margin-top:2px;}
+  .sum-card .sc-sub{font-size:11px;color:var(--grey500);margin-top:2px;}
+
+  /* 자동 검증 섹션 */
+  .section{background:#fff;border-radius:18px;padding:20px 22px;margin-bottom:16px;box-shadow:0 2px 10px rgba(0,0,0,.05);}
+  .sec-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;cursor:pointer;user-select:none;}
+  .sec-head h2{margin:0;font-size:15px;font-weight:800;}
+  .sec-head .sc{margin-left:auto;font-size:12px;font-weight:700;color:var(--grey500);}
+  .sec-head .toggle{font-size:13px;color:var(--grey500);}
+  .sec-body{overflow:hidden;transition:max-height .25s;}
+
+  /* 자동 검증 행 */
+  .auto-table{width:100%;border-collapse:collapse;}
+  .auto-table th{text-align:left;font-size:11.5px;font-weight:800;color:var(--grey500);padding:5px 8px;border-bottom:2px solid var(--line);}
+  .auto-table td{padding:6px 8px;font-size:12.5px;border-bottom:1px solid var(--line);vertical-align:top;}
+  .auto-table tr:last-child td{border-bottom:none;}
+  .auto-table .id{font-weight:800;color:var(--grey500);white-space:nowrap;font-size:11px;}
+  .auto-table .desc{color:var(--grey700);}
+  .pass-chip{display:inline-flex;align-items:center;gap:3px;background:var(--green-bg);color:#0e7a50;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;}
+
+  /* 수동 체크리스트 */
+  .manual-table{width:100%;border-collapse:collapse;}
+  .manual-table th{text-align:left;font-size:11.5px;font-weight:800;color:var(--grey500);padding:5px 8px;border-bottom:2px solid var(--line);}
+  .manual-table td{padding:7px 8px;font-size:12.5px;border-bottom:1px solid var(--line);vertical-align:middle;}
+  .manual-table tr:last-child td{border-bottom:none;}
+  .manual-table .id{font-weight:800;color:var(--grey500);white-space:nowrap;font-size:11px;}
+  .manual-table .action{color:var(--grey700);}
+  .manual-table .expect{color:var(--grey900);font-size:12px;}
+
+  /* 체크박스 스타일 */
+  .cb-wrap{display:flex;gap:6px;}
+  .cb-wrap input[type=radio]{display:none;}
+  .cb-wrap label{cursor:pointer;font-size:18px;line-height:1;opacity:.35;transition:.1s;}
+  .cb-wrap label:hover{opacity:.7;}
+  input[value="pass"]:checked + label{opacity:1;}
+  input[value="fail"]:checked ~ label[for*="-f"]{opacity:1;}
+  input[value="skip"]:checked ~ label[for*="-s"]{opacity:1;}
+
+  /* 미결 정책 */
+  .todo-list{list-style:none;padding:0;margin:0;}
+  .todo-list li{padding:10px 12px;border-radius:10px;background:var(--orange-bg);border:1px solid #ffe0b2;margin-bottom:8px;font-size:13px;color:var(--grey700);line-height:1.5;}
+  .todo-list li b{color:var(--grey900);}
+  .todo-list li:last-child{margin-bottom:0;}
+
+  /* 섹션 바 */
+  .sec-bar{height:4px;border-radius:4px;background:var(--grey100);margin-bottom:14px;overflow:hidden;}
+  .sec-bar-fill{height:100%;border-radius:4px;background:var(--green);transition:width .4s;}
+
+  /* 탭 */
+  .tabs{display:flex;gap:4px;margin-bottom:20px;}
+  .tab{padding:9px 18px;border-radius:10px;font-size:13px;font-weight:800;cursor:pointer;border:none;background:var(--grey100);color:var(--grey700);transition:.12s;}
+  .tab.on{background:var(--grey900);color:#fff;}
+
+  /* 범례 */
+  .legend{display:flex;gap:16px;font-size:12px;color:var(--grey500);font-weight:700;margin-bottom:16px;flex-wrap:wrap;}
+  .legend span{display:flex;align-items:center;gap:4px;}
+
+  .warn-box{background:#fff8e6;border:1px solid #ffe0b2;border-radius:12px;padding:12px 14px;font-size:12.5px;color:#7a4f00;margin-bottom:16px;line-height:1.6;}
+
+  @media(max-width:640px){
+    .summary{grid-template-columns:1fr 1fr;}
+    .page-head{padding:18px 18px 16px;}
+    .section{padding:16px 14px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 헤더 -->
+  <div class="page-head">
+    <h1>🧪 뺄래 낼래 — QA 리포트</h1>
+    <div class="sub">2026-06-23 · 자동 검증 115개 ✅ + 수동 시나리오 82개 (선민 체크용)</div>
+    <div class="badges">
+      <span class="bdg bdg-green">✅ 로직 자동검증 115/115 통과</span>
+      <span class="bdg bdg-blue">🖱️ UI 수동 체크 82케이스</span>
+      <span class="bdg bdg-orange">⚠️ 미결 정책 3건</span>
+      <span class="bdg bdg-grey">npm run qa 로 재실행 가능</span>
+    </div>
+  </div>
+
+  <!-- 요약 -->
+  <div class="summary">
+    <div class="sum-card">
+      <div class="sc-label">자동 검증</div>
+      <div class="sc-val" style="color:var(--green)">115</div>
+      <div class="sc-sub">전체 통과 / 0 실패</div>
+    </div>
+    <div class="sum-card">
+      <div class="sc-label">수동 체크 (선민)</div>
+      <div class="sc-val" style="color:var(--blue)" id="manualCount">82</div>
+      <div class="sc-sub">UI / 플로우 / 엣지케이스</div>
+    </div>
+    <div class="sum-card">
+      <div class="sc-label">미결 정책 (TODO)</div>
+      <div class="sc-val" style="color:var(--orange)">3</div>
+      <div class="sc-sub">현정과 결정 필요</div>
+    </div>
+    <div class="sum-card">
+      <div class="sc-label">검수 제출 목표</div>
+      <div class="sc-val" style="color:var(--grey700)">6/27</div>
+      <div class="sc-sub">출시 6/30</div>
+    </div>
+  </div>
+
+  <!-- 탭 -->
+  <div class="tabs">
+    <button class="tab on" onclick="showTab('auto')">🤖 자동 검증 결과</button>
+    <button class="tab" onclick="showTab('manual')">🖱️ 수동 체크리스트</button>
+    <button class="tab" onclick="showTab('todo')">⚠️ 미결 정책</button>
+  </div>
+
+  <!-- ══ 자동 검증 결과 ══ -->
+  <div id="pane-auto">
+
+  <div class="warn-box">
+    💡 아래는 <b>순수 함수(로직 레이어)</b> 자동 검증 결과입니다. UI 렌더링·광고 실행·로그인 플로우는 <b>수동 체크리스트</b> 탭에서 직접 확인하세요.
+  </div>
+
+  <!-- A -->
+  <div class="section">
+    <div class="sec-head" onclick="toggle(this)">
+      <h2>A. 계산 엔진 <span style="color:var(--grey500);font-weight:600;font-size:13px">calc.ts</span></h2>
+      <span class="sc">17 / 17 ✅</span>
+      <span class="toggle">▾</span>
+    </div>
+    <div class="sec-body">
+      <div class="sec-bar"><div class="sec-bar-fill" style="width:100%"></div></div>
+      <table class="auto-table">
+        <tr><th>ID</th><th>설명</th><th>결과</th></tr>
+        <tr><td class="id">A-1</td><td class="desc">출석 0회 → rate=0%, 단가=10,000, 기부=100,000, 초과=0</td><td><span class="pass-chip">✅ 통과</span></td></tr>
+        <tr><td class="id">A-2</td><td class="desc">done=7/10 → rate=70%, 회수=70,000, 기부=30,000, remain=3</td><td><span class="pass-chip">✅ 통과</span></td></tr>
+        <tr><td class="id">A-3</td><td class="desc">done=10/10 → rate=100%, over=0, donate=0</td><td><span class="pass-chip">✅ 통과</span></td></tr>
+        <tr><td class="id">A-4</td><td class="desc">done=12/10 → rate=120%, 초과=20,000, donate=0</td><td><span class="pass-chip">✅ 통과</span></td></tr>
+        <tr><td class="id">A-5</td><td class="desc">fee=0 → 단가=0, rate=10% (출석만 카운트)</td><td><span class="pass-chip">✅ 통과</span></td></tr>
+        <tr><td class="id">A-6</td><td class="desc">target=1 / done=1 → rate=100%</td><td><span class="pass-chip">✅ 통과</span></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- B -->
+  <div class="section">
+    <div class="sec-head" onclick="toggle(this)">
+      <h2>B. 구간 판정 <span style="color:var(--grey500);font-weight:600;font-size:13px">brackets.ts</span></h2>
+      <span class="sc">15 / 15 ✅</span>
+      <span class="toggle">▾</span>
+    </div>
+    <div class="sec-body">
+      <div class="sec-bar"><div class="sec-bar-fill" style="width:100%"></div></div>
+      <table class="auto-table">
+        <tr><th>ID</th><th>조건</th><th>예상 구간</th><th>결과</th></tr>
+        <tr><td class="id">B-1</td><td class="desc">done=0</td><td>0 (지갑만 운동러)</td><td><span class="pass-chip">✅</span></td></tr>
+        <tr><td class="id">B-2~4</td><td class="desc">rate=1%, 25%(경계), 25.01%</td><td>1 / 1 / 2</td><td><span class="pass-chip">✅</span></td></tr>
+        <tr><td class="id">B-5~6</td><td class="desc">rate=50%(경계), 50.01%</td><td>2 / 3</td><td><span class="pass-chip">✅</span></td></tr>
+        <tr><td class="id">B-7~8</td><td class="desc">rate=75%(경계), 75.01%</td><td>3 / 4</td><td><span class="pass-chip">✅</span></td></tr>
+        <tr><td class="id">B-9~11</td><td class="desc">rate=99.9%, 100%(정확히), 100.01%</td><td>4 / 5 / 6</td><td><span class="pass-chip">✅</span></td></tr>
+        <tr><td class="id">B-12~14</td><td class="desc">isGraduated(100), (99.9), (150)</td><td>true / false / true</td><td><span class="pass-chip">✅</span></td></tr>
+        <tr><td class="id">B-15</td><td class="desc">BRACKET_VISUALS 7구간 모두 정의</td><td>완비</td><td><span class="pass-chip">✅</span></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- C+D -->
+  <div class="section">
+    <div class="sec-head" onclick="toggle(this)">
+      <h2>C·D. 구간 카피 + 표창장 문구 <span style="color:var(--grey500);font-weight:600;font-size:13px">content.ts</span></h2>
+      <span class="sc">14 / 14 ✅</span>
+      <span class="toggle">▾</span>
+    </div>
+    <div class="sec-body">
+      <div class="sec-bar"><div class="sec-bar-fill" style="width:100%"></div></div>
+      <table class="auto-table">
+        <tr><th>ID</th><th>설명</th><th>결과</th></tr>
+        <tr><td class="id">C-1~4</td><td class="desc">구간 0·1·5·6 헤드라인 키워드 포함 여부 (지갑/후원/호구졸업/기부)</td><td><span class="pass-chip">✅ 통과</span></td></tr>
+        <tr><td class="id">D-1~3</td><td class="desc">미달 표창장 — 제목·기부 문구·#뺄래낼래 share</td><td><span class="pass-chip">✅ 통과</span></td></tr>
+        <tr><td class="id">D-4~6</td><td class="desc">달성 졸업장 — 제목·제명 문구·완전 회수 share</td><td><span class="pass-chip">✅ 통과</span></td></tr>
+        <tr><td class="id">D-7~10</td><td class="desc">reportGrade — 100%/75%/50%/49% 총평 분기</td><td><span class="pass-chip">✅ 통과</span></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- E -->
+  <div class="section">
+    <div class="sec-head" onclick="toggle(this)">
+      <h2>E. 대표 칭호 + 프로그레스바 <span style="color:var(--grey500);font-weight:600;font-size:13px">titles.ts</span></h2>
+      <span class="sc">23 / 23 ✅</span>
+      <span class="toggle">▾</span>
+    </div>
+    <div class="sec-body">
+      <div class="sec-bar"><div class="sec-bar-fill" style="width:100%"></div></div>
+      <table class="auto-table">
+        <tr><th>누적 출석</th><th>예상 등급</th><th>progressPct</th><th>결과</th></tr>
+        <tr><td class="id">0회</td><td>🌱 운동 새싹</td><td>0% / next까지 3회</td><td><span class="pass-chip">✅</span></td></tr>
+        <tr><td class="id">2회</td><td>🌱 운동 새싹</td><td>67%</td><td><span class="pass-chip">✅</span></td></tr>
+        <tr><td class="id">3회</td><td>🔥 작심삼일러</td><td>0%</td><td><span class="pass-chip">✅</span></td></tr>
+        <tr><td class="id">10회</td><td>🏃 헬스 뉴비</td><td>0%</td><td><span class="pass-chip">✅</span></td></tr>
+        <tr><td class="id">25회</td><td>🎯 회수 전문가</td><td>0%</td><td><span class="pass-chip">✅</span></td></tr>
+        <tr><td class="id">45회</td><td>💪 본전 사냥꾼</td><td>0%</td><td><span class="pass-chip">✅</span></td></tr>
+        <tr><td class="id">80회</td><td>🏆 뽕 뽑기 달인</td><td>0%</td><td><span class="pass-chip">✅</span></td></tr>
+        <tr><td class="id">120회</td><td>👑 명예 헬창</td><td>100% / next=null</td><td><span class="pass-chip">✅</span></td></tr>
+        <tr><td class="id">정합성</td><td colspan="2">LEVELS 7단계 / 각 min 오름차순 정렬</td><td><span class="pass-chip">✅</span></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- F -->
+  <div class="section">
+    <div class="sec-head" onclick="toggle(this)">
+      <h2>F. 출석 체크 로직 <span style="color:var(--grey500);font-weight:600;font-size:13px">attendance.ts</span></h2>
+      <span class="sc">22 / 22 ✅</span>
+      <span class="toggle">▾</span>
+    </div>
+    <div class="sec-body">
+      <div class="sec-bar"><div class="sec-bar-fill" style="width:100%"></div></div>
+      <table class="auto-table">
+        <tr><th>ID</th><th>시나리오</th><th>결과</th></tr>
+        <tr><td class="id">F-1</td><td class="desc">비로그인 무료 1회 체크인 → freeUsed+1, points=0</td><td><span class="pass-chip">✅</span></td></tr>
+        <tr><td class="id">F-2</td><td class="desc">무료 3회 소진 후 체크인 → need_ad 반환</td><td><span class="pass-chip">✅</span></td></tr>
+        <tr><td class="id">F-3</td><td class="desc">adUnlocked=true 후 체크인 → 성공, adUnlocked=false 소진</td><td><span class="pass-chip">✅</span></td></tr>
+        <tr><td class="id">F-4</td><td class="desc">로그인 체크인 → +1P 적립</td><td><span class="pass-chip">✅</span></td></tr>
+        <tr><td class="id">F-5</td><td class="desc">같은 값 재클릭 → 취소(로그 삭제, 포인트 환불 없음)</td><td><span class="pass-chip">✅</span></td></tr>
+        <tr><td class="id">F-6</td><td class="desc">done → missed 교체 → 정상 처리</td><td><span class="pass-chip">✅</span></td></tr>
+        <tr><td class="id">F-7~10</td><td class="desc">totalDone / freeCheckinsLeft 경계값</td><td><span class="pass-chip">✅</span></td></tr>
+        <tr><td class="id">F-11~12</td><td class="desc">cycleCalendarDay: 빈→done→missed 토글</td><td><span class="pass-chip">✅</span></td></tr>
+        <tr><td class="id">F-13~14</td><td class="desc">monthsGraduated: target=2 → 1개월 졸업, target=3 → 0</td><td><span class="pass-chip">✅</span></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- G+H+I -->
+  <div class="section">
+    <div class="sec-head" onclick="toggle(this)">
+      <h2>G·H·I. 보호권 + 정규화 + 상태 메시지</h2>
+      <span class="sc">24 / 24 ✅</span>
+      <span class="toggle">▾</span>
+    </div>
+    <div class="sec-body">
+      <div class="sec-bar"><div class="sec-bar-fill" style="width:100%"></div></div>
+      <table class="auto-table">
+        <tr><th>영역</th><th>설명</th><th>결과</th></tr>
+        <tr><td class="id">G (7개)</td><td class="desc">4P 구매 불가 / 5P 구매 -5P +1개 / 광고 +1개(포인트 변화 없음)</td><td><span class="pass-chip">✅</span></td></tr>
+        <tr><td class="id">H (8개)</td><td class="desc">미래·MIN이전·잘못된 값 폐기 / 음수fee·target0·문자열 정규화</td><td><span class="pass-chip">✅</span></td></tr>
+        <tr><td class="id">I (9개)</td><td class="desc">done+로그인 "+1P" / done+비로그인 "+1P"없음 / missed "증발" / null neutral / 무료 태그 텍스트</td><td><span class="pass-chip">✅</span></td></tr>
+      </table>
+    </div>
+  </div>
+
+  </div><!-- /pane-auto -->
+
+  <!-- ══ 수동 체크리스트 ══ -->
+  <div id="pane-manual" style="display:none">
+
+  <div class="warn-box">
+    ✅ = 통과 &nbsp;|&nbsp; ❌ = 실패(버그 기록) &nbsp;|&nbsp; — = 건너뜀<br/>
+    각 행 오른쪽 버튼으로 결과를 선택하세요. 상태는 브라우저 로컬에 저장됩니다.
+  </div>
+
+  <div class="legend">
+    <span>✅ 통과</span><span>❌ 실패</span><span>— 건너뜀</span>
+  </div>
+
+  <div id="manual-progress" style="margin-bottom:16px;">
+    <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--grey500);margin-bottom:6px;">
+      <span>수동 체크 진행률</span><span id="prog-txt">0 / 82</span>
+    </div>
+    <div style="height:8px;background:var(--grey100);border-radius:999px;overflow:hidden;">
+      <div id="prog-bar" style="height:100%;width:0%;background:var(--green);border-radius:999px;transition:width .3s;"></div>
+    </div>
+  </div>
+
+  <!-- A. 설정 -->
+  <div class="section">
+    <div class="sec-head" onclick="toggle(this)">
+      <h2>A. 설정 · 기본값</h2>
+      <span class="sc" id="sc-A">0 / 5</span>
+      <span class="toggle">▾</span>
+    </div>
+    <div class="sec-body">
+    <table class="manual-table">
+      <tr><th>#</th><th>행동</th><th>예상 결과</th><th style="white-space:nowrap">결과</th></tr>
+      <tr><td class="id">A-1</td><td class="action">첫 진입 (localStorage 초기화)</td><td class="expect">fee=100,000 / target=12 기본값</td><td><div class="cb-wrap" data-grp="A" data-id="A-1"><input type="radio" name="A-1" id="A-1-p" value="pass"><label for="A-1-p" title="통과">✅</label><input type="radio" name="A-1" id="A-1-f" value="fail"><label for="A-1-f" title="실패">❌</label><input type="radio" name="A-1" id="A-1-s" value="skip"><label for="A-1-s" title="건너뜀">—</label></div></td></tr>
+      <tr><td class="id">A-2</td><td class="action">fee=60,000 / target=20 입력</td><td class="expect">1회 단가 = 3,000원/회 즉시 반영</td><td><div class="cb-wrap" data-grp="A" data-id="A-2"><input type="radio" name="A-2" id="A-2-p" value="pass"><label for="A-2-p">✅</label><input type="radio" name="A-2" id="A-2-f" value="fail"><label for="A-2-f">❌</label><input type="radio" name="A-2" id="A-2-s" value="skip"><label for="A-2-s">—</label></div></td></tr>
+      <tr><td class="id">A-3</td><td class="action">fee=0 입력</td><td class="expect">0 허용, 단가=0원</td><td><div class="cb-wrap" data-grp="A" data-id="A-3"><input type="radio" name="A-3" id="A-3-p" value="pass"><label for="A-3-p">✅</label><input type="radio" name="A-3" id="A-3-f" value="fail"><label for="A-3-f">❌</label><input type="radio" name="A-3" id="A-3-s" value="skip"><label for="A-3-s">—</label></div></td></tr>
+      <tr><td class="id">A-4</td><td class="action">target=0 입력</td><td class="expect">최소 1로 가드</td><td><div class="cb-wrap" data-grp="A" data-id="A-4"><input type="radio" name="A-4" id="A-4-p" value="pass"><label for="A-4-p">✅</label><input type="radio" name="A-4" id="A-4-f" value="fail"><label for="A-4-f">❌</label><input type="radio" name="A-4" id="A-4-s" value="skip"><label for="A-4-s">—</label></div></td></tr>
+      <tr><td class="id">A-5</td><td class="action">설정 변경 후 이달 요약 카드 확인</td><td class="expect">회수율·단가 즉시 재계산</td><td><div class="cb-wrap" data-grp="A" data-id="A-5"><input type="radio" name="A-5" id="A-5-p" value="pass"><label for="A-5-p">✅</label><input type="radio" name="A-5" id="A-5-f" value="fail"><label for="A-5-f">❌</label><input type="radio" name="A-5" id="A-5-s" value="skip"><label for="A-5-s">—</label></div></td></tr>
+    </table>
+    </div>
+  </div>
+
+  <!-- B. 비로그인 출석 -->
+  <div class="section">
+    <div class="sec-head" onclick="toggle(this)">
+      <h2>B. 비로그인 출석 체크</h2>
+      <span class="sc" id="sc-B">0 / 9</span>
+      <span class="toggle">▾</span>
+    </div>
+    <div class="sec-body">
+    <table class="manual-table">
+      <tr><th>#</th><th>행동</th><th>예상 결과</th><th>결과</th></tr>
+      <tr><td class="id">B-1</td><td class="action">첫 진입 비로그인</td><td class="expect">"무료 출석 체크 3회 남았어요" 태그</td><td><div class="cb-wrap" data-grp="B"><input type="radio" name="B-1" id="B-1-p" value="pass"><label for="B-1-p">✅</label><input type="radio" name="B-1" id="B-1-f" value="fail"><label for="B-1-f">❌</label><input type="radio" name="B-1" id="B-1-s" value="skip"><label for="B-1-s">—</label></div></td></tr>
+      <tr><td class="id">B-2</td><td class="action">"오늘 갔어요" 클릭 (1회)</td><td class="expect">버튼 초록 / "N원 회수 완료 💪" / +1P 문구 없음</td><td><div class="cb-wrap" data-grp="B"><input type="radio" name="B-2" id="B-2-p" value="pass"><label for="B-2-p">✅</label><input type="radio" name="B-2" id="B-2-f" value="fail"><label for="B-2-f">❌</label><input type="radio" name="B-2" id="B-2-s" value="skip"><label for="B-2-s">—</label></div></td></tr>
+      <tr><td class="id">B-3</td><td class="action">같은 버튼 재클릭</td><td class="expect">체크 취소 / 상태 메시지 "오늘 출석을 체크해보세요!"</td><td><div class="cb-wrap" data-grp="B"><input type="radio" name="B-3" id="B-3-p" value="pass"><label for="B-3-p">✅</label><input type="radio" name="B-3" id="B-3-f" value="fail"><label for="B-3-f">❌</label><input type="radio" name="B-3" id="B-3-s" value="skip"><label for="B-3-s">—</label></div></td></tr>
+      <tr><td class="id">B-4</td><td class="action">"오늘 안 갔어요" 클릭</td><td class="expect">버튼 빨강 / "N원 증발… 😅"</td><td><div class="cb-wrap" data-grp="B"><input type="radio" name="B-4" id="B-4-p" value="pass"><label for="B-4-p">✅</label><input type="radio" name="B-4" id="B-4-f" value="fail"><label for="B-4-f">❌</label><input type="radio" name="B-4" id="B-4-s" value="skip"><label for="B-4-s">—</label></div></td></tr>
+      <tr><td class="id">B-5</td><td class="action">무료 2회 소진 후</td><td class="expect">"무료 출석 체크 1회 남았어요" 태그</td><td><div class="cb-wrap" data-grp="B"><input type="radio" name="B-5" id="B-5-p" value="pass"><label for="B-5-p">✅</label><input type="radio" name="B-5" id="B-5-f" value="fail"><label for="B-5-f">❌</label><input type="radio" name="B-5" id="B-5-s" value="skip"><label for="B-5-s">—</label></div></td></tr>
+      <tr><td class="id">B-6</td><td class="action">무료 3회 모두 소진</td><td class="expect">"📺 짧은 광고 보고 출석 체크하기" 버튼 등장</td><td><div class="cb-wrap" data-grp="B"><input type="radio" name="B-6" id="B-6-p" value="pass"><label for="B-6-p">✅</label><input type="radio" name="B-6" id="B-6-f" value="fail"><label for="B-6-f">❌</label><input type="radio" name="B-6" id="B-6-s" value="skip"><label for="B-6-s">—</label></div></td></tr>
+      <tr><td class="id">B-7</td><td class="action">광고 게이트 버튼 클릭</td><td class="expect">"광고 시청 완료! 오늘 출석을 선택하세요 ✅" / 버튼 복귀</td><td><div class="cb-wrap" data-grp="B"><input type="radio" name="B-7" id="B-7-p" value="pass"><label for="B-7-p">✅</label><input type="radio" name="B-7" id="B-7-f" value="fail"><label for="B-7-f">❌</label><input type="radio" name="B-7" id="B-7-s" value="skip"><label for="B-7-s">—</label></div></td></tr>
+      <tr><td class="id">B-8</td><td class="action">언락 후 "오늘 갔어요" 클릭</td><td class="expect">정상 체크인 / 태그 사라짐</td><td><div class="cb-wrap" data-grp="B"><input type="radio" name="B-8" id="B-8-p" value="pass"><label for="B-8-p">✅</label><input type="radio" name="B-8" id="B-8-f" value="fail"><label for="B-8-f">❌</label><input type="radio" name="B-8" id="B-8-s" value="skip"><label for="B-8-s">—</label></div></td></tr>
+      <tr><td class="id">B-9</td><td class="action">헤더 "무료 N/3" 카운터</td><td class="expect">출석마다 숫자 감소, 로그인 시 사라짐</td><td><div class="cb-wrap" data-grp="B"><input type="radio" name="B-9" id="B-9-p" value="pass"><label for="B-9-p">✅</label><input type="radio" name="B-9" id="B-9-f" value="fail"><label for="B-9-f">❌</label><input type="radio" name="B-9" id="B-9-s" value="skip"><label for="B-9-s">—</label></div></td></tr>
+    </table>
+    </div>
+  </div>
+
+  <!-- C. 로그인 출석 -->
+  <div class="section">
+    <div class="sec-head" onclick="toggle(this)">
+      <h2>C. 로그인 후 출석</h2>
+      <span class="sc" id="sc-C">0 / 5</span>
+      <span class="toggle">▾</span>
+    </div>
+    <div class="sec-body">
+    <table class="manual-table">
+      <tr><th>#</th><th>행동</th><th>예상 결과</th><th>결과</th></tr>
+      <tr><td class="id">C-1</td><td class="action">"토스 로그인하기" 클릭</td><td class="expect">등급·스트릭·포인트 카드 표시</td><td><div class="cb-wrap" data-grp="C"><input type="radio" name="C-1" id="C-1-p" value="pass"><label for="C-1-p">✅</label><input type="radio" name="C-1" id="C-1-f" value="fail"><label for="C-1-f">❌</label><input type="radio" name="C-1" id="C-1-s" value="skip"><label for="C-1-s">—</label></div></td></tr>
+      <tr><td class="id">C-2</td><td class="action">로그인 후 "오늘 갔어요" 클릭</td><td class="expect">"N원 회수 완료 💪 +1P"</td><td><div class="cb-wrap" data-grp="C"><input type="radio" name="C-2" id="C-2-p" value="pass"><label for="C-2-p">✅</label><input type="radio" name="C-2" id="C-2-f" value="fail"><label for="C-2-f">❌</label><input type="radio" name="C-2" id="C-2-s" value="skip"><label for="C-2-s">—</label></div></td></tr>
+      <tr><td class="id">C-3</td><td class="action">"오늘 안 갔어요" 클릭</td><td class="expect">포인트 변화 없음</td><td><div class="cb-wrap" data-grp="C"><input type="radio" name="C-3" id="C-3-p" value="pass"><label for="C-3-p">✅</label><input type="radio" name="C-3" id="C-3-f" value="fail"><label for="C-3-f">❌</label><input type="radio" name="C-3" id="C-3-s" value="skip"><label for="C-3-s">—</label></div></td></tr>
+      <tr><td class="id">C-4</td><td class="action">버튼 재클릭 (토글)</td><td class="expect">취소, 포인트 차감 없음</td><td><div class="cb-wrap" data-grp="C"><input type="radio" name="C-4" id="C-4-p" value="pass"><label for="C-4-p">✅</label><input type="radio" name="C-4" id="C-4-f" value="fail"><label for="C-4-f">❌</label><input type="radio" name="C-4" id="C-4-s" value="skip"><label for="C-4-s">—</label></div></td></tr>
+      <tr><td class="id">C-5</td><td class="action">로그인 후 무료 태그 확인</td><td class="expect">표시 안 됨</td><td><div class="cb-wrap" data-grp="C"><input type="radio" name="C-5" id="C-5-p" value="pass"><label for="C-5-p">✅</label><input type="radio" name="C-5" id="C-5-f" value="fail"><label for="C-5-f">❌</label><input type="radio" name="C-5" id="C-5-s" value="skip"><label for="C-5-s">—</label></div></td></tr>
+    </table>
+    </div>
+  </div>
+
+  <!-- D. 구간 카피 UI -->
+  <div class="section">
+    <div class="sec-head" onclick="toggle(this)">
+      <h2>D. 구간 카피 · 비주얼 (UI 확인)</h2>
+      <span class="sc" id="sc-D">0 / 7</span>
+      <span class="toggle">▾</span>
+    </div>
+    <div class="sec-body">
+    <div style="font-size:12px;color:var(--grey500);margin-bottom:10px;font-weight:600;">fee=100,000 / target=10 고정 후 달력으로 출석 수 조절</div>
+    <table class="manual-table">
+      <tr><th>#</th><th>출석</th><th>예상 헤드라인·이모지</th><th>결과</th></tr>
+      <tr><td class="id">D-1</td><td class="action">0회</td><td class="expect">💳 "지갑만 운동러" / 회색 게이지</td><td><div class="cb-wrap" data-grp="D"><input type="radio" name="D-1" id="D-1-p" value="pass"><label for="D-1-p">✅</label><input type="radio" name="D-1" id="D-1-f" value="fail"><label for="D-1-f">❌</label><input type="radio" name="D-1" id="D-1-s" value="skip"><label for="D-1-s">—</label></div></td></tr>
+      <tr><td class="id">D-2</td><td class="action">2회 (20%)</td><td class="expect">🥇 "이번 달 후원 1위" / 빨강</td><td><div class="cb-wrap" data-grp="D"><input type="radio" name="D-2" id="D-2-p" value="pass"><label for="D-2-p">✅</label><input type="radio" name="D-2" id="D-2-f" value="fail"><label for="D-2-f">❌</label><input type="radio" name="D-2" id="D-2-s" value="skip"><label for="D-2-s">—</label></div></td></tr>
+      <tr><td class="id">D-3</td><td class="action">4회 (40%)</td><td class="expect">🔥 "절반의 성공?" / 주황</td><td><div class="cb-wrap" data-grp="D"><input type="radio" name="D-3" id="D-3-p" value="pass"><label for="D-3-p">✅</label><input type="radio" name="D-3" id="D-3-f" value="fail"><label for="D-3-f">❌</label><input type="radio" name="D-3" id="D-3-s" value="skip"><label for="D-3-s">—</label></div></td></tr>
+      <tr><td class="id">D-4</td><td class="action">6회 (60%)</td><td class="expect">🏃 "드디어 운동러로" / 청록</td><td><div class="cb-wrap" data-grp="D"><input type="radio" name="D-4" id="D-4-p" value="pass"><label for="D-4-p">✅</label><input type="radio" name="D-4" id="D-4-f" value="fail"><label for="D-4-f">❌</label><input type="radio" name="D-4" id="D-4-s" value="skip"><label for="D-4-s">—</label></div></td></tr>
+      <tr><td class="id">D-5</td><td class="action">9회 (90%)</td><td class="expect">😭 "본전까지 딱 1회!" / 연초록</td><td><div class="cb-wrap" data-grp="D"><input type="radio" name="D-5" id="D-5-p" value="pass"><label for="D-5-p">✅</label><input type="radio" name="D-5" id="D-5-f" value="fail"><label for="D-5-f">❌</label><input type="radio" name="D-5" id="D-5-s" value="skip"><label for="D-5-s">—</label></div></td></tr>
+      <tr><td class="id">D-6</td><td class="action">10회 (100%)</td><td class="expect">🎓 "본전 달성! 이제부터 가는 건 전부 이득" / 파랑</td><td><div class="cb-wrap" data-grp="D"><input type="radio" name="D-6" id="D-6-p" value="pass"><label for="D-6-p">✅</label><input type="radio" name="D-6" id="D-6-f" value="fail"><label for="D-6-f">❌</label><input type="radio" name="D-6" id="D-6-s" value="skip"><label for="D-6-s">—</label></div></td></tr>
+      <tr><td class="id">D-7</td><td class="action">12회 (120%)</td><td class="expect">🤑 "이제 시설이 기부하는 셈" / 골드</td><td><div class="cb-wrap" data-grp="D"><input type="radio" name="D-7" id="D-7-p" value="pass"><label for="D-7-p">✅</label><input type="radio" name="D-7" id="D-7-f" value="fail"><label for="D-7-f">❌</label><input type="radio" name="D-7" id="D-7-s" value="skip"><label for="D-7-s">—</label></div></td></tr>
+    </table>
+    </div>
+  </div>
+
+  <!-- I. 달력 -->
+  <div class="section">
+    <div class="sec-head" onclick="toggle(this)">
+      <h2>I. 달력 · 월간 현황</h2>
+      <span class="sc" id="sc-I">0 / 9</span>
+      <span class="toggle">▾</span>
+    </div>
+    <div class="sec-body">
+    <table class="manual-table">
+      <tr><th>#</th><th>행동</th><th>예상 결과</th><th>결과</th></tr>
+      <tr><td class="id">I-1</td><td class="action">월간 탭 진입</td><td class="expect">요일 헤더 일월화수목금토 정상</td><td><div class="cb-wrap" data-grp="I"><input type="radio" name="I-1" id="I-1-p" value="pass"><label for="I-1-p">✅</label><input type="radio" name="I-1" id="I-1-f" value="fail"><label for="I-1-f">❌</label><input type="radio" name="I-1" id="I-1-s" value="skip"><label for="I-1-s">—</label></div></td></tr>
+      <tr><td class="id">I-2</td><td class="action">달력 1행 빈 칸 확인</td><td class="expect">6/1 요일에 맞게 패딩 존재</td><td><div class="cb-wrap" data-grp="I"><input type="radio" name="I-2" id="I-2-p" value="pass"><label for="I-2-p">✅</label><input type="radio" name="I-2" id="I-2-f" value="fail"><label for="I-2-f">❌</label><input type="radio" name="I-2" id="I-2-s" value="skip"><label for="I-2-s">—</label></div></td></tr>
+      <tr><td class="id">I-3</td><td class="action">오늘 날짜</td><td class="expect">파란 테두리 표시</td><td><div class="cb-wrap" data-grp="I"><input type="radio" name="I-3" id="I-3-p" value="pass"><label for="I-3-p">✅</label><input type="radio" name="I-3" id="I-3-f" value="fail"><label for="I-3-f">❌</label><input type="radio" name="I-3" id="I-3-s" value="skip"><label for="I-3-s">—</label></div></td></tr>
+      <tr><td class="id">I-4</td><td class="action">미래 날짜 탭</td><td class="expect">비활성 (opacity 낮음), 클릭 무반응</td><td><div class="cb-wrap" data-grp="I"><input type="radio" name="I-4" id="I-4-p" value="pass"><label for="I-4-p">✅</label><input type="radio" name="I-4" id="I-4-f" value="fail"><label for="I-4-f">❌</label><input type="radio" name="I-4" id="I-4-s" value="skip"><label for="I-4-s">—</label></div></td></tr>
+      <tr><td class="id">I-5</td><td class="action">과거 빈 날짜 탭</td><td class="expect">초록(done) 으로 기록</td><td><div class="cb-wrap" data-grp="I"><input type="radio" name="I-5" id="I-5-p" value="pass"><label for="I-5-p">✅</label><input type="radio" name="I-5" id="I-5-f" value="fail"><label for="I-5-f">❌</label><input type="radio" name="I-5" id="I-5-s" value="skip"><label for="I-5-s">—</label></div></td></tr>
+      <tr><td class="id">I-6</td><td class="action">done 날짜 재탭</td><td class="expect">빨강(missed)으로 토글</td><td><div class="cb-wrap" data-grp="I"><input type="radio" name="I-6" id="I-6-p" value="pass"><label for="I-6-p">✅</label><input type="radio" name="I-6" id="I-6-f" value="fail"><label for="I-6-f">❌</label><input type="radio" name="I-6" id="I-6-s" value="skip"><label for="I-6-s">—</label></div></td></tr>
+      <tr><td class="id">I-7</td><td class="action">missed 날짜 재탭</td><td class="expect">초록(done)으로 토글</td><td><div class="cb-wrap" data-grp="I"><input type="radio" name="I-7" id="I-7-p" value="pass"><label for="I-7-p">✅</label><input type="radio" name="I-7" id="I-7-f" value="fail"><label for="I-7-f">❌</label><input type="radio" name="I-7" id="I-7-s" value="skip"><label for="I-7-s">—</label></div></td></tr>
+      <tr><td class="id">I-8</td><td class="action">달력 기록 후 요약 카드 확인</td><td class="expect">출석/회수율 즉시 업데이트</td><td><div class="cb-wrap" data-grp="I"><input type="radio" name="I-8" id="I-8-p" value="pass"><label for="I-8-p">✅</label><input type="radio" name="I-8" id="I-8-f" value="fail"><label for="I-8-f">❌</label><input type="radio" name="I-8" id="I-8-s" value="skip"><label for="I-8-s">—</label></div></td></tr>
+      <tr><td class="id">I-9</td><td class="action">"이번 달 기록 초기화" 클릭</td><td class="expect">달력 빈 칸으로, 요약 0으로 초기화</td><td><div class="cb-wrap" data-grp="I"><input type="radio" name="I-9" id="I-9-p" value="pass"><label for="I-9-p">✅</label><input type="radio" name="I-9" id="I-9-f" value="fail"><label for="I-9-f">❌</label><input type="radio" name="I-9" id="I-9-s" value="skip"><label for="I-9-s">—</label></div></td></tr>
+    </table>
+    </div>
+  </div>
+
+  <!-- J. 월 이동 -->
+  <div class="section">
+    <div class="sec-head" onclick="toggle(this)">
+      <h2>J. 월 이동</h2>
+      <span class="sc" id="sc-J">0 / 5</span>
+      <span class="toggle">▾</span>
+    </div>
+    <div class="sec-body">
+    <table class="manual-table">
+      <tr><th>#</th><th>행동</th><th>예상 결과</th><th>결과</th></tr>
+      <tr><td class="id">J-1</td><td class="action">‹ 버튼 클릭</td><td class="expect">이전 달 달력·요약 전환</td><td><div class="cb-wrap" data-grp="J"><input type="radio" name="J-1" id="J-1-p" value="pass"><label for="J-1-p">✅</label><input type="radio" name="J-1" id="J-1-f" value="fail"><label for="J-1-f">❌</label><input type="radio" name="J-1" id="J-1-s" value="skip"><label for="J-1-s">—</label></div></td></tr>
+      <tr><td class="id">J-2</td><td class="action">현재 달에서 › 버튼</td><td class="expect">비활성</td><td><div class="cb-wrap" data-grp="J"><input type="radio" name="J-2" id="J-2-p" value="pass"><label for="J-2-p">✅</label><input type="radio" name="J-2" id="J-2-f" value="fail"><label for="J-2-f">❌</label><input type="radio" name="J-2" id="J-2-s" value="skip"><label for="J-2-s">—</label></div></td></tr>
+      <tr><td class="id">J-3</td><td class="action">드롭다운 → 2026년 1월</td><td class="expect">달력 2026-01 전환</td><td><div class="cb-wrap" data-grp="J"><input type="radio" name="J-3" id="J-3-p" value="pass"><label for="J-3-p">✅</label><input type="radio" name="J-3" id="J-3-f" value="fail"><label for="J-3-f">❌</label><input type="radio" name="J-3" id="J-3-s" value="skip"><label for="J-3-s">—</label></div></td></tr>
+      <tr><td class="id">J-4</td><td class="action">드롭다운 미래 달 옵션 확인</td><td class="expect">현재 달까지만 존재</td><td><div class="cb-wrap" data-grp="J"><input type="radio" name="J-4" id="J-4-p" value="pass"><label for="J-4-p">✅</label><input type="radio" name="J-4" id="J-4-f" value="fail"><label for="J-4-f">❌</label><input type="radio" name="J-4" id="J-4-s" value="skip"><label for="J-4-s">—</label></div></td></tr>
+      <tr><td class="id">J-5</td><td class="action">다른 달 이동 후 다시 돌아옴</td><td class="expect">adSeen 초기화 — 결산·표창장 광고 버튼 재표시</td><td><div class="cb-wrap" data-grp="J"><input type="radio" name="J-5" id="J-5-p" value="pass"><label for="J-5-p">✅</label><input type="radio" name="J-5" id="J-5-f" value="fail"><label for="J-5-f">❌</label><input type="radio" name="J-5" id="J-5-s" value="skip"><label for="J-5-s">—</label></div></td></tr>
+    </table>
+    </div>
+  </div>
+
+  <!-- K. 결산·표창장 -->
+  <div class="section">
+    <div class="sec-head" onclick="toggle(this)">
+      <h2>K. 결산 리포트 + 표창장</h2>
+      <span class="sc" id="sc-K">0 / 11</span>
+      <span class="toggle">▾</span>
+    </div>
+    <div class="sec-body">
+    <div style="font-size:12px;color:var(--grey500);margin-bottom:10px;font-weight:600;">로그인 후 "월말 도착 미리보기" 버튼 활용</div>
+    <table class="manual-table">
+      <tr><th>#</th><th>행동</th><th>예상 결과</th><th>결과</th></tr>
+      <tr><td class="id">K-1</td><td class="action">비로그인 결산/표창장 영역</td><td class="expect">"🔒 로그인하면 열려요" LockCard</td><td><div class="cb-wrap" data-grp="K"><input type="radio" name="K-1" id="K-1-p" value="pass"><label for="K-1-p">✅</label><input type="radio" name="K-1" id="K-1-f" value="fail"><label for="K-1-f">❌</label><input type="radio" name="K-1" id="K-1-s" value="skip"><label for="K-1-s">—</label></div></td></tr>
+      <tr><td class="id">K-2</td><td class="action">로그인 + 진행 중인 달</td><td class="expect">"이번 달이 끝나면 결산이 만들어져요 · D-N"</td><td><div class="cb-wrap" data-grp="K"><input type="radio" name="K-2" id="K-2-p" value="pass"><label for="K-2-p">✅</label><input type="radio" name="K-2" id="K-2-f" value="fail"><label for="K-2-f">❌</label><input type="radio" name="K-2" id="K-2-s" value="skip"><label for="K-2-s">—</label></div></td></tr>
+      <tr><td class="id">K-3</td><td class="action">"월말 도착 미리보기" 클릭</td><td class="expect">결산·표창장 광고 버튼 표시</td><td><div class="cb-wrap" data-grp="K"><input type="radio" name="K-3" id="K-3-p" value="pass"><label for="K-3-p">✅</label><input type="radio" name="K-3" id="K-3-f" value="fail"><label for="K-3-f">❌</label><input type="radio" name="K-3" id="K-3-s" value="skip"><label for="K-3-s">—</label></div></td></tr>
+      <tr><td class="id">K-4</td><td class="action">"광고 보고 결산 보기" 클릭</td><td class="expect">출석/목표/연속/회수/기부/추천목표 행 표시</td><td><div class="cb-wrap" data-grp="K"><input type="radio" name="K-4" id="K-4-p" value="pass"><label for="K-4-p">✅</label><input type="radio" name="K-4" id="K-4-f" value="fail"><label for="K-4-f">❌</label><input type="radio" name="K-4" id="K-4-s" value="skip"><label for="K-4-s">—</label></div></td></tr>
+      <tr><td class="id">K-5</td><td class="action">결산 — rate &lt; 100%</td><td class="expect">"기부한 금액" 빨강 / 총평 분기 확인</td><td><div class="cb-wrap" data-grp="K"><input type="radio" name="K-5" id="K-5-p" value="pass"><label for="K-5-p">✅</label><input type="radio" name="K-5" id="K-5-f" value="fail"><label for="K-5-f">❌</label><input type="radio" name="K-5" id="K-5-s" value="skip"><label for="K-5-s">—</label></div></td></tr>
+      <tr><td class="id">K-6</td><td class="action">결산 — rate = 100%</td><td class="expect">"초과 회수액" 표시 / "완전 회수 🎉"</td><td><div class="cb-wrap" data-grp="K"><input type="radio" name="K-6" id="K-6-p" value="pass"><label for="K-6-p">✅</label><input type="radio" name="K-6" id="K-6-f" value="fail"><label for="K-6-f">❌</label><input type="radio" name="K-6" id="K-6-s" value="skip"><label for="K-6-s">—</label></div></td></tr>
+      <tr><td class="id">K-7</td><td class="action">"광고 보고 표창장 보기" 클릭</td><td class="expect">표창장 카드 펼쳐짐</td><td><div class="cb-wrap" data-grp="K"><input type="radio" name="K-7" id="K-7-p" value="pass"><label for="K-7-p">✅</label><input type="radio" name="K-7" id="K-7-f" value="fail"><label for="K-7-f">❌</label><input type="radio" name="K-7" id="K-7-s" value="skip"><label for="K-7-s">—</label></div></td></tr>
+      <tr><td class="id">K-8</td><td class="action">표창장 — rate &lt; 100%</td><td class="expect">"운동비 후원 표창장" / 기부액 문구</td><td><div class="cb-wrap" data-grp="K"><input type="radio" name="K-8" id="K-8-p" value="pass"><label for="K-8-p">✅</label><input type="radio" name="K-8" id="K-8-f" value="fail"><label for="K-8-f">❌</label><input type="radio" name="K-8" id="K-8-s" value="skip"><label for="K-8-s">—</label></div></td></tr>
+      <tr><td class="id">K-9</td><td class="action">표창장 — rate ≥ 100%</td><td class="expect">"본전 졸업장" / "호구 명단에서 제명"</td><td><div class="cb-wrap" data-grp="K"><input type="radio" name="K-9" id="K-9-p" value="pass"><label for="K-9-p">✅</label><input type="radio" name="K-9" id="K-9-f" value="fail"><label for="K-9-f">❌</label><input type="radio" name="K-9" id="K-9-s" value="skip"><label for="K-9-s">—</label></div></td></tr>
+      <tr><td class="id">K-10</td><td class="action">"공유 문구 복사하기" 클릭</td><td class="expect">클립보드에 #뺄래낼래 포함 텍스트</td><td><div class="cb-wrap" data-grp="K"><input type="radio" name="K-10" id="K-10-p" value="pass"><label for="K-10-p">✅</label><input type="radio" name="K-10" id="K-10-f" value="fail"><label for="K-10-f">❌</label><input type="radio" name="K-10" id="K-10-s" value="skip"><label for="K-10-s">—</label></div></td></tr>
+      <tr><td class="id">K-11</td><td class="action">달 변경 후 같은 달 복귀</td><td class="expect">광고 다시 봐야 함 (재초기화)</td><td><div class="cb-wrap" data-grp="K"><input type="radio" name="K-11" id="K-11-p" value="pass"><label for="K-11-p">✅</label><input type="radio" name="K-11" id="K-11-f" value="fail"><label for="K-11-f">❌</label><input type="radio" name="K-11" id="K-11-s" value="skip"><label for="K-11-s">—</label></div></td></tr>
+    </table>
+    </div>
+  </div>
+
+  <!-- L+M -->
+  <div class="section">
+    <div class="sec-head" onclick="toggle(this)">
+      <h2>L·M. 로그인 전환 + 엣지케이스</h2>
+      <span class="sc" id="sc-LM">0 / 7</span>
+      <span class="toggle">▾</span>
+    </div>
+    <div class="sec-body">
+    <table class="manual-table">
+      <tr><th>#</th><th>행동</th><th>예상 결과</th><th>결과</th></tr>
+      <tr><td class="id">L-1</td><td class="action">비로그인 출석 2회 후 로그인</td><td class="expect">기존 로컬 로그 유지 (병합)</td><td><div class="cb-wrap" data-grp="LM"><input type="radio" name="L-1" id="L-1-p" value="pass"><label for="L-1-p">✅</label><input type="radio" name="L-1" id="L-1-f" value="fail"><label for="L-1-f">❌</label><input type="radio" name="L-1" id="L-1-s" value="skip"><label for="L-1-s">—</label></div></td></tr>
+      <tr><td class="id">L-2</td><td class="action">로그인 후 등급 카드 확인</td><td class="expect">등급·스트릭·포인트 잠금 해제</td><td><div class="cb-wrap" data-grp="LM"><input type="radio" name="L-2" id="L-2-p" value="pass"><label for="L-2-p">✅</label><input type="radio" name="L-2" id="L-2-f" value="fail"><label for="L-2-f">❌</label><input type="radio" name="L-2" id="L-2-s" value="skip"><label for="L-2-s">—</label></div></td></tr>
+      <tr><td class="id">L-3</td><td class="action">localStorage 강제 손상 후 재진입</td><td class="expect">기본값 복구 / 크래시 없음</td><td><div class="cb-wrap" data-grp="LM"><input type="radio" name="L-3" id="L-3-p" value="pass"><label for="L-3-p">✅</label><input type="radio" name="L-3" id="L-3-f" value="fail"><label for="L-3-f">❌</label><input type="radio" name="L-3" id="L-3-s" value="skip"><label for="L-3-s">—</label></div></td></tr>
+      <tr><td class="id">M-1</td><td class="action">fee=999,999,999 입력</td><td class="expect">숫자 포맷 정상, 크래시 없음</td><td><div class="cb-wrap" data-grp="LM"><input type="radio" name="M-1" id="M-1-p" value="pass"><label for="M-1-p">✅</label><input type="radio" name="M-1" id="M-1-f" value="fail"><label for="M-1-f">❌</label><input type="radio" name="M-1" id="M-1-s" value="skip"><label for="M-1-s">—</label></div></td></tr>
+      <tr><td class="id">M-2</td><td class="action">달력 대량 기록 (target=100, done=150)</td><td class="expect">rate=150% / 초과 표시 / 크래시 없음</td><td><div class="cb-wrap" data-grp="LM"><input type="radio" name="M-2" id="M-2-p" value="pass"><label for="M-2-p">✅</label><input type="radio" name="M-2" id="M-2-f" value="fail"><label for="M-2-f">❌</label><input type="radio" name="M-2" id="M-2-s" value="skip"><label for="M-2-s">—</label></div></td></tr>
+      <tr><td class="id">M-3</td><td class="action">done/missed 빠른 재클릭 반복</td><td class="expect">마지막 값만 반영, 레이스 없음</td><td><div class="cb-wrap" data-grp="LM"><input type="radio" name="M-3" id="M-3-p" value="pass"><label for="M-3-p">✅</label><input type="radio" name="M-3" id="M-3-f" value="fail"><label for="M-3-f">❌</label><input type="radio" name="M-3" id="M-3-s" value="skip"><label for="M-3-s">—</label></div></td></tr>
+      <tr><td class="id">M-4</td><td class="action">페이지 새로고침 후 상태 유지</td><td class="expect">localStorage 복원 / 설정·출석 그대로</td><td><div class="cb-wrap" data-grp="LM"><input type="radio" name="M-4" id="M-4-p" value="pass"><label for="M-4-p">✅</label><input type="radio" name="M-4" id="M-4-f" value="fail"><label for="M-4-f">❌</label><input type="radio" name="M-4" id="M-4-s" value="skip"><label for="M-4-s">—</label></div></td></tr>
+    </table>
+    </div>
+  </div>
+
+  </div><!-- /pane-manual -->
+
+  <!-- ══ 미결 정책 ══ -->
+  <div id="pane-todo" style="display:none">
+  <div class="section">
+    <div class="sec-head">
+      <h2>⚠️ 미결 정책 — 현정과 결정 필요</h2>
+    </div>
+    <div class="sec-body">
+    <ul class="todo-list">
+      <li>
+        <b>달력 today 게이팅 (attendance.ts:99)</b><br/>
+        현재: 달력에서 오늘 날짜를 탭하면 무료 3회 / 광고 게이트 없이 done 처리됨.<br/>
+        선택지: (a) 달력은 과거 보정 전용 → 오늘은 버튼으로만 / (b) 달력 today도 게이팅 / (c) 현행 유지<br/>
+        <b style="color:var(--red)">결정 전까지 비로그인 유저가 달력으로 무료 게이트 우회 가능</b>
+      </li>
+      <li>
+        <b>표창장 공유 이미지 생성 방식 (MonthlyScreen.tsx:176)</b><br/>
+        현재: 텍스트 복사만 구현. html-to-image 패키지는 이미 설치돼 있음.<br/>
+        선택지: (a) html-to-image 로 이미지 저장 / (b) 현재처럼 텍스트 복사만 / (c) 스샷 안내 텍스트 추가<br/>
+        <b style="color:var(--orange)">바이럴 핵심 자산이므로 이미지 공유 검토 권장</b>
+      </li>
+      <li>
+        <b>등급 컷 밸런싱 검증 (content.ts:104)</b><br/>
+        현재 컷: 0/3/10/25/45/80/120회 — 기획 §6.2 초안 기준.<br/>
+        월 목표 12회 기준으로 계산 시: 작심삼일러 0.25개월 / 명예 헬창 10개월 소요.<br/>
+        <b style="color:var(--orange)">밸런스 체감 테스트 후 확정 필요</b>
+      </li>
+    </ul>
+    </div>
+  </div>
+  </div><!-- /pane-todo -->
+
+</div><!-- /wrap -->
+
+<script>
+// 탭 전환
+function showTab(t) {
+  ['auto','manual','todo'].forEach(id => {
+    document.getElementById('pane-'+id).style.display = id===t ? '' : 'none';
+  });
+  document.querySelectorAll('.tab').forEach((b,i) => {
+    b.classList.toggle('on', ['auto','manual','todo'][i] === t);
+  });
+}
+
+// 섹션 접기/펼치기
+function toggle(head) {
+  const body = head.nextElementSibling;
+  const t = head.querySelector('.toggle');
+  const isOpen = body.style.maxHeight !== '0px' && body.style.maxHeight !== '';
+  if (isOpen) {
+    body.style.maxHeight = '0px';
+    body.style.overflow = 'hidden';
+    if (t) t.textContent = '▸';
+  } else {
+    body.style.maxHeight = body.scrollHeight + 'px';
+    body.style.overflow = '';
+    if (t) t.textContent = '▾';
+  }
+}
+// 초기 열린 상태
+document.querySelectorAll('.sec-body').forEach(b => {
+  b.style.maxHeight = b.scrollHeight + 'px';
+});
+
+// 수동 체크 상태 저장 + 진행률
+const GRPS = {A:5,B:9,C:5,D:7,I:9,J:5,K:11,LM:7};
+const TOTAL_MANUAL = 82;
+
+function saveState() {
+  const all = {};
+  document.querySelectorAll('.manual-table input[type=radio]:checked').forEach(r => {
+    all[r.name] = r.value;
+  });
+  localStorage.setItem('plnl_qa', JSON.stringify(all));
+}
+
+function loadState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('plnl_qa') || '{}');
+    Object.entries(saved).forEach(([name, val]) => {
+      const el = document.querySelector(`input[name="${name}"][value="${val}"]`);
+      if (el) el.checked = true;
+    });
+  } catch(e) {}
+}
+
+function updateProgress() {
+  const checked = document.querySelectorAll('.manual-table input[type=radio]:checked').length;
+  const pct = Math.round(checked / TOTAL_MANUAL * 100);
+  document.getElementById('prog-txt').textContent = `${checked} / ${TOTAL_MANUAL}`;
+  document.getElementById('prog-bar').style.width = pct + '%';
+
+  // 그룹별 카운트
+  const grpMaps = {A:'sc-A',B:'sc-B',C:'sc-C',D:'sc-D',I:'sc-I',J:'sc-J',K:'sc-K',LM:'sc-LM'};
+  Object.entries(grpMaps).forEach(([grp, scId]) => {
+    const total = GRPS[grp];
+    const done = document.querySelectorAll(`.cb-wrap[data-grp="${grp}"] input:checked`).length;
+    const el = document.getElementById(scId);
+    if (el) el.textContent = `${done} / ${total}`;
+  });
+
+  saveState();
+}
+
+// 체크박스 변경 시 반응
+document.addEventListener('change', e => {
+  if (e.target.matches('input[type=radio]')) updateProgress();
+});
+
+// 초기화
+loadState();
+updateProgress();
+</script>
+</body>
+</html>

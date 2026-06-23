@@ -204,3 +204,59 @@ export const AD_UNLOCKED_TAG = "광고 시청 완료! 오늘 출석을 선택하
 export function freeCheckinTagText(freeLeft: number): string {
   return `무료 출석 체크 ${freeLeft}회 남았어요`;
 }
+
+// ── 로그인 버텀시트 — 기획 §5.1 (F6) ────────────────────────────────────────
+
+export type LoginTrigger = "free_exhausted" | "locked_content" | "streak_start";
+
+export interface LoginSheetCopy {
+  title: string;
+  body: string;
+  /** 트리거별 서브텍스트 (title 아래 작은 문구). */
+  sub: string;
+  cta: string;
+}
+
+/** 로그인 버텀시트 트리거별 카피. 메인 카피는 공통, 서브만 분기. */
+export function loginSheetCopy(trigger: LoginTrigger): LoginSheetCopy {
+  const subs: Record<LoginTrigger, string> = {
+    free_exhausted: "무료 출석 3회를 모두 썼어요. 로그인하면 무제한으로 체크할 수 있어요.",
+    locked_content: "이달 표창장·결산은 로그인 후 열려요.",
+    streak_start: "스트릭과 포인트는 로그인부터 쌓이기 시작해요.",
+  };
+  return {
+    title: "오늘 기록, 어디서든 이어가요",
+    body: "로그인하면 운동 기록이 기기를 바꿔도 그대로 보존돼요.",
+    sub: subs[trigger],
+    cta: "토스로 로그인하기",
+  };
+}
+
+// ── 온보딩 슬라이드 — 기획 §5.0 (F1) ────────────────────────────────────────
+
+export interface OnboardingSlide {
+  emoji: string;
+  title: string;
+  body: string;
+  /** 마지막 슬라이드 버튼 라벨 (undefined 면 "다음"). */
+  cta?: string;
+}
+
+export const ONBOARDING_SLIDES: OnboardingSlide[] = [
+  {
+    emoji: "💳",
+    title: "운동비, 뽑고 계세요?",
+    body: "이번 달 결제한 운동비에서 얼마나 회수했는지 한눈에 확인해요.",
+  },
+  {
+    emoji: "🏃",
+    title: "갈수록 아까워지는 구조",
+    body: "출석할수록 단가가 낮아져요. 안 가면 단가만큼 기부하는 셈이에요.",
+  },
+  {
+    emoji: "🔔",
+    title: "오늘의 선택",
+    body: "오늘 가면 얼마 회수, 안 가면 얼마 증발. 매일 직관적으로 알려드려요.",
+    cta: "시작하기",
+  },
+];
