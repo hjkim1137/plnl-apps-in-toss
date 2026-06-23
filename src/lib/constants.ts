@@ -10,6 +10,12 @@ export const POINT_PER_CHECKIN = 1;
 /** 스트릭 보호권 1개 가격 (포인트). 보상형 광고로도 획득 가능(가격 0). */
 export const FREEZE_COST_POINTS = 5;
 
+/**
+ * 보호권 자동 소비(reconcile) 시 스트릭 앵커(직전 'done')를 거슬러 찾는 최대 일수.
+ * 이보다 오래 비운 경우는 새 출발로 보고 자동 보호하지 않는다(보호권 낭비 방지).
+ */
+export const FREEZE_RECONCILE_LOOKBACK_DAYS = 60;
+
 /** 출석 달력 기록 시작 시점 (그 이전 달은 선택 불가). 0=1월. */
 export const CALENDAR_MIN_YEAR = 2026;
 export const CALENDAR_MIN_MONTH = 0; // 2026년 1월

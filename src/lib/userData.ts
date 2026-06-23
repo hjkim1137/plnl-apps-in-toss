@@ -56,6 +56,7 @@ interface PlnlRow {
   logs: Logs | null;
   points: number;
   freezes: number;
+  frozen: string[] | null;
   claimed_milestones: number[] | null;
 }
 
@@ -69,6 +70,7 @@ function rowToState(row: PlnlRow, now: Date): PlnlState {
       loggedIn: true,
       points: row.points,
       freezes: row.freezes,
+      frozen: row.frozen ?? [],
       claimed: row.claimed_milestones ?? [],
       freeUsed: 0,
       adUnlocked: false,
@@ -85,6 +87,7 @@ function stateToRow(tossUserKey: string, state: PlnlState): PlnlRow {
     logs: state.logs,
     points: state.points,
     freezes: state.freezes,
+    frozen: state.frozen,
     claimed_milestones: state.claimed,
   };
 }
@@ -130,7 +133,7 @@ export async function loadRemoteState(
   // dev/MVP — supabase 직접
   const { data, error } = await supabase
     .from(TABLE)
-    .select("toss_user_key, fee, target, logs, points, freezes, claimed_milestones")
+    .select("toss_user_key, fee, target, logs, points, freezes, frozen, claimed_milestones")
     .eq("toss_user_key", tossUserKey)
     .maybeSingle();
   if (error) throw new Error(`loadRemoteState failed: ${error.message}`);

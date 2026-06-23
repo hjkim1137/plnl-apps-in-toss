@@ -27,7 +27,7 @@ function Card({ children }: { children: React.ReactNode }) {
 }
 
 export function TodayScreen({ plnl }: { plnl: PlnlController }) {
-  const { today, checkin, game, actions, state } = plnl;
+  const { today, checkin, game, actions, state, repair } = plnl;
   const s = today.stats;
   const statusMsg = todayCheckInStatusText(today.todayValue, s.unit, state.loggedIn);
 
@@ -179,6 +179,31 @@ export function TodayScreen({ plnl }: { plnl: PlnlController }) {
                 : "최고 등급 달성! 👑"}
             </div>
           </Card>
+          {/* 보호권 복구 제안 (확인 후 복구) — 동의해야만 보호권 차감 */}
+          {repair && (
+            <div style={{ background: "#eaf2ff", border: "1px solid #cfe0ff", borderRadius: 18, padding: 18, marginBottom: 14 }}>
+              <p style={{ fontWeight: 800, color: "#1b64da", margin: "0 0 4px" }}>
+                🛡️ 빠진 날이 있어요
+              </p>
+              <p style={{ fontSize: 13, color: "#3f5a82", margin: "0 0 12px", lineHeight: 1.5 }}>
+                {repair.count}일 빠졌어요. 보호권 {repair.count}개로 연속을 지킬까요?
+              </p>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button
+                  onClick={() => actions.confirmFreezeRepair()}
+                  style={{ flex: 1, padding: 12, border: "none", borderRadius: 12, fontWeight: 800, background: "#3182f6", color: "#fff" }}
+                >
+                  🛡️ 지키기 (보호권 {repair.count}개)
+                </button>
+                <button
+                  onClick={() => actions.dismissFreezeRepair()}
+                  style={{ flex: "0 0 auto", padding: "12px 16px", border: "1px solid #cfe0ff", borderRadius: 12, fontWeight: 700, background: "#fff", color: "#6b7684" }}
+                >
+                  괜찮아요
+                </button>
+              </div>
+            </div>
+          )}
           <Card>
             <p style={{ fontWeight: 700, color: "#6b7684", marginTop: 0 }}>🔥 연속 출석</p>
             <div style={{ fontSize: 24, fontWeight: 800 }}>
@@ -207,6 +232,9 @@ export function TodayScreen({ plnl }: { plnl: PlnlController }) {
             </div>
             <div style={{ fontSize: 13, marginTop: 8 }}>
               🛡️ 스트릭 보호권 보유 {game.freezes}개
+            </div>
+            <div style={{ fontSize: 11.5, color: "#8b95a1", marginTop: 3 }}>
+              빠진 날엔 보호권으로 연속을 지킬지 물어봐요
             </div>
             <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
               <button

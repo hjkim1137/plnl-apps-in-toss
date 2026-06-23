@@ -23,7 +23,20 @@ import {
   cycleCalendarDay,
 } from "../src/lib/attendance";
 import { applyBuyFreeze, applyFreezeFromAd, canBuyFreeze } from "../src/lib/freeze";
-import { normalizeState, sanitizeLogs, createInitialState } from "../src/lib/model";
+import {
+  currentStreak,
+  detectFreezeRepair,
+  applyFreezeRepair,
+  declineFreezeRepair,
+} from "../src/lib/streak";
+import {
+  normalizeState,
+  sanitizeLogs,
+  sanitizeDateList,
+  createInitialState,
+  type Logs,
+  type PlnlState,
+} from "../src/lib/model";
 
 let passed = 0;
 let failed = 0;
@@ -325,6 +338,98 @@ check("I-4 null neutral", statusNeutral.kind, "neutral");
 check("I-5 freeCheckinTagText(3)", freeCheckinTagText(3).includes("3"), true);
 check("I-6 freeCheckinTagText(1)", freeCheckinTagText(1).includes("1"), true);
 check("I-7 AD_UNLOCKED_TAG 존재", AD_UNLOCKED_TAG.length > 0, true);
+
+// ────────────────────────────────────────────────────────
+section("J. 스트릭 + 보호권 확인 후 복구 (streak.ts)");
+
+const J_NOW = new Date(2026, 5, 10); // 2026-06-10 (로컬)
+function mkState(over: Partial<PlnlState>): PlnlState {
+  return { ...createInitialState(), loggedIn: true, ...over };
+}
+const done = (...keys: string[]): Logs =>
+  Object.fromEntries(keys.map((k) => [k, "done" as const]));
+
+// currentStreak — frozen 인지
+check(
+  "J-1 오늘+직전 2일 done → 3",
+  currentStreak(done("2026-06-08", "2026-06-09", "2026-06-10"), [], J_NOW),
+  3,
+);
+check(
+  "J-2 오늘 미체크 → 0 (푸시 의도)",
+  currentStreak(done("2026-06-08", "2026-06-09"), [], J_NOW),
+  0,
+);
+check(
+  "J-3 중간 빠진 날 frozen 이면 이어짐(카운트는 done만=3)",
+  currentStreak(done("2026-06-07", "2026-06-08", "2026-06-10"), ["2026-06-09"], J_NOW),
+  3,
+);
+check(
+  "J-4 빠진 날 frozen 아니면 끊김 → 1",
+  currentStreak(done("2026-06-08", "2026-06-10"), [], J_NOW),
+  1,
+);
+
+// detectFreezeRepair — 제안 감지 (차감 X)
+check(
+  "J-5 빈틈 없음(어제 done) → 제안 없음",
+  detectFreezeRepair(mkState({ logs: done("2026-06-09"), freezes: 2 }), J_NOW),
+  null,
+);
+const det6 = detectFreezeRepair(mkState({ logs: done("2026-06-08"), freezes: 2 }), J_NOW);
+check("J-6 빈 1일 + 보호권 충분 → 제안", det6, { days: ["2026-06-09"], cost: 1 });
+check(
+  "J-7 빈 2일 + 보호권 1개 → all-or-nothing, 제안 없음",
+  detectFreezeRepair(mkState({ logs: done("2026-06-07"), freezes: 1 }), J_NOW),
+  null,
+);
+check(
+  "J-8 명시적 missed 만나면 → 제안 없음(본인 인정 결석)",
+  detectFreezeRepair(
+    mkState({ logs: { "2026-06-08": "done", "2026-06-09": "missed" }, freezes: 2 }),
+    J_NOW,
+  ),
+  null,
+);
+check(
+  "J-9 앵커(done) 없으면 → 제안 없음",
+  detectFreezeRepair(mkState({ logs: {}, freezes: 2 }), J_NOW),
+  null,
+);
+
+// applyFreezeRepair — 동의 시 차감
+const base6 = mkState({ logs: done("2026-06-08"), freezes: 2 });
+const applied = applyFreezeRepair(base6, det6!.days);
+check("J-10 동의 → 보호권 1 차감", applied.freezes, 1);
+check("J-10 frozen=[06-09]", applied.frozen, ["2026-06-09"]);
+check(
+  "J-11 복구 뒤 오늘 체크 시 연속 유지(2)",
+  currentStreak({ ...applied.logs, "2026-06-10": "done" }, applied.frozen, J_NOW),
+  2,
+);
+check(
+  "J-12 복구 뒤 재감지 → 제안 없음(멱등)",
+  detectFreezeRepair(applied, J_NOW),
+  null,
+);
+
+// declineFreezeRepair — 거절 시 missed 기록 (보호권 안 씀)
+const declined = declineFreezeRepair(base6, det6!.days);
+check("J-13 거절 → 보호권 그대로(2)", declined.freezes, 2);
+check("J-13 거절 → 06-09=missed", declined.logs["2026-06-09"], "missed");
+check(
+  "J-14 거절 뒤 재감지 → 제안 없음(다시 안 물음)",
+  detectFreezeRepair(declined, J_NOW),
+  null,
+);
+
+// sanitizeDateList — 방어적 정규화
+check(
+  "J-15 유효 날짜만·정렬·중복제거",
+  sanitizeDateList(["2026-06-09", "2026-06-09", "bad", "2999-01-01"], J_NOW),
+  ["2026-06-09"],
+);
 
 // ────────────────────────────────────────────────────────
 console.log(`\n${"═".repeat(55)}`);

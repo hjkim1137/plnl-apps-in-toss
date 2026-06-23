@@ -93,15 +93,21 @@ export function MonthlyScreen({ plnl }: { plnl: PlnlController }) {
                 key={cell.dateStr}
                 disabled={cell.isFuture}
                 onClick={() => actions.cycleDay(cell.dateStr)}
+                title={cell.isFrozen ? "🛡️ 보호권으로 지킨 날" : undefined}
                 style={{
+                  position: "relative",
                   aspectRatio: "1", border: cell.isToday ? "2px solid #3182f6" : "none", borderRadius: 9,
                   fontSize: 12.5, fontWeight: cell.value ? 800 : 600,
-                  background: cell.value === "done" ? "#e7f9f1" : cell.value === "missed" ? "#fdeced" : "#f2f4f6",
-                  color: cell.value === "done" ? "#15b877" : cell.value === "missed" ? "#f04452" : "#8b95a1",
+                  // 보호된 날(빠졌지만 보호권으로 메움)은 done/missed 색 대신 보호 톤으로.
+                  background: cell.isFrozen ? "#eaf2ff" : cell.value === "done" ? "#e7f9f1" : cell.value === "missed" ? "#fdeced" : "#f2f4f6",
+                  color: cell.isFrozen ? "#3182f6" : cell.value === "done" ? "#15b877" : cell.value === "missed" ? "#f04452" : "#8b95a1",
                   opacity: cell.isFuture ? 0.3 : 1,
                 }}
               >
                 {cell.day}
+                {cell.isFrozen && (
+                  <span style={{ position: "absolute", top: 1, right: 2, fontSize: 9 }}>🛡️</span>
+                )}
               </button>
             ),
           )}

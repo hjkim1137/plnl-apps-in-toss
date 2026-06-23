@@ -21,6 +21,8 @@ create table if not exists public.plnl_aits_users (
   points integer not null default 0 check (points >= 0),
   -- 보유 스트릭 보호권 수.
   freezes integer not null default 0 check (freezes >= 0),
+  -- 보호권으로 보호된 날짜 목록 ['YYYY-MM-DD', ...]. 출석(done)이 아니라 스트릭 연속만 이어줌.
+  frozen jsonb not null default '[]'::jsonb,
   -- 수령 완료한 스트릭 마일스톤 일수 목록(중복 지급 방지).
   claimed_milestones integer[] not null default '{}'::integer[],
   created_at timestamptz not null default now(),
@@ -33,6 +35,7 @@ alter table public.plnl_aits_users add column if not exists target integer not n
 alter table public.plnl_aits_users add column if not exists logs jsonb not null default '{}'::jsonb;
 alter table public.plnl_aits_users add column if not exists points integer not null default 0;
 alter table public.plnl_aits_users add column if not exists freezes integer not null default 0;
+alter table public.plnl_aits_users add column if not exists frozen jsonb not null default '[]'::jsonb;
 alter table public.plnl_aits_users add column if not exists claimed_milestones integer[] not null default '{}'::integer[];
 
 create index if not exists plnl_aits_users_toss_user_key_idx

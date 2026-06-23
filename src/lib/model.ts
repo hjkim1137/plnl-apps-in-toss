@@ -1,7 +1,7 @@
 // 앱 상태 모델 + 방어적 정규화.
 // PlnlState 는 클라이언트의 단일 진실 소스. 로그인 시 일부 필드(fee/target/logs/points/
-// freezes/claimed)는 서버에 영속되고, freeUsed/adUnlocked/lastSeenMonth/notifyAgreed 는
-// 기기 로컬 전용이다. (서버 매핑은 userData.ts 참고)
+// freezes/frozen/claimed)는 서버에 영속되고, freeUsed/adUnlocked/lastSeenMonth/notifyAgreed
+// 는 기기 로컬 전용이다. (서버 매핑은 userData.ts 참고)
 
 import {
   CALENDAR_MIN_MONTH,
@@ -27,6 +27,12 @@ export interface PlnlState {
   points: number;
   /** 보유 스트릭 보호권 개수(≥0). */
   freezes: number;
+  /**
+   * 보호권으로 보호된 날짜 키 목록('YYYY-MM-DD'). 자동 소비(reconcile)로 채워진다.
+   * ⚠️ 출석('done')이 아니다 — 진실 숫자(회수율·기부액)에는 포함되지 않고, 스트릭 연속만
+   * 이어준다(streak.ts). logs 와 독립.
+   */
+  frozen: string[];
   /** 수령 완료한 스트릭 마일스톤 일수 목록 (중복 지급 방지). */
   claimed: number[];
   /** 비로그인 무료 출석 사용 횟수. */
@@ -47,6 +53,7 @@ export function createInitialState(): PlnlState {
     loggedIn: false,
     points: 0,
     freezes: 0,
+    frozen: [],
     claimed: [],
     freeUsed: 0,
     adUnlocked: false,
@@ -68,7 +75,8 @@ function posInt(v: unknown, fallback: number): number {
   return Number.isFinite(n) && n >= 1 ? n : fallback;
 }
 
-const MIN_DATE = monthPrefix(CALENDAR_MIN_YEAR, CALENDAR_MIN_MONTH) + "01";
+/** 기록 시작 경계 'YYYY-MM-DD' (이 날 이전은 폐기). streak.ts 등에서 재사용. */
+export const MIN_DATE = monthPrefix(CALENDAR_MIN_YEAR, CALENDAR_MIN_MONTH) + "01";
 
 /** 허용된 날짜 키 + 값만 통과. 미래/형식오류/CALENDAR_MIN 이전은 폐기. */
 export function sanitizeLogs(v: unknown, now: Date = new Date()): Logs {
@@ -83,6 +91,20 @@ export function sanitizeLogs(v: unknown, now: Date = new Date()): Logs {
     out[k] = val;
   }
   return out;
+}
+
+/** 날짜 키 목록 정규화 — 유효 'YYYY-MM-DD'(기록 시작~오늘)만, 중복 제거·정렬. */
+export function sanitizeDateList(v: unknown, now: Date = new Date()): string[] {
+  if (!Array.isArray(v)) return [];
+  const today = ymd(now);
+  const seen = new Set<string>();
+  for (const item of v) {
+    if (typeof item !== "string") continue;
+    if (parseYmd(item) == null) continue;
+    if (item < MIN_DATE || item > today) continue;
+    seen.add(item);
+  }
+  return Array.from(seen).sort();
 }
 
 /** 마일스톤 일수 목록 정규화 — 양수 정수만, 중복 제거. */
@@ -111,6 +133,7 @@ export function normalizeState(
     loggedIn: o.loggedIn === true,
     points: nonNegInt(o.points),
     freezes: nonNegInt(o.freezes),
+    frozen: sanitizeDateList(o.frozen, now),
     claimed: sanitizeClaimed(o.claimed),
     freeUsed: nonNegInt(o.freeUsed),
     adUnlocked: o.adUnlocked === true,

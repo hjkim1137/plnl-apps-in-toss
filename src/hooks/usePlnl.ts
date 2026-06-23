@@ -67,7 +67,15 @@ import {
   daysUntilMonthEnd,
   isMonthEnded,
 } from "../lib/settlement";
-import { bestStreakAll, currentStreak, maxStreakInMonth } from "../lib/streak";
+import {
+  applyFreezeRepair,
+  bestStreakAll,
+  currentStreak,
+  declineFreezeRepair,
+  detectFreezeRepair,
+  maxStreakInMonth,
+  type FreezeRepair,
+} from "../lib/streak";
 import { resolveTitle } from "../lib/titles";
 import {
   loadLocalState,
@@ -84,6 +92,8 @@ export interface CalendarCell {
   value: LogValue | null;
   isToday: boolean;
   isFuture: boolean;
+  /** 보호권으로 보호된 날(빠졌지만 스트릭이 끊기지 않게 메운 날). */
+  isFrozen: boolean;
 }
 
 /**
@@ -122,6 +132,8 @@ export function usePlnl() {
   const [adSeen, setAdSeen] = useState({ report: false, cert: false });
   // 이번 세션에 '도착'한 직전 달(월 경계를 넘어 처음 연 경우). null = 도착 없음.
   const [arrival, setArrival] = useState<{ y: number; m: number } | null>(null);
+  // 보호권으로 메울 수 있는 빠진 날 제안(확인 후 복구). null = 제안 없음. 영속 아님(세션 UI).
+  const [freezeRepair, setFreezeRepair] = useState<FreezeRepair | null>(null);
 
   // 비동기 액션이 항상 최신 state 를 보도록 ref 동기화.
   const stateRef = useRef(state);
@@ -164,6 +176,14 @@ export function usePlnl() {
     };
   }, [now]);
 
+  // ── 보호권 복구 제안 감지 (확인 후 복구) ──────────────────────────────────
+  // 마운트 시 1회: 빠진 빈 날을 보유 보호권으로 메울 수 있으면 '제안'만 띄운다(차감은 동의 후).
+  // 순수 read 라 영속 상태는 건드리지 않고 UI 상태(freezeRepair)에만 보관. 로그인 직후엔
+  // login() 이 머지 결과로 다시 감지한다(서버 기록의 빈 날 포함).
+  useEffect(() => {
+    setFreezeRepair(detectFreezeRepair(stateRef.current, now));
+  }, [now]);
+
   // ── 파생값: 오늘 탭 ────────────────────────────────────────────────────
   const todayData = useMemo(() => {
     const stats = statsForMonth(state, curY, curM);
@@ -201,9 +221,10 @@ export function usePlnl() {
 
     // 달력 셀
     const cells: CalendarCell[] = [];
+    const frozenSet = new Set(state.frozen);
     const lead = firstWeekday(viewY, viewM);
     for (let i = 0; i < lead; i++) {
-      cells.push({ day: 0, dateStr: "", value: null, isToday: false, isFuture: false });
+      cells.push({ day: 0, dateStr: "", value: null, isToday: false, isFuture: false, isFrozen: false });
     }
     const days = daysInMonth(viewY, viewM);
     for (let d = 1; d <= days; d++) {
@@ -214,6 +235,7 @@ export function usePlnl() {
         value: state.logs[ds] ?? null,
         isToday: ds === today,
         isFuture: ds > today,
+        isFrozen: frozenSet.has(ds),
       });
     }
 
@@ -236,12 +258,12 @@ export function usePlnl() {
     };
     // adSeen 은 의도적으로 의존성에서 제외 — 두 boolean(열람 여부)만 좌우하므로 무거운
     // 달력/결산/표창장 재계산을 일으키지 않도록 메모 밖(return)에서 합성한다.
-  }, [state.fee, state.target, state.logs, state.loggedIn, viewY, viewM, previewEnd, now, curY, curM, today]);
+  }, [state.fee, state.target, state.logs, state.loggedIn, state.frozen, viewY, viewM, previewEnd, now, curY, curM, today]);
 
   // ── 파생값: 게이미피케이션(로그인) ─────────────────────────────────────
   const gamification = useMemo(() => {
     const td = totalDone(state.logs);
-    const streak = currentStreak(state.logs, now);
+    const streak = currentStreak(state.logs, state.frozen, now);
     return {
       title: resolveTitle(td),
       totalDone: td,
@@ -254,7 +276,7 @@ export function usePlnl() {
       freezes: state.freezes,
       canBuyFreeze: canBuyFreeze(state),
     };
-  }, [state.logs, state.target, state.claimed, state.points, state.freezes, now]);
+  }, [state.logs, state.target, state.claimed, state.points, state.freezes, state.frozen, now]);
 
   // ── 액션 ───────────────────────────────────────────────────────────────
 
@@ -308,7 +330,7 @@ export function usePlnl() {
   /** 스트릭 마일스톤 수령 — 전면형 광고 보고 포인트. */
   const claimMilestone = useCallback(async () => {
     const m = nextClaimableMilestone(
-      currentStreak(stateRef.current.logs, now),
+      currentStreak(stateRef.current.logs, stateRef.current.frozen, now),
       stateRef.current.claimed,
     );
     if (!m) return { ok: false as const, reason: "none" as const };
@@ -333,6 +355,21 @@ export function usePlnl() {
     setState(applyFreezeFromAd(stateRef.current));
     return { ok: true as const };
   }, []);
+
+  /** 복구 제안 동의 — 빈 날을 보호권으로 메우고(차감) 연속을 살린다. */
+  const confirmFreezeRepair = useCallback(() => {
+    if (!freezeRepair) return { ok: false as const };
+    setState((s) => applyFreezeRepair(s, freezeRepair.days));
+    setFreezeRepair(null);
+    return { ok: true as const, days: freezeRepair.cost };
+  }, [freezeRepair]);
+
+  /** 복구 제안 거절 — 빈 날을 'missed'(안 감)로 기록(보호권 안 씀). 다시 묻지 않는다. */
+  const dismissFreezeRepair = useCallback(() => {
+    if (!freezeRepair) return;
+    setState((s) => declineFreezeRepair(s, freezeRepair.days));
+    setFreezeRepair(null);
+  }, [freezeRepair]);
 
   /** 월간 결산 열람용 전면형 광고. */
   const watchReportAd = useCallback(async () => {
@@ -439,6 +476,8 @@ export function usePlnl() {
       const remote = await loadRemoteState(session.userKey, now);
       const merged = mergeForLogin(stateRef.current, remote);
       setState(merged);
+      // 서버 기록의 빈 날까지 포함해 복구 제안 재감지(로그인 직후 지연 없이).
+      setFreezeRepair(detectFreezeRepair(merged, now));
       // 병합 결과 즉시 서버 반영(기기 간 보존).
       saveRemoteState(session.userKey, merged).catch(() => {});
     } catch (e) {
@@ -462,6 +501,8 @@ export function usePlnl() {
     selectableMonths,
     view: { year: viewY, month: viewM, previewEnd },
     notif,
+    // 보호권 복구 제안(확인 후 복구). null = 제안 없음. count = 메울 빈 날 수 = 소비될 보호권 수.
+    repair: freezeRepair ? { count: freezeRepair.cost } : null,
     actions: {
       checkIn,
       watchCheckinAd,
@@ -471,6 +512,8 @@ export function usePlnl() {
       claimMilestone,
       buyFreeze,
       watchFreezeAd,
+      confirmFreezeRepair,
+      dismissFreezeRepair,
       watchReportAd,
       watchCertAd,
       goToMonth,
