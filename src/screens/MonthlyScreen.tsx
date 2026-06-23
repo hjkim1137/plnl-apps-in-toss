@@ -1,4 +1,5 @@
 import type { PlnlController } from "../hooks/usePlnl";
+import { NOTIFY_COPY } from "../lib/content";
 import { won } from "../lib/format";
 
 // ── 월간 현황 탭 ─────────────────────────────────────────────────────────
@@ -15,7 +16,7 @@ function Card({ children }: { children: React.ReactNode }) {
 const DOW = ["일", "월", "화", "수", "목", "금", "토"];
 
 export function MonthlyScreen({ plnl }: { plnl: PlnlController }) {
-  const { monthly, selectableMonths, actions, state } = plnl;
+  const { monthly, selectableMonths, actions, state, notif } = plnl;
   const s = monthly.stats;
 
   return (
@@ -24,8 +25,17 @@ export function MonthlyScreen({ plnl }: { plnl: PlnlController }) {
       {monthly.showNotif && (
         <div style={{ background: "linear-gradient(135deg,#fff3d6,#ffe7a8)", border: "1px solid #ffdb87", borderRadius: 14, padding: 13, marginBottom: 14 }}>
           <div style={{ fontSize: 13, fontWeight: 800, color: "#8a5b00" }}>
-            🎉 {monthly.year}년 {monthly.monthLabel} 표창장이 도착했어요!
+            {NOTIFY_COPY.arrivalTitle(`${monthly.year}년 ${monthly.monthLabel}`)}
           </div>
+          {/* 다음 달부터 도착 알림 받기 (F17 알림 동의) */}
+          {notif.canPrompt && (
+            <button
+              onClick={() => actions.enableNotifications()}
+              style={{ marginTop: 10, padding: "8px 12px", border: "1px solid #ffdb87", borderRadius: 10, background: "#fff", color: "#b07a00", fontWeight: 800, fontSize: 12 }}
+            >
+              🔔 다음 달부터 도착 알림 받기
+            </button>
+          )}
         </div>
       )}
 

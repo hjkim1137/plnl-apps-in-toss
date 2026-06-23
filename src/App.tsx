@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { usePlnl } from "./hooks/usePlnl";
+import { NOTIFY_COPY } from "./lib/content";
 import { isInsideTossApp } from "./lib/environment";
 import { TodayScreen } from "./screens/TodayScreen";
 import { MonthlyScreen } from "./screens/MonthlyScreen";
@@ -117,6 +118,53 @@ export default function App() {
             />
           </label>
         </section>
+      )}
+
+      {/* 월말 도착 알림 (F17 트리거) — 새 달에 처음 열면 직전 달 결산/표창장 도착.
+          상세 UI 는 인정(A) 담당, 여기선 트리거 배선만. */}
+      {plnl.notif.arrival && (
+        <div style={{ padding: "12px 18px 0" }}>
+          <div
+            style={{
+              background: "linear-gradient(135deg,#fff3d6,#ffe7a8)",
+              border: "1px solid #ffdb87",
+              borderRadius: 14,
+              padding: "12px 14px",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ flex: 1, fontSize: 13.5, fontWeight: 800, color: "#8a5b00" }}>
+                {NOTIFY_COPY.arrivalTitle(plnl.notif.arrival.monthLabel)}
+              </div>
+              <button
+                onClick={() => plnl.actions.dismissArrival()}
+                aria-label="닫기"
+                style={{ border: "none", background: "transparent", color: "#b07a00", fontSize: 16, fontWeight: 800 }}
+              >
+                ✕
+              </button>
+            </div>
+            <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+              <button
+                onClick={() => {
+                  setTab("monthly");
+                  plnl.actions.openArrival();
+                }}
+                style={{ flex: 1, padding: 10, border: "none", borderRadius: 10, fontWeight: 800, background: "#b07a00", color: "#fff", fontSize: 12.5 }}
+              >
+                {NOTIFY_COPY.arrivalCta}
+              </button>
+              {plnl.notif.canPrompt && (
+                <button
+                  onClick={() => plnl.actions.enableNotifications()}
+                  style={{ flex: 1, padding: 10, border: "1px solid #ffdb87", borderRadius: 10, fontWeight: 800, background: "#fff", color: "#b07a00", fontSize: 12.5 }}
+                >
+                  {NOTIFY_COPY.enableCta}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
       )}
 
       {/* 탭 */}

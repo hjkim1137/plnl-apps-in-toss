@@ -46,3 +46,12 @@ export function todayStr(now: Date = new Date()): string {
 export function monthIndex(y: number, m: number): number {
   return y * 12 + m;
 }
+
+/**
+ * 서버 epoch(ms) → KST(UTC+9) 기준 연/월(0-based). 기기 타임존 무관하게 월 경계를 고정한다.
+ * 위 KST 보정 TODO 의 첫 적용처 — 월말 도착 트리거(notify.ts)가 getServerTime() 과 함께 사용.
+ */
+export function kstYearMonth(epochMs: number): { y: number; m: number } {
+  const kst = new Date(epochMs + 9 * 60 * 60 * 1000);
+  return { y: kst.getUTCFullYear(), m: kst.getUTCMonth() };
+}

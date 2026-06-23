@@ -107,6 +107,9 @@ export function mergeForLogin(local: PlnlState, remote: PlnlState): PlnlState {
     logs,
     fee: remote.fee || local.fee,
     target: remote.target || local.target,
+    // 기기 로컬 전용 — 서버 row 에 없으므로 이 기기 값을 유지(로그인해도 도착 트리거/동의 보존).
+    lastSeenMonth: local.lastSeenMonth,
+    notifyAgreed: local.notifyAgreed || remote.notifyAgreed,
   };
 }
 

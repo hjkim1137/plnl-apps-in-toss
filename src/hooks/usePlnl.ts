@@ -56,6 +56,12 @@ import {
 } from "../lib/milestones";
 import { type LogValue, type PlnlState } from "../lib/model";
 import {
+  currentMonthIndex,
+  detectArrival,
+  isNotifyAvailable,
+  requestNotifyAgreement,
+} from "../lib/notify";
+import {
   buildCertificate,
   buildReport,
   daysUntilMonthEnd,
@@ -114,6 +120,8 @@ export function usePlnl() {
   const [previewEnd, setPreviewEnd] = useState(false);
   // 결산/표창장은 "해당 달 1회" 광고 시청 후 열람(세션). 달이 바뀌면 리셋.
   const [adSeen, setAdSeen] = useState({ report: false, cert: false });
+  // 이번 세션에 '도착'한 직전 달(월 경계를 넘어 처음 연 경우). null = 도착 없음.
+  const [arrival, setArrival] = useState<{ y: number; m: number } | null>(null);
 
   // 비동기 액션이 항상 최신 state 를 보도록 ref 동기화.
   const stateRef = useRef(state);
@@ -132,6 +140,29 @@ export function usePlnl() {
     }, SAVE_DEBOUNCE_MS);
     return () => clearTimeout(t);
   }, [state]);
+
+  // ── 월말 도착 트리거 (F17) ─────────────────────────────────────────────
+  // 마운트 시: 서버 시각(KST) 기준 현재 달과 마지막 방문 달을 비교해, 달이 넘어갔으면 직전
+  // 달의 결산/표창장이 "도착"했음을 감지하고 lastSeenMonth 를 갱신한다. (생성/공개 로직은
+  // settlement.ts, 실제 푸시 발송은 서버 스마트 발송)
+  //
+  // now 가 안정값이라 사실상 1회 실행. StrictMode 의 mount→cleanup→remount 이중 호출에는
+  // cancelled 플래그로 stale write 만 막고, 재실행은 멱등(detectArrival 순수 + 같은 결과)하게
+  // 둔다 — ref 가드로 막으면 첫 실행이 취소된 뒤 재실행이 안 돌아 트리거가 통째로 누락된다.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const idx = await currentMonthIndex(now);
+      if (cancelled) return;
+      const seen = stateRef.current.lastSeenMonth;
+      const arr = detectArrival(seen, idx);
+      if (arr) setArrival(arr);
+      if (seen !== idx) setState((s) => ({ ...s, lastSeenMonth: idx }));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [now]);
 
   // ── 파생값: 오늘 탭 ────────────────────────────────────────────────────
   const todayData = useMemo(() => {
@@ -347,6 +378,39 @@ export function usePlnl() {
     setAdSeen({ report: false, cert: false });
   }, []);
 
+  // ── 알림 (F17) ─────────────────────────────────────────────────────────
+
+  /**
+   * 알림 수신 동의 요청 → 동의 시 notifyAgreed 저장. 강제 노출 금지 — 도착/로그인 등
+   * 전환 의도가 강한 순간에 화면이 CTA 로 호출한다(F6 와 같은 철학).
+   */
+  const enableNotifications = useCallback(async () => {
+    const outcome = await requestNotifyAgreement();
+    if (outcome === "agreed") setState((s) => ({ ...s, notifyAgreed: true }));
+    return { ok: outcome === "agreed", outcome };
+  }, []);
+
+  /** 도착한 달의 결산/표창장으로 이동(월 뷰 전환) + 도착 배너 해제. */
+  const openArrival = useCallback(() => {
+    if (arrival) goToMonth(arrival.y, arrival.m);
+    setArrival(null);
+  }, [arrival, goToMonth]);
+
+  /** 도착 배너 닫기. */
+  const dismissArrival = useCallback(() => setArrival(null), []);
+
+  // 알림/월말 도착(F17). arrival = 이번 세션에 도착한 직전 달(없으면 null).
+  // canPrompt = 동의 CTA 노출 여부(미동의 + 사용 가능 환경). 파생값이라 메모(파일 컨벤션).
+  const notif = useMemo(
+    () => ({
+      arrival: arrival
+        ? { ...arrival, monthLabel: MONTH_LABELS[arrival.m] }
+        : null,
+      canPrompt: isNotifyAvailable() && !state.notifyAgreed,
+    }),
+    [arrival, state.notifyAgreed],
+  );
+
   /** 선택 가능한 월 목록(드롭다운용). 2026.01~현재. */
   const selectableMonths = useMemo(() => {
     const out: { y: number; m: number; label: string }[] = [];
@@ -397,6 +461,7 @@ export function usePlnl() {
     game: gamification,
     selectableMonths,
     view: { year: viewY, month: viewM, previewEnd },
+    notif,
     actions: {
       checkIn,
       watchCheckinAd,
@@ -411,6 +476,9 @@ export function usePlnl() {
       goToMonth,
       shiftMonth,
       togglePreview,
+      enableNotifications,
+      openArrival,
+      dismissArrival,
       login,
     },
   };

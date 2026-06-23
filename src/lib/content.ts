@@ -260,3 +260,31 @@ export const ONBOARDING_SLIDES: OnboardingSlide[] = [
     cta: "시작하기",
   },
 ];
+
+// ── 알림(스마트 발송) 카피 — F17 (B 관리) ─────────────────────────────────
+// 인앱 카피(arrival 배너·동의 CTA)는 화면이 직접 렌더. PUSH_TEMPLATES 는 서버 스마트
+// 발송 템플릿과 미러용 — 세그먼트별 본문의 단일 출처(실제 발송은 서버, docs/backend).
+
+export const NOTIFY_COPY = {
+  /** 월말 결산/표창장 도착 배너 제목. */
+  arrivalTitle: (monthLabel: string) => `🎉 ${monthLabel} 표창장이 도착했어요!`,
+  /** 도착 배너 → 결산/표창장으로 이동 버튼. */
+  arrivalCta: "결산·표창장 보러 가기",
+  /** 알림 수신 동의 유도 버튼. */
+  enableCta: "🔔 도착 알림 받기",
+};
+
+/** 서버 스마트 발송 본문 미러(세그먼트별). 실제 발송 트리거/세그먼트 정의는 백엔드. */
+export const PUSH_TEMPLATES = {
+  /** 매일 — 오늘 출석 유도. */
+  daily: "오늘도 운동비 회수하러 가볼까요? 💪 안 가면 단가만큼 증발해요",
+  /** 스트릭 끊김 위기 — 오늘 출석 필요. */
+  streakRisk: (days: number) =>
+    `🔥 ${days}일 연속 출석 중! 오늘 안 가면 끊겨요. 보호권으로 지킬 수도 있어요`,
+  /** 마일스톤 도달 — 광고 보고 포인트 수령 가능. */
+  milestoneReady: (days: number, p: number) =>
+    `🎁 ${days}일 연속 달성! 광고 보고 +${p}P 받아가세요`,
+  /** 월말 도착 — 결산/표창장 공개. */
+  arrival: (monthLabel: string) =>
+    `📊 ${monthLabel} 결산과 표창장이 도착했어요. 이번 달 회수율 확인해보세요!`,
+};
