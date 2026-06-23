@@ -361,7 +361,7 @@ export function usePlnl() {
     if (!freezeRepair) return { ok: false as const };
     setState((s) => applyFreezeRepair(s, freezeRepair.days));
     setFreezeRepair(null);
-    return { ok: true as const, days: freezeRepair.cost };
+    return { ok: true as const, days: freezeRepair.days.length };
   }, [freezeRepair]);
 
   /** 복구 제안 거절 — 빈 날을 'missed'(안 감)로 기록(보호권 안 씀). 다시 묻지 않는다. */
@@ -502,7 +502,7 @@ export function usePlnl() {
     view: { year: viewY, month: viewM, previewEnd },
     notif,
     // 보호권 복구 제안(확인 후 복구). null = 제안 없음. count = 메울 빈 날 수 = 소비될 보호권 수.
-    repair: freezeRepair ? { count: freezeRepair.cost } : null,
+    repair: freezeRepair ? { count: freezeRepair.days.length } : null,
     actions: {
       checkIn,
       watchCheckinAd,

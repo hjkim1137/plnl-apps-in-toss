@@ -37,9 +37,13 @@ export type ActionResult =
 export function kstNow(): Date {
   return new Date(Date.now() + 9 * 60 * 60 * 1000);
 }
-const pad = (n: number) => String(n).padStart(2, "0");
+export const pad = (n: number) => String(n).padStart(2, "0");
 function ymd(d: Date): string {
   return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`;
+}
+/** 'YYYY-MM-' 월 키. m 은 0-based. settlement 등 서버 모듈에서 재사용(클라 date.ts:monthPrefix 미러). */
+export function monthPrefix(y: number, m: number): string {
+  return `${y}-${pad(m + 1)}-`;
 }
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 function isValidDateKey(s: unknown): s is string {
@@ -66,8 +70,8 @@ export function currentStreak(
 }
 
 export interface FreezeRepair {
+  /** 메울 빈 날(정렬). 소비될 보호권 수 = days.length. */
   days: string[];
-  cost: number;
 }
 /** 직전 done 이후의 '그냥 안 연 날'을 보호권으로 전부 메울 수 있을 때만 제안. 아니면 null. */
 export function detectFreezeRepair(
@@ -93,7 +97,7 @@ export function detectFreezeRepair(
   }
   if (!anchorFound || days.length === 0) return null;
   if (row.freezes < days.length) return null; // all-or-nothing
-  return { days: [...days].sort(), cost: days.length };
+  return { days: days.sort() };
 }
 
 // ── 액션 reducer (모두 순수, 서버 권위) ─────────────────────────────────────
@@ -191,14 +195,15 @@ export function serverSettings(
  */
 export function serverResolveRepair(
   row: PlnlRow,
-  accept: boolean,
+  accept: unknown,
   now: Date = kstNow(),
 ): ActionResult {
+  if (typeof accept !== "boolean") return { ok: false, reason: "bad_accept" };
   const repair = detectFreezeRepair(row, now);
   if (!repair) return { ok: true, row }; // 제안 없음 — 멱등 no-op
   if (accept) {
     const frozen = [...row.frozen, ...repair.days].sort();
-    return { ok: true, row: { ...row, frozen, freezes: row.freezes - repair.cost } };
+    return { ok: true, row: { ...row, frozen, freezes: row.freezes - repair.days.length } };
   }
   const logs = { ...row.logs };
   for (const k of repair.days) logs[k] = "missed";

@@ -39,10 +39,8 @@ export function currentStreak(
 }
 
 export interface FreezeRepair {
-  /** 보호권으로 메울 빈 날들('YYYY-MM-DD', 정렬). */
+  /** 보호권으로 메울 빈 날들('YYYY-MM-DD', 정렬). 소비될 보호권 수 = days.length. */
   days: string[];
-  /** 소비될 보호권 수(=days.length). */
-  cost: number;
 }
 
 /**
@@ -55,7 +53,7 @@ export interface FreezeRepair {
  * - **all-or-nothing**: 빈 날 전부를 보유 보호권으로 메울 수 있을 때만 제안(아니면 null).
  * - 앵커('done')를 LOOKBACK 일 안에서 못 찾으면 살릴 스트릭이 없는 것 → null.
  *
- * @returns 제안할 게 있으면 { days, cost }, 없으면 null.
+ * @returns 제안할 게 있으면 { days }, 없으면 null.
  */
 export function detectFreezeRepair(
   state: PlnlState,
@@ -80,7 +78,7 @@ export function detectFreezeRepair(
   }
   if (!anchorFound || days.length === 0) return null; // 살릴 스트릭/빈 날 없음
   if (state.freezes < days.length) return null; // 다 못 메움 → 제안 안 함(낭비 X)
-  return { days: [...days].sort(), cost: days.length };
+  return { days: days.sort() };
 }
 
 /**

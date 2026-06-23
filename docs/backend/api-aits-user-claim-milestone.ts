@@ -2,6 +2,7 @@
 // 복사 위치: plnl.vercel.app/app/api/aits/user/claim-milestone/route.ts
 // body: { d: 3|7|14|30 } → { points, claimed }
 
+import { NextRequest } from "next/server";
 import { handleUserAction, corsOptions } from "@/lib/aits/route";
 import { limiters } from "@/lib/aits/ratelimit";
 import { serverClaimMilestone } from "@/lib/aits/userActions";
@@ -9,7 +10,7 @@ import { serverClaimMilestone } from "@/lib/aits/userActions";
 export const runtime = "nodejs";
 export const OPTIONS = corsOptions;
 
-export async function POST(req: import("next/server").NextRequest) {
+export async function POST(req: NextRequest) {
   return handleUserAction(
     req,
     limiters().userClaimMilestone,

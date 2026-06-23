@@ -378,7 +378,7 @@ check(
   null,
 );
 const det6 = detectFreezeRepair(mkState({ logs: done("2026-06-08"), freezes: 2 }), J_NOW);
-check("J-6 빈 1일 + 보호권 충분 → 제안", det6, { days: ["2026-06-09"], cost: 1 });
+check("J-6 빈 1일 + 보호권 충분 → 제안", det6, { days: ["2026-06-09"] });
 check(
   "J-7 빈 2일 + 보호권 1개 → all-or-nothing, 제안 없음",
   detectFreezeRepair(mkState({ logs: done("2026-06-07"), freezes: 1 }), J_NOW),

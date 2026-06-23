@@ -7,9 +7,8 @@
 // ⚠️ 문구는 B(선민) 콘텐츠 영역 — 여기 텍스트는 기능 placeholder. 최종 카피는 클라 content.ts 와 맞춘다.
 
 import type { PlnlRow } from "@/lib/aits/db";
-import { kstNow } from "@/lib/aits/userActions";
+import { kstNow, monthPrefix } from "@/lib/aits/userActions";
 
-const pad = (n: number) => String(n).padStart(2, "0");
 /** 천 단위 콤마(원 표기). */
 function won(n: number): string {
   return `${Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")}원`;
@@ -36,7 +35,7 @@ export function buildLastMonthPush(
     m = 11;
     y -= 1;
   }
-  const prefix = `${y}-${pad(m + 1)}-`;
+  const prefix = monthPrefix(y, m);
 
   let done = 0;
   for (const [k, v] of Object.entries(row.logs)) {

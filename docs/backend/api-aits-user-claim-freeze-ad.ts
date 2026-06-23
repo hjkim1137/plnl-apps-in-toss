@@ -3,6 +3,7 @@
 // body: { adToken? } → { freezes }
 // TODO(광고검증): 가능하면 adToken 을 토스 보상형 광고 완료 검증에 사용(userActions.serverFreezeFromAd 참고).
 
+import { NextRequest } from "next/server";
 import { handleUserAction, corsOptions } from "@/lib/aits/route";
 import { limiters } from "@/lib/aits/ratelimit";
 import { serverFreezeFromAd } from "@/lib/aits/userActions";
@@ -10,7 +11,7 @@ import { serverFreezeFromAd } from "@/lib/aits/userActions";
 export const runtime = "nodejs";
 export const OPTIONS = corsOptions;
 
-export async function POST(req: import("next/server").NextRequest) {
+export async function POST(req: NextRequest) {
   return handleUserAction(
     req,
     limiters().userBuyFreeze, // 보호권 획득 계열 — buy-freeze 와 동일 임계치 공유

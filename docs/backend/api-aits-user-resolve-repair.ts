@@ -4,6 +4,7 @@
 // body: { accept: boolean } → { freezes, frozen, logs }
 //   accept=true  → 빈 날을 보호권으로 메움(차감) / accept=false → 'missed' 기록(다시 안 물음)
 
+import { NextRequest } from "next/server";
 import { handleUserAction, corsOptions } from "@/lib/aits/route";
 import { limiters } from "@/lib/aits/ratelimit";
 import { serverResolveRepair } from "@/lib/aits/userActions";
@@ -11,14 +12,11 @@ import { serverResolveRepair } from "@/lib/aits/userActions";
 export const runtime = "nodejs";
 export const OPTIONS = corsOptions;
 
-export async function POST(req: import("next/server").NextRequest) {
+export async function POST(req: NextRequest) {
   return handleUserAction(
     req,
     limiters().userResolveRepair,
-    (row, b) =>
-      typeof b.accept === "boolean"
-        ? serverResolveRepair(row, b.accept)
-        : { ok: false as const, reason: "bad_accept" },
+    (row, b) => serverResolveRepair(row, b.accept), // accept 검증은 reducer 가(다른 라우트와 동일)
     (row) => ({ freezes: row.freezes, frozen: row.frozen, logs: row.logs }),
   );
 }
