@@ -33,7 +33,7 @@ export function MonthlyScreen({ plnl }: { plnl: PlnlController }) {
               onClick={() => actions.enableNotifications()}
               style={{ marginTop: 10, padding: "8px 12px", border: "1px solid #ffdb87", borderRadius: 10, background: "#fff", color: "#b07a00", fontWeight: 800, fontSize: 12 }}
             >
-              🔔 다음 달부터 도착 알림 받기
+              {NOTIFY_COPY.enableCta}
             </button>
           )}
         </div>
