@@ -107,7 +107,7 @@
   <div class="wrap">
     <div class="head">
       <h1>🗓️ 뺄래 낼래 — 출시 일정 · 진행현황 <span style="color:#8b5cf6;font-size:15px;">v2</span></h1>
-      <div class="sub">2026.06.13(토) → 06.30(화) · 18일 · 3명(개발 1 + 비개발 2) · 마지막 업데이트 <b>2026-06-23</b></div>
+      <div class="sub">2026.06.13(토) → 06.30(화) · 18일 · 3명(개발 1 + 비개발 2) · 마지막 업데이트 <b>2026-06-24</b></div>
       <div class="legend">
         <div class="lg"><span class="sw" style="background:var(--blue)"></span>현정 · 개발</div>
         <div class="lg"><span class="sw" style="background:var(--green)"></span>인정 · UI (비개발)</div>
@@ -131,7 +131,8 @@
         · <b>의존성</b>: 현정의 스캐폴딩/뼈대(6/13~15)가 먼저 → 인정·선민은 그 위에서 화면·콘텐츠 병렬 진행<br/>
         · <b>병렬</b>: 인증·광고·동기화(현정) ↔ UI(인정) ↔ 카피·칭호·QA(선민) 동시 진행 가능<br/>
         · <b>주말(13·14·20·21·28)</b>은 버퍼 — 단, <b>6/27(토)</b>은 검수 제출 목표일로 가동<br/>
-        · 6/28~30은 <b>검수 대응 + QA + 마케팅 자산</b> 마무리 → <b>6/30(화) 출시</b>
+        · 6/28~30은 <b>검수 대응 + QA + 마케팅 자산</b> 마무리 → <b>6/30(화) 출시</b><br/>
+        · <b>백엔드(D)</b>: 인증 + <b>액션 라우트(변조 방지)</b> + <b>월말 cron 푸시</b> 이식 완료(docs/backend) — <b>배포·RLS 잠금은 사업자 통과 후</b>(그 전까진 supabase 직접 MVP)
       </p>
     </div>
 
@@ -203,13 +204,13 @@
   const stMark = (s)=> s==='done'?'✅':s==='partial'?'🔶':'⬜';
   // 담당별 작업 막대 상태 (GROUPS 의 tasks 순서와 1:1)
   const STATUS_TASK = {
-    D:['done','partial','partial','done','partial','done','todo','todo'],
+    D:['done','partial','done','done','partial','done','todo','todo'],
     A:['todo','todo','todo','todo','todo','todo'],
     B:['partial','partial','partial','todo','partial','todo'],
   };
   // 기능 명세 상태 — D 로직/데이터 구현 기준 (화면 UI 는 인정 작업 별도)
   const STATUS_SPEC = {
-    F1:'done', F6:'partial', F7:'partial', F18:'partial',
+    F1:'done', F6:'partial', F7:'done', F18:'partial',
     F2:'done', F3:'done', F4:'done', F5:'done',
     F8:'done', F9:'done', F10:'done', F11:'done', F12:'done', 'F12+':'todo',
     F13:'partial', F14:'done', F15:'partial', F16:'partial', F17:'done',
@@ -266,13 +267,13 @@
      {id:'F7', ico:'💾', name:'데이터 저장 · 동기화', who:['D'], sched:'D 6/17~20',
       desc:'비로그인 로컬 → 로그인 시 서버 누적, 기기 바꿔도 보존',
       feats:[
-        '비로그인 <b>localStorage</b> 저장(출석·설정)',
-        '로그인 시 <b>서버 누적</b> 기록으로 승격·병합',
-        '<b>기기 변경 시 보존</b> — 로그인의 핵심 목적',
-        '출석·포인트·스트릭·칭호 영속 스키마',
-        '로컬 ↔ 서버 머지 규칙(중복·충돌 처리)',
+        '비로그인 <b>localStorage</b> 저장(출석·설정) ✅',
+        '로그인 시 <b>서버 누적</b> 기록으로 승격·병합(mergeForLogin) ✅',
+        '<b>기기 변경 시 보존</b> — 로그인의 핵심 목적 ✅',
+        '출석·포인트·스트릭·칭호·<b>보호권(frozen)</b> 영속 스키마 ✅',
+        '<b>서버 권위 액션 라우트</b> 이식 — checkin/claim/buy/resolve-repair/settings 로 points·freezes·frozen <b>변조 방지</b> ✅ (배포는 사업자 통과 후)',
       ],
-      rules:'데이터 모델 스키마 확정 필요(TODO). 진실 숫자 무결성 유지.'},
+      rules:'스키마 확정(plnl_aits_users + frozen). 진실 숫자 무결성 유지. 변조 방지는 백엔드 액션 라우트.'},
      {id:'F18', ico:'🔒', name:'잠금 UI (전환 유도)', who:['A'], sched:'A 6/22~24',
       desc:'비로그인에게 프리미엄 요소를 잠금으로 보여 호기심·로그인 유도',
       feats:[
