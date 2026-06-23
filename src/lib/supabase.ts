@@ -12,7 +12,12 @@ if (!url || !anonKey) {
   );
 }
 
-export const supabase = createClient(url ?? "", anonKey ?? "", {
+// env 없는 dev 환경에서 createClient("")가 throw하는 것을 막기 위해 placeholder 사용.
+// 실제 DB 호출은 isAuthConfigured() / API_BASE 체크로 이미 차단됨.
+const safeUrl = url || "https://placeholder.supabase.co";
+const safeKey = anonKey || "placeholder-anon-key";
+
+export const supabase = createClient(safeUrl, safeKey, {
   auth: {
     persistSession: false,
     autoRefreshToken: false,
