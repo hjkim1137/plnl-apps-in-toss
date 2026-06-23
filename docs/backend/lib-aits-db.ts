@@ -17,7 +17,30 @@ export interface PlnlRow {
   logs: Record<string, "done" | "missed">;
   points: number;
   freezes: number;
+  /** 보호권으로 보호된 날짜 키 목록. 출석(done)이 아니라 스트릭 연속만 이어줌(streak.ts). */
+  frozen: string[];
   claimed_milestones: number[];
+}
+
+const ROW_COLUMNS =
+  "toss_user_key, fee, target, logs, points, freezes, frozen, claimed_milestones" as const;
+
+// 클라 src/lib/constants.ts 와 동일 기본값. 신규 유저(아직 저장 전) row 의 기준값.
+const DEFAULT_FEE = 100000;
+const DEFAULT_TARGET = 12;
+
+/** 신규 유저(서버 row 없음)의 기본 row. 액션 라우트가 첫 mutate 시 사용. */
+export function defaultRow(tossUserKey: string): PlnlRow {
+  return {
+    toss_user_key: tossUserKey,
+    fee: DEFAULT_FEE,
+    target: DEFAULT_TARGET,
+    logs: {},
+    points: 0,
+    freezes: 0,
+    frozen: [],
+    claimed_milestones: [],
+  };
 }
 
 let _client: ReturnType<typeof createClient> | null = null;
@@ -34,11 +57,31 @@ export function getSupabase() {
 export async function fetchRow(tossUserKey: string): Promise<PlnlRow | null> {
   const { data, error } = await getSupabase()
     .from(TABLE)
-    .select("toss_user_key, fee, target, logs, points, freezes, claimed_milestones")
+    .select(ROW_COLUMNS)
     .eq("toss_user_key", tossUserKey)
     .maybeSingle();
   if (error) throw new Error(`fetchRow failed: ${error.message}`);
   return (data as PlnlRow | null) ?? null;
+}
+
+// 액션 라우트용 — row 없으면 기본 row 로 시작(첫 mutate 시 생성).
+export async function fetchRowOrDefault(tossUserKey: string): Promise<PlnlRow> {
+  return (await fetchRow(tossUserKey)) ?? defaultRow(tossUserKey);
+}
+
+// 서버 권위 mutate 결과 저장(upsert). 변조 방지 — 클라가 보낸 값이 아니라 서버가 계산한 row 만 쓴다.
+export async function upsertRow(row: PlnlRow): Promise<void> {
+  const { error } = await getSupabase()
+    .from(TABLE)
+    .upsert(row, { onConflict: "toss_user_key" });
+  if (error) throw new Error(`upsertRow failed: ${error.message}`);
+}
+
+// 월말 cron(push/send)용 — 전체 유저 row. ⚠️ 규모 커지면 keyset 페이지네이션 필요(현재 MVP 일괄).
+export async function fetchAllRows(): Promise<PlnlRow[]> {
+  const { data, error } = await getSupabase().from(TABLE).select(ROW_COLUMNS);
+  if (error) throw new Error(`fetchAllRows failed: ${error.message}`);
+  return (data as PlnlRow[] | null) ?? [];
 }
 
 // 기본 origin 매처 — 미니앱(`*.apps.tossmini.com`) 화이트리스트. AITS_ALLOWED_ORIGINS

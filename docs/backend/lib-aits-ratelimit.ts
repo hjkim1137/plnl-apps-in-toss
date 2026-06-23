@@ -12,6 +12,7 @@
 //   /user/checkin         userKey   60 req / 60s   출석 체크
 //   /user/claim-milestone userKey   10 req / 60s   광고 시청 보상 — 분당 상한
 //   /user/buy-freeze      userKey   20 req / 60s   보호권 구매/광고 획득
+//   /user/resolve-repair  userKey   20 req / 60s   보호권 복구 제안 수락/거절
 //   /user/settings        userKey   10 req / 60s   설정 변경(드묾)
 
 import { Ratelimit } from "@upstash/ratelimit";
@@ -56,6 +57,7 @@ export function limiters() {
     userCheckin: makeLimiter({ prefix: "rl:userCheckin", limit: 60, windowSeconds: 60 }),
     userClaimMilestone: makeLimiter({ prefix: "rl:userClaimMilestone", limit: 10, windowSeconds: 60 }),
     userBuyFreeze: makeLimiter({ prefix: "rl:userBuyFreeze", limit: 20, windowSeconds: 60 }),
+    userResolveRepair: makeLimiter({ prefix: "rl:userResolveRepair", limit: 20, windowSeconds: 60 }),
     userSettings: makeLimiter({ prefix: "rl:userSettings", limit: 10, windowSeconds: 60 }),
   };
   return _limiters;
