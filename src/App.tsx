@@ -14,6 +14,14 @@ export default function App() {
   const plnl = usePlnl();
   const [tab, setTab] = useState<"today" | "monthly">("today");
   const [showSettings, setShowSettings] = useState(false);
+  const [showLoginSheet, setShowLoginSheet] = useState(false);
+
+  const openLogin = () => setShowLoginSheet(true);
+  const closeLogin = () => setShowLoginSheet(false);
+  const doLogin = async () => {
+    await plnl.actions.login();
+    closeLogin();
+  };
 
   if (!isInsideTossApp()) {
     return (
@@ -94,30 +102,65 @@ export default function App() {
 
       {/* 설정 (⚙️ 토글) */}
       {showSettings && (
-        <section style={{ padding: "14px 18px", background: "#fff" }}>
-          <label style={{ display: "block", fontSize: 13, marginBottom: 6 }}>
-            운동 비용(한 달)
-            <input
-              type="number"
-              defaultValue={plnl.state.fee}
-              onChange={(e) =>
-                plnl.actions.setSettings({ fee: Number(e.target.value) })
-              }
-              style={{ display: "block", width: "100%", padding: 10, marginTop: 4 }}
-            />
-          </label>
-          <label style={{ display: "block", fontSize: 13 }}>
-            이번 달 목표 횟수
-            <input
-              type="number"
-              defaultValue={plnl.state.target}
-              onChange={(e) =>
-                plnl.actions.setSettings({ target: Number(e.target.value) })
-              }
-              style={{ display: "block", width: "100%", padding: 10, marginTop: 4 }}
-            />
-          </label>
-        </section>
+        <div style={{ padding: "12px 18px 0" }}>
+          <div style={{ background: "#fff", borderRadius: 18, padding: "18px 18px 14px", boxShadow: "0 1px 2px rgba(0,0,0,.04)" }}>
+            <p style={{ margin: "0 0 14px", fontSize: 13, fontWeight: 700, color: "#6b7684" }}>⚙️ 내 운동 설정</p>
+
+            <label style={{ display: "block", marginBottom: 14 }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: "#4e5968", display: "block", marginBottom: 7 }}>
+                운동 비용 <span style={{ color: "#b0b8c1", fontWeight: 500 }}>(한 달 기준)</span>
+              </span>
+              <div style={{ position: "relative" }}>
+                <input
+                  type="number"
+                  defaultValue={plnl.state.fee}
+                  inputMode="numeric"
+                  onChange={(e) => plnl.actions.setSettings({ fee: Number(e.target.value) })}
+                  style={{
+                    width: "100%", border: "none", background: "#f2f4f6", borderRadius: 12,
+                    padding: "13px 40px 13px 14px", fontSize: 16, fontWeight: 700,
+                    color: "#333d4b", outline: "none", boxSizing: "border-box", fontFamily: "inherit",
+                  }}
+                  onFocus={(e) => { e.target.style.background = "#e8f3ff"; e.target.style.outline = "2px solid #3182f6"; }}
+                  onBlur={(e) => { e.target.style.background = "#f2f4f6"; e.target.style.outline = "none"; }}
+                />
+                <span style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", color: "#8b95a1", fontSize: 14, fontWeight: 600 }}>원</span>
+              </div>
+            </label>
+
+            <label style={{ display: "block", marginBottom: 14 }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: "#4e5968", display: "block", marginBottom: 7 }}>
+                이번 달 목표 운동 횟수 <span style={{ color: "#b0b8c1", fontWeight: 500 }}>(주3회 ≈ 월12회)</span>
+              </span>
+              <div style={{ position: "relative" }}>
+                <input
+                  type="number"
+                  defaultValue={plnl.state.target}
+                  inputMode="numeric"
+                  onChange={(e) => plnl.actions.setSettings({ target: Number(e.target.value) })}
+                  style={{
+                    width: "100%", border: "none", background: "#f2f4f6", borderRadius: 12,
+                    padding: "13px 40px 13px 14px", fontSize: 16, fontWeight: 700,
+                    color: "#333d4b", outline: "none", boxSizing: "border-box", fontFamily: "inherit",
+                  }}
+                  onFocus={(e) => { e.target.style.background = "#e8f3ff"; e.target.style.outline = "2px solid #3182f6"; }}
+                  onBlur={(e) => { e.target.style.background = "#f2f4f6"; e.target.style.outline = "none"; }}
+                />
+                <span style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", color: "#8b95a1", fontSize: 14, fontWeight: 600 }}>회</span>
+              </div>
+              <p style={{ fontSize: 11.5, color: "#b0b8c1", margin: "6px 0 0", lineHeight: 1.4 }}>
+                방문 횟수는 <b style={{ color: "#8b95a1" }}>월간 현황</b> 달력의 출석 체크로 자동 집계돼요.
+              </p>
+            </label>
+
+            <button
+              onClick={() => setShowSettings(false)}
+              style={{ width: "100%", border: "none", background: "#3182f6", color: "#fff", fontSize: 16, fontWeight: 800, padding: 15, borderRadius: 14, cursor: "pointer", fontFamily: "inherit" }}
+            >
+              완료
+            </button>
+          </div>
+        </div>
       )}
 
       {/* 월말 도착 알림 (F17 트리거) — 새 달에 처음 열면 직전 달 결산/표창장 도착.
@@ -168,34 +211,97 @@ export default function App() {
       )}
 
       {/* 탭 */}
-      <nav style={{ display: "flex", gap: 4, padding: "10px 18px 0" }}>
-        {(["today", "monthly"] as const).map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            style={{
-              flex: 1,
-              padding: "10px 4px",
-              border: "none",
-              borderRadius: 10,
-              fontWeight: 700,
-              background: tab === t ? "#fff" : "#f2f4f6",
-              color: tab === t ? "#191f28" : "#6b7684",
-              boxShadow: tab === t ? "0 1px 3px rgba(0,0,0,.08)" : "none",
-            }}
-          >
-            {t === "today" ? "오늘" : "월간 현황"}
-          </button>
-        ))}
-      </nav>
+      <div style={{ padding: "10px 18px 0" }}>
+        <nav style={{ display: "flex", gap: 4, background: "#f2f4f6", padding: 4, borderRadius: 13 }}>
+          {(["today", "monthly"] as const).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              style={{
+                flex: 1,
+                padding: "10px 4px",
+                border: "none",
+                borderRadius: 10,
+                fontWeight: 700,
+                fontSize: 13.5,
+                cursor: "pointer",
+                fontFamily: "inherit",
+                background: tab === t ? "#fff" : "transparent",
+                color: tab === t ? "#191f28" : "#6b7684",
+                boxShadow: tab === t ? "0 1px 3px rgba(0,0,0,.08)" : "none",
+                transition: "background .15s, color .15s",
+              }}
+            >
+              {t === "today" ? "오늘" : "월간 현황"}
+            </button>
+          ))}
+        </nav>
+      </div>
 
       <main style={{ padding: "14px 18px 40px" }}>
         {tab === "today" ? (
-          <TodayScreen plnl={plnl} />
+          <TodayScreen plnl={plnl} onOpenLogin={openLogin} />
         ) : (
-          <MonthlyScreen plnl={plnl} />
+          <MonthlyScreen plnl={plnl} onOpenLogin={openLogin} />
         )}
       </main>
+
+      {/* 로그인 버텀시트 */}
+      {showLoginSheet && (
+        <>
+          {/* 딤 배경 */}
+          <div
+            onClick={closeLogin}
+            style={{
+              position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 20,
+            }}
+          />
+          {/* 시트 */}
+          <div
+            style={{
+              position: "fixed", left: 0, right: 0, bottom: 0,
+              background: "#fff", borderRadius: "24px 24px 0 0",
+              padding: "10px 22px 36px", zIndex: 21,
+              maxWidth: 480, margin: "0 auto",
+            }}
+          >
+            {/* 핸들 */}
+            <div style={{ width: 40, height: 4, background: "#e5e8eb", borderRadius: 999, margin: "6px auto 18px" }} />
+            <h3 style={{ fontSize: 19, fontWeight: 800, margin: "0 0 6px", letterSpacing: -0.4 }}>
+              토스 로그인하고 더 누리기
+            </h3>
+            <p style={{ fontSize: 13, color: "#6b7684", lineHeight: 1.55, marginBottom: 18 }}>
+              기기를 바꿔도 출석 기록이 그대로 남고, 광고 없이 무제한으로 쓸 수 있어요.
+            </p>
+            {[
+              { e: "📱", t: "기기 바꿔도 기록 그대로", s: "출석·스트릭·포인트가 토스 계정에 안전하게 저장돼요" },
+              { e: "🚫", t: "광고 없이 무제한 출석 체크", s: "매일 광고 안 보고 바로 기록" },
+              { e: "🪙", t: "출석할 때마다 포인트 적립", s: "모은 포인트로 스트릭 보호권 교환" },
+              { e: "🏅", t: "월간 결산 & 표창장", s: "한 달이 끝나면 나만의 표창장이 도착해요" },
+            ].map((b) => (
+              <div key={b.t} style={{ display: "flex", alignItems: "flex-start", gap: 11, padding: "10px 0" }}>
+                <div style={{ fontSize: 20, width: 24, textAlign: "center" }}>{b.e}</div>
+                <div>
+                  <div style={{ fontSize: 13.5, fontWeight: 700, color: "#333d4b" }}>{b.t}</div>
+                  <div style={{ fontSize: 12, color: "#8b95a1", marginTop: 1 }}>{b.s}</div>
+                </div>
+              </div>
+            ))}
+            <button
+              onClick={doLogin}
+              style={{ width: "100%", border: "none", background: "#3182f6", color: "#fff", fontSize: 16, fontWeight: 800, padding: 16, borderRadius: 14, marginTop: 18 }}
+            >
+              토스로 3초 만에 로그인
+            </button>
+            <div
+              onClick={closeLogin}
+              style={{ textAlign: "center", fontSize: 13, color: "#b0b8c1", marginTop: 12, cursor: "pointer", fontWeight: 600 }}
+            >
+              다음에 할게요
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

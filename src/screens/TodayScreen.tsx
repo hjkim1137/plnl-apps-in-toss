@@ -26,7 +26,7 @@ function Card({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function TodayScreen({ plnl }: { plnl: PlnlController }) {
+export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpenLogin: () => void }) {
   const { today, checkin, game, actions, state, repair } = plnl;
   const s = today.stats;
   const statusMsg = todayCheckInStatusText(today.todayValue, s.unit, state.loggedIn);
@@ -254,19 +254,11 @@ export function TodayScreen({ plnl }: { plnl: PlnlController }) {
           </Card>
         </>
       ) : (
-        <Card>
-          <p style={{ fontWeight: 700, color: "#6b7684", marginTop: 0 }}>🔒 로그인 전용</p>
-          <p style={{ fontSize: 13, color: "#8b95a1", margin: 0 }}>
-            로그인하면 등급·연속 출석·포인트·표창장이 열려요.
-            {/* TODO(A): 자물쇠+블러 잠금 카드 + 로그인 버텀시트 트리거 */}
-          </p>
-          <button
-            onClick={() => actions.login()}
-            style={{ marginTop: 10, padding: "9px 16px", border: "none", borderRadius: 999, fontWeight: 800, background: "#3182f6", color: "#fff" }}
-          >
-            토스 로그인하기
-          </button>
-        </Card>
+        <>
+          <LockCard emoji="🏅" title="내 등급" desc="출석할수록 등급 상승 — 작심삼일러 → 회수 전문가 → 뽕 뽑기 달인 → 명예 헬창" onLogin={onOpenLogin} />
+          <LockCard emoji="🔥" title="연속 출석 스트릭" desc="로그인하면 연속 출석 + 광고 보고 마일스톤 포인트를 받아요" onLogin={onOpenLogin} />
+          <LockCard emoji="🪙" title="출석 포인트" desc="출석마다 1P 적립 → 스트릭 보호권으로 연속 기록을 지켜요" onLogin={onOpenLogin} />
+        </>
       )}
 
       {/* 6) 회원님께 한마디 */}
@@ -287,6 +279,36 @@ function Stat({ k, v, color }: { k: string; v: string; color?: string }) {
     <div style={{ background: "#f9fafb", border: "1px solid #f2f4f6", borderRadius: 14, padding: 13 }}>
       <div style={{ fontSize: 12, color: "#8b95a1", fontWeight: 600 }}>{k}</div>
       <div style={{ fontSize: 18, fontWeight: 800, color: color ?? "#191f28" }}>{v}</div>
+    </div>
+  );
+}
+
+function LockCard({ emoji, title, desc, onLogin }: { emoji: string; title: string; desc: string; onLogin: () => void }) {
+  return (
+    <div style={{ background: "#fff", borderRadius: 18, padding: 18, marginBottom: 14, boxShadow: "0 1px 2px rgba(0,0,0,.04)", position: "relative", overflow: "hidden" }}>
+      <p style={{ fontWeight: 700, color: "#6b7684", marginTop: 0 }}>{emoji} {title}</p>
+      {/* 블러 플레이스홀더 */}
+      <div style={{ filter: "blur(4px)", opacity: 0.5, pointerEvents: "none", userSelect: "none" }}>
+        <div style={{ height: 54, background: "#f2f4f6", borderRadius: 12, marginBottom: 8 }} />
+        <div style={{ height: 14, width: "60%", background: "#f2f4f6", borderRadius: 6 }} />
+      </div>
+      {/* 베일 오버레이 */}
+      <div style={{
+        position: "absolute", inset: 0, background: "rgba(255,255,255,0.6)",
+        borderRadius: 18, display: "flex", flexDirection: "column",
+        alignItems: "center", justifyContent: "center",
+        gap: 6, padding: 16, textAlign: "center",
+      }}>
+        <div style={{ fontSize: 26 }}>🔒</div>
+        <div style={{ fontSize: 13.5, fontWeight: 800, color: "#333d4b" }}>{title} · 로그인 전용</div>
+        <div style={{ fontSize: 11.5, color: "#8b95a1", lineHeight: 1.4 }}>{desc}</div>
+        <button
+          onClick={onLogin}
+          style={{ marginTop: 6, background: "#3182f6", color: "#fff", border: "none", borderRadius: 999, padding: "9px 16px", fontSize: 12.5, fontWeight: 800, cursor: "pointer" }}
+        >
+          토스 로그인하기
+        </button>
+      </div>
     </div>
   );
 }

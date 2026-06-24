@@ -15,7 +15,7 @@ function Card({ children }: { children: React.ReactNode }) {
 
 const DOW = ["일", "월", "화", "수", "목", "금", "토"];
 
-export function MonthlyScreen({ plnl }: { plnl: PlnlController }) {
+export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpenLogin: () => void }) {
   const { monthly, selectableMonths, actions, state, notif } = plnl;
   const s = monthly.stats;
 
@@ -122,7 +122,7 @@ export function MonthlyScreen({ plnl }: { plnl: PlnlController }) {
 
       {/* 월간 결산 (로그인 + 월말 + 광고) */}
       {!state.loggedIn ? (
-        <LockCard title="📊 월간 결산 리포트" onLogin={actions.login} />
+        <LockCard emoji="📊" title="월간 결산 리포트" desc="한 달이 끝나면 이번 달 운동 성적표가 나와요" onLogin={onOpenLogin} />
       ) : !monthly.monthEnded ? (
         <Card>
           <p style={{ fontWeight: 700, color: "#6b7684", marginTop: 0 }}>📊 월간 결산 리포트</p>
@@ -161,7 +161,7 @@ export function MonthlyScreen({ plnl }: { plnl: PlnlController }) {
 
       {/* 표창장 */}
       {!state.loggedIn ? (
-        <LockCard title="🏅 표창장" onLogin={actions.login} />
+        <LockCard emoji="🏅" title="표창장" desc="한 달 출석 기록으로 나만의 표창장이 만들어져요" onLogin={onOpenLogin} />
       ) : !monthly.monthEnded ? (
         <Card>
           <p style={{ fontWeight: 700, color: "#6b7684", marginTop: 0 }}>🏅 표창장</p>
@@ -235,15 +235,32 @@ function Line({ k, v, color }: { k: string; v: string; color?: string }) {
   );
 }
 
-function LockCard({ title, onLogin }: { title: string; onLogin: () => void }) {
-  // TODO(A): 자물쇠+블러 veil + 로그인 버텀시트 트리거 (기획 §5.3)
+function LockCard({ emoji, title, desc, onLogin }: { emoji: string; title: string; desc: string; onLogin: () => void }) {
   return (
-    <Card>
-      <p style={{ fontWeight: 700, color: "#6b7684", marginTop: 0 }}>{title}</p>
-      <p style={{ fontSize: 13, color: "#8b95a1", margin: "0 0 10px" }}>🔒 로그인하면 열려요</p>
-      <button onClick={onLogin} style={{ padding: "9px 16px", border: "none", borderRadius: 999, fontWeight: 800, background: "#3182f6", color: "#fff" }}>
-        토스 로그인하기
-      </button>
-    </Card>
+    <div style={{ background: "#fff", borderRadius: 18, padding: 18, marginBottom: 14, boxShadow: "0 1px 2px rgba(0,0,0,.04)", position: "relative", overflow: "hidden" }}>
+      <p style={{ fontWeight: 700, color: "#6b7684", marginTop: 0 }}>{emoji} {title}</p>
+      {/* 블러 플레이스홀더 */}
+      <div style={{ filter: "blur(4px)", opacity: 0.5, pointerEvents: "none", userSelect: "none" }}>
+        <div style={{ height: 54, background: "#f2f4f6", borderRadius: 12, marginBottom: 8 }} />
+        <div style={{ height: 14, width: "60%", background: "#f2f4f6", borderRadius: 6 }} />
+      </div>
+      {/* 베일 오버레이 */}
+      <div style={{
+        position: "absolute", inset: 0, background: "rgba(255,255,255,0.6)",
+        borderRadius: 18, display: "flex", flexDirection: "column",
+        alignItems: "center", justifyContent: "center",
+        gap: 6, padding: 16, textAlign: "center",
+      }}>
+        <div style={{ fontSize: 26 }}>🔒</div>
+        <div style={{ fontSize: 13.5, fontWeight: 800, color: "#333d4b" }}>{title} · 로그인 전용</div>
+        <div style={{ fontSize: 11.5, color: "#8b95a1", lineHeight: 1.4 }}>{desc}</div>
+        <button
+          onClick={onLogin}
+          style={{ marginTop: 6, background: "#3182f6", color: "#fff", border: "none", borderRadius: 999, padding: "9px 16px", fontSize: 12.5, fontWeight: 800, cursor: "pointer" }}
+        >
+          토스 로그인하기
+        </button>
+      </div>
+    </div>
   );
 }
