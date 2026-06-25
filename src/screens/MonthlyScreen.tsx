@@ -108,6 +108,12 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
                 {cell.isFrozen && (
                   <span style={{ position: "absolute", top: 1, right: 2, fontSize: 9 }}>🛡️</span>
                 )}
+                {!cell.isFrozen && cell.value === "done" && (
+                  <span style={{ position: "absolute", bottom: 1, right: 2, fontSize: 9 }}>💪</span>
+                )}
+                {!cell.isFrozen && cell.value === "missed" && (
+                  <span style={{ position: "absolute", bottom: 1, right: 2, fontSize: 9 }}>💸</span>
+                )}
               </button>
             ),
           )}
