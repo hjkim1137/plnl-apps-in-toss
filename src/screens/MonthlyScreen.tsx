@@ -96,11 +96,11 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
                 title={cell.isFrozen ? "🛡️ 보호권으로 지킨 날" : undefined}
                 style={{
                   position: "relative",
-                  aspectRatio: "1", border: cell.isToday ? "2px solid #3182f6" : "none", borderRadius: 9,
+                  aspectRatio: "1", border: cell.isToday ? "2px solid #5DC528" : "none", borderRadius: 9,
                   fontSize: 12.5, fontWeight: cell.value ? 800 : 600,
                   // 보호된 날(빠졌지만 보호권으로 메움)은 done/missed 색 대신 보호 톤으로.
                   background: cell.isFrozen ? "#eaf2ff" : cell.value === "done" ? "#e7f9f1" : cell.value === "missed" ? "#fdeced" : "#f2f4f6",
-                  color: cell.isFrozen ? "#3182f6" : cell.value === "done" ? "#15b877" : cell.value === "missed" ? "#f04452" : "#8b95a1",
+                  color: cell.isFrozen ? "#5DC528" : cell.value === "done" ? "#15b877" : cell.value === "missed" ? "#f04452" : "#8b95a1",
                   opacity: cell.isFuture ? 0.3 : 1,
                 }}
               >
@@ -220,7 +220,7 @@ function copyShareText(text: string) {
 }
 
 const navBtn: React.CSSProperties = { border: "none", background: "#fff", width: 34, height: 34, borderRadius: 10, fontSize: 16, boxShadow: "0 1px 2px rgba(0,0,0,.06)", color: "#4e5968" };
-const fullBtn: React.CSSProperties = { width: "100%", padding: 14, border: "none", borderRadius: 14, fontWeight: 800, background: "#3182f6", color: "#fff" };
+const fullBtn: React.CSSProperties = { width: "100%", padding: 14, border: "none", borderRadius: 14, fontWeight: 800, background: "#5DC528", color: "#fff" };
 const ghostBtn: React.CSSProperties = { width: "100%", padding: 12, border: "1px solid #e5e8eb", borderRadius: 13, background: "#fff", color: "#6b7684", fontWeight: 700 };
 
 function Stat({ k, v, color }: { k: string; v: string; color?: string }) {
@@ -262,7 +262,7 @@ function LockCard({ emoji, title, desc, onLogin }: { emoji: string; title: strin
         <div style={{ fontSize: 11.5, color: "#8b95a1", lineHeight: 1.4 }}>{desc}</div>
         <button
           onClick={onLogin}
-          style={{ marginTop: 6, background: "#3182f6", color: "#fff", border: "none", borderRadius: 999, padding: "9px 16px", fontSize: 12.5, fontWeight: 800, cursor: "pointer" }}
+          style={{ marginTop: 6, background: "#5DC528", color: "#fff", border: "none", borderRadius: 999, padding: "9px 16px", fontSize: 12.5, fontWeight: 800, cursor: "pointer" }}
         >
           토스 로그인하기
         </button>

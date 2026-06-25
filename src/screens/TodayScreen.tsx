@@ -52,9 +52,9 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
           )}
         </p>
         <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
-          <div style={{ flex: 1, background: "#e8f3ff", borderRadius: 14, padding: 12, textAlign: "center" }}>
-            <div style={{ fontSize: 12, color: "#3182f6", fontWeight: 700 }}>오늘 가면</div>
-            <div style={{ fontSize: 18, fontWeight: 800, color: "#3182f6" }}>
+          <div style={{ flex: 1, background: "#edfadf", borderRadius: 14, padding: 12, textAlign: "center" }}>
+            <div style={{ fontSize: 12, color: "#3a8a12", fontWeight: 700 }}>오늘 가면</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: "#3a8a12" }}>
               +{won(today.choice.goReward)}
             </div>
             <div style={{ fontSize: 11, color: "#8b95a1" }}>
@@ -71,7 +71,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
         </div>
 
         {freeTag && (
-          <div style={{ fontSize: 12, fontWeight: 700, color: state.adUnlocked ? "#15b877" : "#3182f6", textAlign: "center", marginBottom: 10 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: state.adUnlocked ? "#15b877" : "#5DC528", textAlign: "center", marginBottom: 10 }}>
             {freeTag}
           </div>
         )}
@@ -80,7 +80,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
           <div style={{ display: "flex", gap: 10 }}>
             <button
               onClick={() => actions.checkIn("done")}
-              style={{ flex: 1, padding: 15, border: "none", borderRadius: 14, fontWeight: 800, background: today.todayValue === "done" ? "#15b877" : "#3182f6", color: "#fff" }}
+              style={{ flex: 1, padding: 15, border: "none", borderRadius: 14, fontWeight: 800, background: today.todayValue === "done" ? "#15b877" : "#5DC528", color: "#fff" }}
             >
               오늘 갔어요 💪
             </button>
@@ -171,7 +171,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
               </div>
             </div>
             <div style={{ height: 12, background: "#f2f4f6", borderRadius: 999, overflow: "hidden", marginBottom: 6 }}>
-              <div style={{ height: "100%", width: `${game.title.progressPct}%`, borderRadius: 999, background: "linear-gradient(90deg,#3182f6,#5a9cff)", transition: "width .5s" }} />
+              <div style={{ height: "100%", width: `${game.title.progressPct}%`, borderRadius: 999, background: "linear-gradient(90deg,#5DC528,#7de34a)", transition: "width .5s" }} />
             </div>
             <div style={{ fontSize: 11.5, color: "#8b95a1", fontWeight: 600, textAlign: "right" }}>
               {game.title.next
@@ -181,17 +181,17 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
           </Card>
           {/* 보호권 복구 제안 (확인 후 복구) — 동의해야만 보호권 차감 */}
           {repair && (
-            <div style={{ background: "#eaf2ff", border: "1px solid #cfe0ff", borderRadius: 18, padding: 18, marginBottom: 14 }}>
-              <p style={{ fontWeight: 800, color: "#1b64da", margin: "0 0 4px" }}>
+            <div style={{ background: "#edfadf", border: "1px solid #c5f0a0", borderRadius: 18, padding: 18, marginBottom: 14 }}>
+              <p style={{ fontWeight: 800, color: "#3a8a12", margin: "0 0 4px" }}>
                 🛡️ 빠진 날이 있어요
               </p>
-              <p style={{ fontSize: 13, color: "#3f5a82", margin: "0 0 12px", lineHeight: 1.5 }}>
+              <p style={{ fontSize: 13, color: "#4e7a20", margin: "0 0 12px", lineHeight: 1.5 }}>
                 {repair.count}일 빠졌어요. 보호권 {repair.count}개로 연속을 지킬까요?
               </p>
               <div style={{ display: "flex", gap: 8 }}>
                 <button
                   onClick={() => actions.confirmFreezeRepair()}
-                  style={{ flex: 1, padding: 12, border: "none", borderRadius: 12, fontWeight: 800, background: "#3182f6", color: "#fff" }}
+                  style={{ flex: 1, padding: 12, border: "none", borderRadius: 12, fontWeight: 800, background: "#5DC528", color: "#fff" }}
                 >
                   🛡️ 지키기 (보호권 {repair.count}개)
                 </button>
@@ -240,7 +240,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
               <button
                 onClick={() => actions.buyFreeze()}
                 disabled={!game.canBuyFreeze}
-                style={{ flex: 1, padding: 9, border: "none", borderRadius: 10, fontWeight: 800, background: game.canBuyFreeze ? "#3182f6" : "#e5e8eb", color: game.canBuyFreeze ? "#fff" : "#b0b8c1" }}
+                style={{ flex: 1, padding: 9, border: "none", borderRadius: 10, fontWeight: 800, background: game.canBuyFreeze ? "#5DC528" : "#e5e8eb", color: game.canBuyFreeze ? "#fff" : "#b0b8c1" }}
               >
                 5P로 받기
               </button>
@@ -304,7 +304,7 @@ function LockCard({ emoji, title, desc, onLogin }: { emoji: string; title: strin
         <div style={{ fontSize: 11.5, color: "#8b95a1", lineHeight: 1.4 }}>{desc}</div>
         <button
           onClick={onLogin}
-          style={{ marginTop: 6, background: "#3182f6", color: "#fff", border: "none", borderRadius: 999, padding: "9px 16px", fontSize: 12.5, fontWeight: 800, cursor: "pointer" }}
+          style={{ marginTop: 6, background: "#5DC528", color: "#fff", border: "none", borderRadius: 999, padding: "9px 16px", fontSize: 12.5, fontWeight: 800, cursor: "pointer" }}
         >
           토스 로그인하기
         </button>

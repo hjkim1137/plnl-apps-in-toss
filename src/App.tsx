@@ -51,7 +51,7 @@ export default function App() {
         }}
       >
         <div style={{ fontSize: 18, fontWeight: 800 }}>
-          뺄래 <span style={{ color: "#3182f6" }}>낼래</span>
+          뺄래 <span style={{ color: "#5DC528" }}>낼래</span>
         </div>
         <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
           {plnl.state.loggedIn ? (
@@ -61,8 +61,8 @@ export default function App() {
                 fontWeight: 800,
                 padding: "5px 10px",
                 borderRadius: 999,
-                background: "#e8f3ff",
-                color: "#3182f6",
+                background: "#edfadf",
+                color: "#3a8a12",
               }}
             >
               토스 로그인
@@ -76,7 +76,7 @@ export default function App() {
                 padding: "6px 12px",
                 borderRadius: 999,
                 border: "none",
-                background: "#3182f6",
+                background: "#5DC528",
                 color: "#fff",
               }}
             >
@@ -121,7 +121,7 @@ export default function App() {
                     padding: "13px 40px 13px 14px", fontSize: 16, fontWeight: 700,
                     color: "#333d4b", outline: "none", boxSizing: "border-box", fontFamily: "inherit",
                   }}
-                  onFocus={(e) => { e.target.style.background = "#e8f3ff"; e.target.style.outline = "2px solid #3182f6"; }}
+                  onFocus={(e) => { e.target.style.background = "#edfadf"; e.target.style.outline = "2px solid #5DC528"; }}
                   onBlur={(e) => { e.target.style.background = "#f2f4f6"; e.target.style.outline = "none"; }}
                 />
                 <span style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", color: "#8b95a1", fontSize: 14, fontWeight: 600 }}>원</span>
@@ -143,7 +143,7 @@ export default function App() {
                     padding: "13px 40px 13px 14px", fontSize: 16, fontWeight: 700,
                     color: "#333d4b", outline: "none", boxSizing: "border-box", fontFamily: "inherit",
                   }}
-                  onFocus={(e) => { e.target.style.background = "#e8f3ff"; e.target.style.outline = "2px solid #3182f6"; }}
+                  onFocus={(e) => { e.target.style.background = "#edfadf"; e.target.style.outline = "2px solid #5DC528"; }}
                   onBlur={(e) => { e.target.style.background = "#f2f4f6"; e.target.style.outline = "none"; }}
                 />
                 <span style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", color: "#8b95a1", fontSize: 14, fontWeight: 600 }}>회</span>
@@ -155,7 +155,7 @@ export default function App() {
 
             <button
               onClick={() => setShowSettings(false)}
-              style={{ width: "100%", border: "none", background: "#3182f6", color: "#fff", fontSize: 16, fontWeight: 800, padding: 15, borderRadius: 14, cursor: "pointer", fontFamily: "inherit" }}
+              style={{ width: "100%", border: "none", background: "#5DC528", color: "#fff", fontSize: 16, fontWeight: 800, padding: 15, borderRadius: 14, cursor: "pointer", fontFamily: "inherit" }}
             >
               완료
             </button>
@@ -289,7 +289,7 @@ export default function App() {
             ))}
             <button
               onClick={doLogin}
-              style={{ width: "100%", border: "none", background: "#3182f6", color: "#fff", fontSize: 16, fontWeight: 800, padding: 16, borderRadius: 14, marginTop: 18 }}
+              style={{ width: "100%", border: "none", background: "#5DC528", color: "#fff", fontSize: 16, fontWeight: 800, padding: 16, borderRadius: 14, marginTop: 18 }}
             >
               토스로 3초 만에 로그인
             </button>
