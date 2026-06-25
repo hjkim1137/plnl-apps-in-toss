@@ -199,13 +199,13 @@
   const $ = (s)=>document.querySelector(s);
   const chart = $('#chart');
 
-  // ===== 작업 현황 (2026-06-24 기준) — 정본은 뺄래낼래_마일스톤.md =====
+  // ===== 작업 현황 (2026-06-26 기준) — 정본은 뺄래낼래_마일스톤.md =====
   // ✅ done · 🔶 partial(클라 O / 백엔드·검증·UI 남음) · ⬜ todo
   const stMark = (s)=> s==='done'?'✅':s==='partial'?'🔶':'⬜';
   // 담당별 작업 막대 상태 (GROUPS 의 tasks 순서와 1:1)
   const STATUS_TASK = {
     D:['done','partial','done','done','partial','done','todo','todo'],
-    A:['done','done','done','done','todo','todo'],
+    A:['done','done','done','done','done','todo'],
     B:['done','done','done','todo','partial','partial'],
   };
   // 기능 명세 상태 — D 로직/데이터 구현 기준 (화면 UI 는 인정 작업 별도)
