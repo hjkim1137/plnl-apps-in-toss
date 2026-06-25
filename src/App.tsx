@@ -163,6 +163,35 @@ export default function App() {
         </div>
       )}
 
+      {/* 온보딩 — 처음 쓰는 유저 (출석 기록 없음 + 무료 미사용) */}
+      {Object.keys(plnl.state.logs).length === 0 && plnl.state.freeUsed === 0 && !showSettings && (
+        <div style={{ padding: "12px 18px 0" }}>
+          <div style={{
+            background: "linear-gradient(135deg, #e8f3ff, #dbeafe)",
+            border: "1px solid #bfdbfe",
+            borderRadius: 18, padding: "18px 18px 16px",
+          }}>
+            <div style={{ fontSize: 22, marginBottom: 8 }}>👋</div>
+            <div style={{ fontSize: 15, fontWeight: 800, color: "#1e40af", marginBottom: 6, letterSpacing: -0.3 }}>
+              뺄래 낼래에 오신 걸 환영해요!
+            </div>
+            <div style={{ fontSize: 13, color: "#3b6fd4", lineHeight: 1.6, marginBottom: 14 }}>
+              운동 안 가면 그냥 헬스장에 기부하는 셈이에요.<br />
+              매달 낸 돈 얼마나 회수하는지 같이 확인해봐요 💪
+            </div>
+            <div style={{ fontSize: 12.5, fontWeight: 700, color: "#1e40af", marginBottom: 10 }}>
+              먼저 내 운동 비용과 목표 횟수를 설정해주세요 👇
+            </div>
+            <button
+              onClick={() => setShowSettings(true)}
+              style={{ width: "100%", border: "none", background: "#3182f6", color: "#fff", fontSize: 14, fontWeight: 800, padding: "13px", borderRadius: 12, cursor: "pointer", fontFamily: "inherit" }}
+            >
+              ⚙️ 운동 설정 시작하기
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* 월말 도착 알림 (F17 트리거) — 새 달에 처음 열면 직전 달 결산/표창장 도착.
           상세 UI 는 인정(A) 담당, 여기선 트리거 배선만. */}
       {plnl.notif.arrival && (

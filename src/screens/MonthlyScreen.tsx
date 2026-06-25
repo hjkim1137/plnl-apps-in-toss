@@ -145,13 +145,20 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
       ) : (
         <Card>
           <p style={{ fontWeight: 700, color: "#6b7684", marginTop: 0 }}>
-            📊 {monthly.report.year}년 {monthly.report.monthLabel} 결산
+            📊 {monthly.report.year}년 {monthly.report.monthLabel} 결산 리포트
           </p>
-          <div style={{ fontSize: 15, fontWeight: 800 }}>
-            {monthly.bracket.emoji} {monthly.bracket.label} · 회수율 {monthly.report.rate}%
-          </div>
-          <div style={{ fontSize: 12.5, color: "#8b95a1", marginBottom: 10 }}>
-            한 줄 총평: {monthly.report.grade}
+          {/* 등급 헤더 */}
+          <div style={{
+            background: monthly.bracket.bgGradient,
+            borderRadius: 14, padding: "14px 16px", marginBottom: 14, color: "#fff",
+          }}>
+            <div style={{ fontSize: 26, marginBottom: 4 }}>{monthly.bracket.emoji}</div>
+            <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: -0.4 }}>
+              {monthly.bracket.label} · 회수율 {monthly.report.rate}%
+            </div>
+            <div style={{ fontSize: 12.5, opacity: 0.9, marginTop: 4 }}>
+              한 줄 총평: {monthly.report.grade}
+            </div>
           </div>
           <Line k="출석 / 목표" v={`${monthly.report.done} / ${monthly.report.target}회`} />
           <Line k="최장 연속 출석" v={`${monthly.report.maxStreak}일 🔥`} />
@@ -183,26 +190,43 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
       ) : (
         <Card>
           <p style={{ fontWeight: 700, color: "#6b7684", marginTop: 0 }}>
-            🏅 {monthly.year}년 {monthly.monthLabel} 표창장
+            🏅 {monthly.year}년 {monthly.monthLabel} 표창장 <small style={{ color: "#b0b8c1", fontWeight: 500 }}>(스샷 공유용)</small>
           </p>
-          <div style={{ border: "2px solid #ffb800", borderRadius: 16, padding: 22, textAlign: "center", background: "linear-gradient(180deg,#fffdf5,#fff8e6)" }}>
-            <div style={{ fontSize: 15, fontWeight: 800, color: "#a06800", letterSpacing: 2, margin: "6px 0 14px" }}>
-              {monthly.certificate.text.title}
+          {/* 표창장 카드 */}
+          <div style={{ position: "relative", marginBottom: 14 }}>
+            {/* 상단 메달 */}
+            <div style={{
+              position: "absolute", top: -18, left: "50%", transform: "translateX(-50%)",
+              background: "#fff", padding: "0 6px", borderRadius: "50%",
+              fontSize: 28, lineHeight: 1, zIndex: 1,
+            }}>🏅</div>
+            <div style={{
+              border: "2px solid #ffb800", borderRadius: 16,
+              padding: "28px 20px 22px", textAlign: "center",
+              background: "linear-gradient(180deg,#fffdf5,#fff8e6)",
+            }}>
+              <div style={{ fontSize: 15, fontWeight: 800, color: "#a06800", letterSpacing: 2, marginBottom: 14 }}>
+                {monthly.certificate.text.title}
+              </div>
+              <div
+                style={{ fontSize: 14, color: "#333d4b", lineHeight: 1.7, fontWeight: 600 }}
+                dangerouslySetInnerHTML={{ __html: monthly.certificate.text.body }}
+              />
+              <div style={{ fontSize: 12.5, color: "#8b95a1", marginTop: 14, fontWeight: 600 }}>
+                — {monthly.year}.{String(monthly.month + 1).padStart(2, "0")} 뺄래낼래 —
+              </div>
             </div>
-            {/* 문구에 <b> 강조 포함 → dangerouslySetInnerHTML (콘텐츠는 content.ts, B 관리) */}
-            <div
-              style={{ fontSize: 14, color: "#333d4b", lineHeight: 1.7, fontWeight: 600 }}
-              dangerouslySetInnerHTML={{ __html: monthly.certificate.text.body }}
-            />
           </div>
-          {/* 공유 문구 (스샷/복사). TODO(A): html-to-image 로 이미지 저장·공유 */}
-          <pre style={{ background: "#f9fafb", border: "1px solid #f2f4f6", borderRadius: 14, padding: 16, fontSize: 14, whiteSpace: "pre-wrap", fontFamily: "inherit", color: "#4e5968" }}>
+          {/* 공유 문구 박스 */}
+          <div style={{
+            background: "#f9fafb", border: "1px solid #f2f4f6",
+            borderRadius: 14, padding: 16, fontSize: 14,
+            whiteSpace: "pre-line", color: "#4e5968", lineHeight: 1.7,
+            fontWeight: 500, marginBottom: 12,
+          }}>
             {monthly.certificate.text.share}
-          </pre>
-          <button
-            onClick={() => copyShareText(monthly.certificate.text.share)}
-            style={fullBtn}
-          >
+          </div>
+          <button onClick={() => copyShareText(monthly.certificate.text.share)} style={fullBtn}>
             공유 문구 복사하기
           </button>
         </Card>
