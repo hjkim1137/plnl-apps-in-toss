@@ -7,9 +7,9 @@ import { appLogin, getAnonymousKey } from "@apps-in-toss/web-framework";
 export const API_BASE = import.meta.env.VITE_AITS_API_BASE ?? "";
 const SESSION_KEY = "plnl:session";
 
+// 토스 로그인 동의 항목은 '이름'만 받는다(필수 동의). 생년월일·이메일·성별 등은 수집하지 않음.
 export interface TossProfile {
   name: string | null;
-  birthday: string | null; // yyyyMMdd
 }
 
 export interface Session {
@@ -101,7 +101,7 @@ export async function loginWithToss(): Promise<Session> {
     sessionToken: json.sessionToken as string,
     refreshToken: json.refreshToken as string,
     userKey: json.userKey as string,
-    profile: (json.profile as TossProfile) ?? { name: null, birthday: null },
+    profile: (json.profile as TossProfile) ?? { name: null },
   };
 }
 
@@ -129,6 +129,6 @@ export function makeMockSession(): Session {
     sessionToken: `mock-token-${id}`,
     refreshToken: `mock-refresh-${id}`,
     userKey: id,
-    profile: { name: null, birthday: null },
+    profile: { name: null },
   };
 }

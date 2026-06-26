@@ -61,11 +61,10 @@ export async function POST(req: NextRequest) {
         { status: 401, headers: cors },
       );
     }
-    const { userKey, name: encName, birthday: encBirthday } = meRes.success;
+    const { userKey, name: encName } = meRes.success;
 
-    // 3) PII 복호화 (이름만 사용. 생년월일은 클라 Session.profile 호환 위해 전달만).
+    // 3) PII 복호화 — 토스 로그인 동의 항목은 '이름'만 받는다. 생년월일·이메일·성별 등 미수집.
     const name = decryptPIINullable(encName);
-    const birthday = decryptPIINullable(encBirthday); // yyyyMMdd
 
     const userKeyStr = String(userKey);
 
@@ -76,7 +75,7 @@ export async function POST(req: NextRequest) {
     ]);
 
     return NextResponse.json(
-      { sessionToken, refreshToken, userKey: userKeyStr, profile: { name, birthday } },
+      { sessionToken, refreshToken, userKey: userKeyStr, profile: { name } },
       { status: 200, headers: cors },
     );
   } catch (e) {
