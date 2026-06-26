@@ -35,7 +35,7 @@ export default function App() {
   }
 
   return (
-    <div>
+    <div style={{ maxWidth: 480, margin: "0 auto", minHeight: "100dvh", background: "#f4f6f8" }}>
       {/* 상단 바 */}
       <header
         style={{
@@ -167,24 +167,24 @@ export default function App() {
       {Object.keys(plnl.state.logs).length === 0 && plnl.state.freeUsed === 0 && !showSettings && (
         <div style={{ padding: "12px 18px 0" }}>
           <div style={{
-            background: "linear-gradient(135deg, #e8f3ff, #dbeafe)",
-            border: "1px solid #bfdbfe",
+            background: "linear-gradient(135deg, #edfadf, #d4f5b8)",
+            border: "1px solid #c5f0a0",
             borderRadius: 18, padding: "18px 18px 16px",
           }}>
             <div style={{ fontSize: 22, marginBottom: 8 }}>👋</div>
-            <div style={{ fontSize: 15, fontWeight: 800, color: "#1e40af", marginBottom: 6, letterSpacing: -0.3 }}>
+            <div style={{ fontSize: 15, fontWeight: 800, color: "#2d6a0a", marginBottom: 6, letterSpacing: -0.3 }}>
               뺄래 낼래에 오신 걸 환영해요!
             </div>
-            <div style={{ fontSize: 13, color: "#3b6fd4", lineHeight: 1.6, marginBottom: 14 }}>
+            <div style={{ fontSize: 13, color: "#3a8a12", lineHeight: 1.6, marginBottom: 14 }}>
               운동 안 가면 그냥 헬스장에 기부하는 셈이에요.<br />
               매달 낸 돈 얼마나 회수하는지 같이 확인해봐요 💪
             </div>
-            <div style={{ fontSize: 12.5, fontWeight: 700, color: "#1e40af", marginBottom: 10 }}>
+            <div style={{ fontSize: 12.5, fontWeight: 700, color: "#2d6a0a", marginBottom: 10 }}>
               먼저 내 운동 비용과 목표 횟수를 설정해주세요 👇
             </div>
             <button
               onClick={() => setShowSettings(true)}
-              style={{ width: "100%", border: "none", background: "#3182f6", color: "#fff", fontSize: 14, fontWeight: 800, padding: "13px", borderRadius: 12, cursor: "pointer", fontFamily: "inherit" }}
+              style={{ width: "100%", border: "none", background: "#5DC528", color: "#fff", fontSize: 14, fontWeight: 800, padding: "13px", borderRadius: 12, cursor: "pointer", fontFamily: "inherit" }}
             >
               ⚙️ 운동 설정 시작하기
             </button>

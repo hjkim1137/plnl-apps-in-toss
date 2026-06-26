@@ -80,13 +80,13 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
           <div style={{ display: "flex", gap: 10 }}>
             <button
               onClick={() => actions.checkIn("done")}
-              style={{ flex: 1, padding: 15, border: "none", borderRadius: 14, fontWeight: 800, background: today.todayValue === "done" ? "#15b877" : "#5DC528", color: "#fff" }}
+              style={{ flex: 1, padding: 15, border: "none", borderRadius: 14, fontWeight: 800, background: today.todayValue === "done" ? "#15b877" : "#5DC528", color: "#fff", cursor: "pointer", fontFamily: "inherit", fontSize: 15 }}
             >
               오늘 갔어요 💪
             </button>
             <button
               onClick={() => actions.checkIn("missed")}
-              style={{ flex: 1, padding: 15, border: "none", borderRadius: 14, fontWeight: 800, background: today.todayValue === "missed" ? "#f04452" : "#f2f4f6", color: today.todayValue === "missed" ? "#fff" : "#4e5968" }}
+              style={{ flex: 1, padding: 15, border: "none", borderRadius: 14, fontWeight: 800, background: today.todayValue === "missed" ? "#f04452" : "#f2f4f6", color: today.todayValue === "missed" ? "#fff" : "#4e5968", cursor: "pointer", fontFamily: "inherit", fontSize: 15 }}
             >
               오늘 안 갔어요
             </button>
@@ -95,7 +95,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
           // 무료 소진 → 전면형 광고 게이트. 시청 완료 시 1회 언락되고 위 버튼이 나타남.
           <button
             onClick={() => actions.watchCheckinAd()}
-            style={{ width: "100%", padding: 15, border: "none", borderRadius: 14, fontWeight: 800, background: "#191f28", color: "#fff" }}
+            style={{ width: "100%", padding: 15, border: "none", borderRadius: 14, fontWeight: 800, background: "#191f28", color: "#fff", cursor: "pointer", fontFamily: "inherit", fontSize: 15 }}
           >
             📺 짧은 광고 보고 출석 체크하기
           </button>
@@ -134,7 +134,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
           <div style={{ fontSize: 15, color: "#8b95a1", fontWeight: 700 }}>% 회수</div>
         </div>
         <div style={{ height: 14, background: "#f2f4f6", borderRadius: 999, overflow: "hidden", marginTop: 8 }}>
-          <div style={{ height: "100%", width: `${Math.min(100, s.rateRaw)}%`, background: today.bracket.barColor }} />
+          <div style={{ height: "100%", width: `${Math.min(100, s.rateRaw)}%`, background: today.bracket.barColor, borderRadius: 999, transition: "width .4s ease" }} />
         </div>
         <div style={{ fontSize: 13, color: "#6b7684", marginTop: 8 }}>{today.monthStatus}</div>
       </Card>
@@ -219,7 +219,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
             {game.claimableMilestone && (
               <button
                 onClick={() => actions.claimMilestone()}
-                style={{ width: "100%", marginTop: 12, padding: 13, border: "none", borderRadius: 13, fontWeight: 800, background: "#191f28", color: "#fff" }}
+                style={{ width: "100%", marginTop: 12, padding: 13, border: "none", borderRadius: 13, fontWeight: 800, background: "#191f28", color: "#fff", cursor: "pointer", fontFamily: "inherit" }}
               >
                 🎁 광고보고 포인트 받기 (+{game.claimableMilestone.p}P · {game.claimableMilestone.d}일)
               </button>

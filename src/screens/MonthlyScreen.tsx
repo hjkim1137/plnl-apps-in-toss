@@ -31,7 +31,7 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
           {notif.canPrompt && (
             <button
               onClick={() => actions.enableNotifications()}
-              style={{ marginTop: 10, padding: "8px 12px", border: "1px solid #ffdb87", borderRadius: 10, background: "#fff", color: "#b07a00", fontWeight: 800, fontSize: 12 }}
+              style={{ marginTop: 10, padding: "8px 12px", border: "1px solid #ffdb87", borderRadius: 10, background: "#fff", color: "#b07a00", fontWeight: 800, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}
             >
               {NOTIFY_COPY.enableCta}
             </button>
@@ -65,7 +65,7 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
             const [y, m] = e.target.value.split("-").map(Number);
             actions.goToMonth(y, m);
           }}
-          style={{ padding: "9px 16px", borderRadius: 12, border: "none", fontWeight: 800, fontSize: 15, boxShadow: "0 1px 2px rgba(0,0,0,.06)" }}
+          style={{ padding: "9px 16px", borderRadius: 12, border: "none", fontWeight: 800, fontSize: 15, boxShadow: "0 1px 2px rgba(0,0,0,.06)", cursor: "pointer", fontFamily: "inherit" }}
         >
           {selectableMonths.map((o) => (
             <option key={`${o.y}-${o.m}`} value={`${o.y}-${o.m}`}>{o.label}</option>
@@ -120,7 +120,7 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
         </div>
         <button
           onClick={() => actions.clearMonth(monthly.year, monthly.month)}
-          style={{ width: "100%", marginTop: 12, padding: 13, border: "1px solid #e5e8eb", borderRadius: 13, background: "#fff", color: "#6b7684", fontWeight: 700 }}
+          style={{ width: "100%", marginTop: 12, padding: 13, border: "1px solid #e5e8eb", borderRadius: 13, background: "#fff", color: "#6b7684", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
         >
           이번 달 기록 초기화
         </button>
@@ -243,9 +243,9 @@ function copyShareText(text: string) {
   }
 }
 
-const navBtn: React.CSSProperties = { border: "none", background: "#fff", width: 34, height: 34, borderRadius: 10, fontSize: 16, boxShadow: "0 1px 2px rgba(0,0,0,.06)", color: "#4e5968" };
-const fullBtn: React.CSSProperties = { width: "100%", padding: 14, border: "none", borderRadius: 14, fontWeight: 800, background: "#5DC528", color: "#fff" };
-const ghostBtn: React.CSSProperties = { width: "100%", padding: 12, border: "1px solid #e5e8eb", borderRadius: 13, background: "#fff", color: "#6b7684", fontWeight: 700 };
+const navBtn: React.CSSProperties = { border: "none", background: "#fff", width: 34, height: 34, borderRadius: 10, fontSize: 16, boxShadow: "0 1px 2px rgba(0,0,0,.06)", color: "#4e5968", cursor: "pointer", fontFamily: "inherit" };
+const fullBtn: React.CSSProperties = { width: "100%", padding: 14, border: "none", borderRadius: 14, fontWeight: 800, background: "#5DC528", color: "#fff", cursor: "pointer", fontFamily: "inherit", fontSize: 15 };
+const ghostBtn: React.CSSProperties = { width: "100%", padding: 12, border: "1px solid #e5e8eb", borderRadius: 13, background: "#fff", color: "#6b7684", fontWeight: 700, cursor: "pointer", fontFamily: "inherit", fontSize: 14 };
 
 function Stat({ k, v, color }: { k: string; v: string; color?: string }) {
   return (
