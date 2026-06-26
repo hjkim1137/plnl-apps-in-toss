@@ -1,0 +1,7 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "npm install",
+  "buildCommand": "echo 'plnl: 미니앱은 ait deploy 로 토스 CDN 에 배포. Vercel 은 /api 함수만 호스팅하므로 프론트 빌드 생략.'",
+  "outputDirectory": "public"
+}
