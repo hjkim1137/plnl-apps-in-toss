@@ -21,6 +21,9 @@ function applyCors(req: VercelRequest, res: VercelResponse): void {
   const origin = typeof req.headers.origin === "string" ? req.headers.origin : "";
   if (TOSS_ORIGIN.test(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
+    // 콘솔 "테스트하기"가 credentialed fetch 인 경우에도 응답(401 포함)을 읽을 수 있도록.
+    // (이게 없으면 401 이 와도 브라우저가 차단 → "Failed to fetch".)
+    res.setHeader("Access-Control-Allow-Credentials", "true");
   }
   res.setHeader("Vary", "Origin");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -38,13 +41,16 @@ function safeEqual(a: string, b: string): boolean {
 
 function verifyBasicAuth(req: VercelRequest): boolean {
   const header =
-    typeof req.headers.authorization === "string" ? req.headers.authorization : "";
-  if (!header.startsWith("Basic ")) return false;
+    typeof req.headers.authorization === "string" ? req.headers.authorization.trim() : "";
+  if (!header) return false;
   const expectedUser = process.env.AITS_DISCONNECT_BASIC_USER ?? "";
   const expectedPass = process.env.AITS_DISCONNECT_BASIC_PASS ?? "";
   if (!expectedUser || !expectedPass) return false;
+  // 콘솔에 따라 "Basic " 접두어를 붙여 보내기도/생략하기도 한다. 둘 다 흡수:
+  // 선행 "Basic "(대소문자 무시) 가 있으면 제거하고 base64 자격증명만 디코드.
+  const token = header.replace(/^basic\s+/i, "");
   try {
-    const decoded = Buffer.from(header.slice(6), "base64").toString("utf-8");
+    const decoded = Buffer.from(token, "base64").toString("utf-8");
     const idx = decoded.indexOf(":");
     if (idx < 0) return false;
     return (
