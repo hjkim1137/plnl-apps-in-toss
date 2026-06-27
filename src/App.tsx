@@ -35,7 +35,7 @@ export default function App() {
   }
 
   return (
-    <div style={{ maxWidth: 480, margin: "0 auto", minHeight: "100dvh", background: "#f4f6f8" }}>
+    <div style={{ maxWidth: 480, margin: "0 auto" }}>
       {/* 상단 바 */}
       <header
         style={{
