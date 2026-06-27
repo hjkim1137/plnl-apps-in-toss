@@ -132,7 +132,7 @@
         · <b>병렬</b>: 인증·광고·동기화(현정) ↔ UI(인정) ↔ 카피·칭호·QA(선민) 동시 진행 가능<br/>
         · <b>주말(13·14·20·21·28)</b>은 버퍼 — 단, <b>6/27(토)</b>은 검수 제출 목표일로 가동<br/>
         · 6/28~30은 <b>검수 대응 + QA + 마케팅 자산</b> 마무리 → <b>6/30(화) 출시</b><br/>
-        · <b>백엔드(D)</b>: 인증 + <b>액션 라우트(변조 방지)</b> + <b>월말 cron 푸시</b> 이식 완료(docs/backend). <b>연결 끊기 콜백 Vercel 배포·검증 완료</b>(plnl-apps-in-toss.vercel.app/api/aits/auth/disconnect — 실제 row 삭제까지 확인). <b>로그인 백엔드 배포 완료</b>(login/refresh/me — mTLS·PII 복호화·세션 JWT 적용, 이름만 수집). <b>미니앱 VITE_AITS_API_BASE 연결 + CORS origin(AITS_ALLOWED_ORIGINS) + 실로그인 검증</b>만 남음. RLS 잠금은 사업자 통과 후.
+        · <b>백엔드(D)</b>: 인증 + <b>액션 라우트(변조 방지)</b> + <b>월말 cron 푸시</b> 이식 완료(docs/backend). <b>연결 끊기 콜백 Vercel 배포·검증 완료</b>(plnl-apps-in-toss.vercel.app/api/aits/auth/disconnect — 실제 row 삭제까지 확인). <b>로그인 백엔드 배포·mTLS 연결 검증 완료</b>(login/refresh/me, 이름만 수집). <b>전면형·보상형 광고 실기기 노출 확인</b>. 남은 것: <b>로그인 후 Supabase row 미생성</b> 디버깅. RLS 잠금은 사업자 통과 후.
       </p>
     </div>
 
@@ -204,7 +204,7 @@
   const stMark = (s)=> s==='done'?'✅':s==='partial'?'🔶':'⬜';
   // 담당별 작업 막대 상태 (GROUPS 의 tasks 순서와 1:1)
   const STATUS_TASK = {
-    D:['done','partial','done','done','partial','done','partial','todo'],
+    D:['done','partial','done','done','done','done','partial','todo'],
     A:['done','done','done','done','done','done'],
     B:['done','done','done','todo','partial','partial'],
   };
@@ -213,7 +213,7 @@
     F1:'done', F6:'done', F7:'done', F18:'done',
     F2:'done', F3:'done', F4:'done', F5:'done',
     F8:'done', F9:'done', F10:'done', F11:'done', F12:'done', 'F12+':'todo',
-    F13:'partial', F14:'done', F15:'partial', F16:'partial', F17:'done',
+    F13:'done', F14:'done', F15:'partial', F16:'partial', F17:'done',
   };
 
   // 날짜 헤더
