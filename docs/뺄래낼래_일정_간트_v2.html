@@ -132,7 +132,7 @@
         · <b>병렬</b>: 인증·광고·동기화(현정) ↔ UI(인정) ↔ 카피·칭호·QA(선민) 동시 진행 가능<br/>
         · <b>주말(13·14·20·21·28)</b>은 버퍼 — 단, <b>6/27(토)</b>은 검수 제출 목표일로 가동<br/>
         · 6/28~30은 <b>검수 대응 + QA + 마케팅 자산</b> 마무리 → <b>6/30(화) 출시</b><br/>
-        · <b>백엔드(D)</b>: 인증 + <b>액션 라우트(변조 방지)</b> + <b>월말 cron 푸시</b> 이식 완료(docs/backend). <b>연결 끊기 콜백 Vercel 배포·검증 완료</b>(plnl-apps-in-toss.vercel.app/api/aits/auth/disconnect — 실제 row 삭제까지 확인). <b>로그인 백엔드 배포·mTLS 연결 검증 완료</b>(login/refresh/me, 이름만 수집). <b>전면형·보상형 광고 실기기 노출 확인</b>. 남은 것: <b>로그인 후 Supabase row 미생성</b> 디버깅. RLS 잠금은 사업자 통과 후.
+        · <b>백엔드(D)</b>: 인증 + <b>액션 라우트(변조 방지)</b> + <b>월말 cron 푸시</b> 이식 완료(docs/backend). <b>연결 끊기 콜백 Vercel 배포·검증 완료</b>(plnl-apps-in-toss.vercel.app/api/aits/auth/disconnect — 실제 row 삭제까지 확인). <b>토스 로그인 실기기 동작 확인</b>(login/refresh/me 배포·mTLS·CORS·세션 발급 → 잠금 해제, 이름만 수집). <b>전면형·보상형 광고 실기기 노출 확인</b>. Supabase 스키마 정비(frozen·식별용 name 컬럼·시간 KST). RLS 잠금은 사업자 통과 후.
       </p>
     </div>
 
@@ -199,12 +199,12 @@
   const $ = (s)=>document.querySelector(s);
   const chart = $('#chart');
 
-  // ===== 작업 현황 (2026-06-27 기준) — 정본은 뺄래낼래_마일스톤.md =====
+  // ===== 작업 현황 (2026-06-28 기준) — 정본은 뺄래낼래_마일스톤.md =====
   // ✅ done · 🔶 partial(클라 O / 백엔드·검증·UI 남음) · ⬜ todo
   const stMark = (s)=> s==='done'?'✅':s==='partial'?'🔶':'⬜';
   // 담당별 작업 막대 상태 (GROUPS 의 tasks 순서와 1:1)
   const STATUS_TASK = {
-    D:['done','partial','done','done','done','done','partial','todo'],
+    D:['done','done','done','done','done','done','partial','todo'],
     A:['done','done','done','done','done','done'],
     B:['done','done','done','todo','partial','partial'],
   };
