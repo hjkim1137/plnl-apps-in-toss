@@ -80,7 +80,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
           <div style={{ display: "flex", gap: 10 }}>
             <button
               onClick={() => actions.checkIn("done")}
-              style={{ flex: 1, padding: 15, border: "none", borderRadius: 14, fontWeight: 800, background: today.todayValue === "done" ? "#15b877" : "#5DC528", color: "#fff", cursor: "pointer", fontFamily: "inherit", fontSize: 15 }}
+              style={{ flex: 1, padding: 15, border: "none", borderRadius: 14, fontWeight: 800, background: today.todayValue === "missed" ? "#f2f4f6" : today.todayValue === "done" ? "#15b877" : "#5DC528", color: today.todayValue === "missed" ? "#b0b8c1" : "#fff", cursor: "pointer", fontFamily: "inherit", fontSize: 15 }}
             >
               오늘 갔어요 💪
             </button>
