@@ -93,12 +93,23 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
           </div>
         ) : (
           // 무료 소진 → 전면형 광고 게이트. 시청 완료 시 1회 언락되고 위 버튼이 나타남.
-          <button
-            onClick={() => actions.watchCheckinAd()}
-            style={{ width: "100%", padding: 15, border: "none", borderRadius: 14, fontWeight: 800, background: "#191f28", color: "#fff", cursor: "pointer", fontFamily: "inherit", fontSize: 15 }}
-          >
-            📺 짧은 광고 보고 출석 체크하기
-          </button>
+          <>
+            <button
+              onClick={() => actions.watchCheckinAd()}
+              style={{ width: "100%", padding: 15, border: "none", borderRadius: 14, fontWeight: 800, background: "#191f28", color: "#fff", cursor: "pointer", fontFamily: "inherit", fontSize: 15 }}
+            >
+              📺 짧은 광고 보고 출석 체크하기
+            </button>
+            <div style={{ textAlign: "center", fontSize: 12, color: "#8b95a1", marginTop: 10 }}>
+              또는{" "}
+              <span
+                onClick={onOpenLogin}
+                style={{ color: "#5DC528", fontWeight: 800, cursor: "pointer" }}
+              >
+                토스 로그인하고 광고 없이 무제한 + 포인트 받기
+              </span>
+            </div>
+          </>
         )}
 
         {/* 출석 체크 후 상태 메시지 */}
@@ -113,6 +124,11 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
           color: statusMsg.kind === "done" ? "#15b877" : statusMsg.kind === "missed" ? "#f04452" : "#6b7684",
         }}>
           {statusMsg.text}
+          {statusMsg.kind === "done" && state.loggedIn && (
+            <span style={{ display: "inline-block", background: "#fff7e0", color: "#b07a00", fontWeight: 800, fontSize: 11, padding: "2px 8px", borderRadius: 999, marginLeft: 6 }}>
+              +1P
+            </span>
+          )}
         </div>
       </Card>
 

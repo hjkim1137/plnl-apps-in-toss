@@ -59,18 +59,21 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
       {/* 월 이동 (달력 위) */}
       <div style={{ display: "flex", gap: 10, justifyContent: "center", alignItems: "center", marginBottom: 14 }}>
         <button onClick={() => actions.shiftMonth(-1)} style={navBtn}>‹</button>
-        <select
-          value={`${monthly.year}-${monthly.month}`}
-          onChange={(e) => {
-            const [y, m] = e.target.value.split("-").map(Number);
-            actions.goToMonth(y, m);
-          }}
-          style={{ padding: "9px 16px", borderRadius: 12, border: "none", fontWeight: 800, fontSize: 15, boxShadow: "0 1px 2px rgba(0,0,0,.06)", cursor: "pointer", fontFamily: "inherit" }}
-        >
-          {selectableMonths.map((o) => (
-            <option key={`${o.y}-${o.m}`} value={`${o.y}-${o.m}`}>{o.label}</option>
-          ))}
-        </select>
+        <div style={{ position: "relative" }}>
+          <select
+            value={`${monthly.year}-${monthly.month}`}
+            onChange={(e) => {
+              const [y, m] = e.target.value.split("-").map(Number);
+              actions.goToMonth(y, m);
+            }}
+            style={{ appearance: "none", WebkitAppearance: "none", padding: "9px 30px 9px 16px", borderRadius: 12, border: "none", fontWeight: 800, fontSize: 15, boxShadow: "0 1px 2px rgba(0,0,0,.06)", cursor: "pointer", fontFamily: "inherit", color: "#191f28" }}
+          >
+            {selectableMonths.map((o) => (
+              <option key={`${o.y}-${o.m}`} value={`${o.y}-${o.m}`}>{o.label}</option>
+            ))}
+          </select>
+          <span style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", color: "#b0b8c1", fontSize: 12, pointerEvents: "none" }}>▾</span>
+        </div>
         <button onClick={() => actions.shiftMonth(1)} disabled={monthly.isCurrent} style={navBtn}>›</button>
       </div>
 
@@ -118,9 +121,20 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
             ),
           )}
         </div>
+        {/* 달력 범례 */}
+        <div style={{ display: "flex", gap: 16, fontSize: 12, color: "#6b7684", margin: "10px 0 4px" }}>
+          <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
+            <span style={{ width: 11, height: 11, borderRadius: 4, background: "#e7f9f1", display: "inline-block" }} />
+            운동함 💪
+          </span>
+          <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
+            <span style={{ width: 11, height: 11, borderRadius: 4, background: "#fdeced", display: "inline-block" }} />
+            못 감 💸
+          </span>
+        </div>
         <button
           onClick={() => actions.clearMonth(monthly.year, monthly.month)}
-          style={{ width: "100%", marginTop: 12, padding: 13, border: "1px solid #e5e8eb", borderRadius: 13, background: "#fff", color: "#6b7684", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
+          style={{ width: "100%", marginTop: 8, padding: 13, border: "1px solid #e5e8eb", borderRadius: 13, background: "#fff", color: "#6b7684", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
         >
           이번 달 기록 초기화
         </button>
