@@ -26,12 +26,21 @@ export function parseBody(req: VercelRequest): unknown {
 
 // 미니앱(`*.apps.tossmini.com`) origin 화이트리스트 — AITS_ALLOWED_ORIGINS(`,` 구분, `*` 와일드카드).
 // 패턴은 배포 동안 불변이므로 모듈 스코프에서 1회만 파싱/정규식 컴파일해 재사용.
+// 앱인토스 미니앱 웹뷰는 *.tossmini.com 서브도메인에서 동작한다
+// (예: plnl.private-apps.tossmini.com = 심사/테스트, plnl.apps.tossmini.com = 배포).
+// 기본 허용하고, AITS_ALLOWED_ORIGINS 로 추가 origin 을 더할 수 있다.
+const DEFAULT_ALLOWED_ORIGINS = ["https://*.tossmini.com"];
+
 let _matchers: { exact: Set<string>; regexes: RegExp[] } | null = null;
 function getMatchers() {
   if (_matchers) return _matchers;
   const exact = new Set<string>();
   const regexes: RegExp[] = [];
-  for (const raw of (process.env.AITS_ALLOWED_ORIGINS ?? "").split(",")) {
+  const patterns = [
+    ...DEFAULT_ALLOWED_ORIGINS,
+    ...(process.env.AITS_ALLOWED_ORIGINS ?? "").split(","),
+  ];
+  for (const raw of patterns) {
     const p = raw.trim();
     if (!p) continue;
     if (p.includes("*")) {
@@ -56,14 +65,6 @@ export function applyCors(
   opts: { methods?: string } = {},
 ): void {
   const origin = typeof req.headers.origin === "string" ? req.headers.origin : "";
-  // TEMP DEBUG — 미니앱 실제 origin/허용여부 확인용. 원인 잡으면 제거.
-  console.log(
-    "[aits/cors] origin=%s allowed=%s method=%s url=%s",
-    origin,
-    isAllowedByEnv(origin),
-    req.method,
-    req.url,
-  );
   if (isAllowedByEnv(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
   }
