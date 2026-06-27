@@ -132,7 +132,7 @@
         · <b>병렬</b>: 인증·광고·동기화(현정) ↔ UI(인정) ↔ 카피·칭호·QA(선민) 동시 진행 가능<br/>
         · <b>주말(13·14·20·21·28)</b>은 버퍼 — 단, <b>6/27(토)</b>은 검수 제출 목표일로 가동<br/>
         · 6/28~30은 <b>검수 대응 + QA + 마케팅 자산</b> 마무리 → <b>6/30(화) 출시</b><br/>
-        · <b>백엔드(D)</b>: 인증 + <b>액션 라우트(변조 방지)</b> + <b>월말 cron 푸시</b> 이식 완료(docs/backend) — <b>배포·RLS 잠금은 사업자 통과 후</b>(그 전까진 supabase 직접 MVP)
+        · <b>백엔드(D)</b>: 인증 + <b>액션 라우트(변조 방지)</b> + <b>월말 cron 푸시</b> 이식 완료(docs/backend). <b>연결 끊기 콜백 Vercel 배포·검증 완료</b>(plnl-apps-in-toss.vercel.app/api/aits/auth/disconnect — 실제 row 삭제까지 확인). <b>로그인 백엔드 co-locate 설정</b>(토스 로그인 이름만 수집 · PII 복호화 키 적용, mTLS 인증서는 사업자 통과 후). RLS 잠금은 사업자 통과 후.
       </p>
     </div>
 
@@ -204,7 +204,7 @@
   const stMark = (s)=> s==='done'?'✅':s==='partial'?'🔶':'⬜';
   // 담당별 작업 막대 상태 (GROUPS 의 tasks 순서와 1:1)
   const STATUS_TASK = {
-    D:['done','partial','done','done','partial','done','todo','todo'],
+    D:['done','partial','done','done','partial','done','partial','todo'],
     A:['done','done','done','done','done','done'],
     B:['done','done','done','todo','partial','partial'],
   };
