@@ -1,8 +1,10 @@
 -- 뺄래 낼래 미니앱 — Supabase 스키마
--- 실행: Supabase 콘솔 > SQL Editor 에서 전체 복붙 실행. 재실행 안전(if not exists / drop if exists).
+-- 실행: Supabase 콘솔 > SQL Editor 에서 전체 복붙 실행. 재실행 안전(if not exists / 조건부 변환).
 --
 -- 토스 로그인 사용자의 누적 기록(기기 변경 보존)을 한 곳에 모은다.
 -- 비로그인 유저는 클라이언트 localStorage 만 사용하고 이 테이블에 row 를 만들지 않는다.
+-- 시간 컬럼(created_at/updated_at)은 KST(Asia/Seoul) wall-clock 으로 저장 — 한국 전용 서비스라
+-- DB 에서 바로 한국 시간으로 읽도록. (앱 코드는 이 컬럼을 읽지 않음.)
 
 -- =========================================================
 -- 1) plnl_aits_users
@@ -11,6 +13,8 @@ create table if not exists public.plnl_aits_users (
   id bigserial primary key,
   -- 토스 로그인 사용자 식별자(콘솔 발급, 안정적). 모든 row 식별 기준.
   toss_user_key text unique not null,
+  -- 식별용 이름(토스 로그인 프로필). 앱 로직 미사용 — DB 식별 편의용.
+  name text,
   -- 한 달 운동 비용(원). 진실 숫자의 기준값.
   fee integer not null default 100000 check (fee >= 0),
   -- 이번 달 목표 운동 횟수.
@@ -25,11 +29,12 @@ create table if not exists public.plnl_aits_users (
   frozen jsonb not null default '[]'::jsonb,
   -- 수령 완료한 스트릭 마일스톤 일수 목록(중복 지급 방지).
   claimed_milestones integer[] not null default '{}'::integer[],
-  created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  created_at timestamp not null default (now() at time zone 'Asia/Seoul'),
+  updated_at timestamp not null default (now() at time zone 'Asia/Seoul')
 );
 
 -- 기존 테이블 idempotent 마이그레이션 (컬럼 추가)
+alter table public.plnl_aits_users add column if not exists name text;
 alter table public.plnl_aits_users add column if not exists fee integer not null default 100000;
 alter table public.plnl_aits_users add column if not exists target integer not null default 12;
 alter table public.plnl_aits_users add column if not exists logs jsonb not null default '{}'::jsonb;
@@ -38,16 +43,33 @@ alter table public.plnl_aits_users add column if not exists freezes integer not 
 alter table public.plnl_aits_users add column if not exists frozen jsonb not null default '[]'::jsonb;
 alter table public.plnl_aits_users add column if not exists claimed_milestones integer[] not null default '{}'::integer[];
 
+-- created_at/updated_at 을 KST wall-clock 으로 (timestamptz → timestamp). 이미 timestamp 면 건너뜀(재실행 안전).
+do $$
+begin
+  if (select data_type from information_schema.columns
+      where table_schema='public' and table_name='plnl_aits_users' and column_name='created_at') = 'timestamp with time zone' then
+    alter table public.plnl_aits_users
+      alter column created_at type timestamp using (created_at at time zone 'Asia/Seoul'),
+      alter column created_at set default (now() at time zone 'Asia/Seoul');
+  end if;
+  if (select data_type from information_schema.columns
+      where table_schema='public' and table_name='plnl_aits_users' and column_name='updated_at') = 'timestamp with time zone' then
+    alter table public.plnl_aits_users
+      alter column updated_at type timestamp using (updated_at at time zone 'Asia/Seoul'),
+      alter column updated_at set default (now() at time zone 'Asia/Seoul');
+  end if;
+end $$;
+
 create index if not exists plnl_aits_users_toss_user_key_idx
   on public.plnl_aits_users(toss_user_key);
 
 -- =========================================================
--- 2) updated_at 자동 갱신 트리거
+-- 2) updated_at 자동 갱신 트리거 (KST)
 -- =========================================================
 create or replace function public.plnl_set_updated_at()
 returns trigger language plpgsql as $$
 begin
-  new.updated_at = now();
+  new.updated_at = now() at time zone 'Asia/Seoul';
   return new;
 end;
 $$;

@@ -51,6 +51,8 @@ export function saveLocalState(state: PlnlState): void {
 
 interface PlnlRow {
   toss_user_key: string;
+  // 식별용 이름(토스 로그인 프로필). 앱 로직은 사용하지 않고 DB 식별 편의용으로만 저장.
+  name?: string | null;
   fee: number;
   target: number;
   logs: Logs | null;
@@ -149,9 +151,11 @@ export async function saveRemoteState(
   // TODO(하드닝): 사업자 통과 후 points/freezes 변조 방지를 위해 액션 라우트
   //   (/user/checkin, /user/claim-milestone, /user/buy-freeze, /user/settings) 로 분리하고
   //   supabase RLS 를 잠근다(docs/backend 참고). v1 MVP 는 직접 upsert.
+  // 식별용 이름(토스 로그인 프로필)을 함께 저장. 없으면 null(복호화 전/미동의).
+  const name = getStoredSession()?.profile?.name ?? null;
   const { error } = await supabase
     .from(TABLE)
-    .upsert(stateToRow(tossUserKey, state), { onConflict: "toss_user_key" });
+    .upsert({ ...stateToRow(tossUserKey, state), name }, { onConflict: "toss_user_key" });
   if (error) throw new Error(`saveRemoteState failed: ${error.message}`);
 }
 
