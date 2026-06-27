@@ -12,10 +12,10 @@
 // CORS: 미니앱(`*.apps.tossmini.com`)에서 호출 → AITS_ALLOWED_ORIGINS 화이트리스트(http.preflight).
 
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { tossGenerateToken, tossLoginMe } from "../../_lib/aits/tossApi";
-import { decryptPIINullable } from "../../_lib/aits/pii";
-import { signRefreshToken, signSession } from "../../_lib/aits/session";
-import { parseBody, preflight } from "../../_lib/aits/http";
+import { tossGenerateToken, tossLoginMe } from "../../_lib/aits/tossApi.js";
+import { decryptPIINullable } from "../../_lib/aits/pii.js";
+import { signRefreshToken, signSession } from "../../_lib/aits/session.js";
+import { parseBody, preflight } from "../../_lib/aits/http.js";
 
 interface LoginRequestBody {
   authorizationCode?: string;

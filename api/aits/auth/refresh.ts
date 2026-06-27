@@ -10,8 +10,8 @@
 // CORS: 미니앱(`*.apps.tossmini.com`)에서 호출 → AITS_ALLOWED_ORIGINS 화이트리스트(http.preflight).
 
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { signSession, verifyRefreshToken } from "../../_lib/aits/session";
-import { parseBody, preflight } from "../../_lib/aits/http";
+import { signSession, verifyRefreshToken } from "../../_lib/aits/session.js";
+import { parseBody, preflight } from "../../_lib/aits/http.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (preflight(req, res, "POST")) return;
