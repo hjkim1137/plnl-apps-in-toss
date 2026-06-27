@@ -1,6 +1,7 @@
 import type { PlnlController } from "../hooks/usePlnl";
 import { NOTIFY_COPY } from "../lib/content";
 import { won } from "../lib/format";
+import { useToast } from "@toss/tds-mobile";
 
 // ── 월간 현황 탭 ─────────────────────────────────────────────────────────
 // TODO(인정/A): TDS 컴포넌트로 교체. 데이터/액션은 plnl 그대로 사용.
@@ -17,6 +18,7 @@ const DOW = ["일", "월", "화", "수", "목", "금", "토"];
 
 export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpenLogin: () => void }) {
   const { monthly, selectableMonths, actions, state, notif, view } = plnl;
+  const { openToast } = useToast();
   const s = monthly.stats;
 
   return (
@@ -154,7 +156,7 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
       ) : !monthly.reportUnlocked ? (
         <Card>
           <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>📊 월간 결산 리포트</p>
-          <button onClick={() => actions.watchReportAd()} style={fullBtn}>📺 광고 보고 결산 보기</button>
+          <button onClick={async () => { const r = await actions.watchReportAd(); if (r.ok) openToast("결산 리포트가 도착했어요"); }} style={fullBtn}>📺 광고 보고 결산 보기</button>
         </Card>
       ) : (
         <Card>
@@ -219,7 +221,7 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
       ) : !monthly.certUnlocked ? (
         <Card>
           <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>🏅 표창장</p>
-          <button onClick={() => actions.watchCertAd()} style={fullBtn}>📺 광고 보고 표창장 보기</button>
+          <button onClick={async () => { const r = await actions.watchCertAd(); if (r.ok) openToast("표창장이 열렸어요"); }} style={fullBtn}>📺 광고 보고 표창장 보기</button>
         </Card>
       ) : (
         <Card>

@@ -5,6 +5,7 @@ import {
   todayCheckInStatusText,
 } from "../lib/content";
 import { won, wonN } from "../lib/format";
+import { useToast } from "@toss/tds-mobile";
 
 // ── 오늘 탭 ──────────────────────────────────────────────────────────────
 // TODO(인정/A): 아래 plain DOM 을 TDS 컴포넌트로 교체. 데이터/액션은 plnl 에서 그대로 사용.
@@ -28,6 +29,7 @@ function Card({ children }: { children: React.ReactNode }) {
 
 export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpenLogin: () => void }) {
   const { today, checkin, game, actions, state, repair } = plnl;
+  const { openToast } = useToast();
   const s = today.stats;
   const statusMsg = todayCheckInStatusText(today.todayValue, s.unit, state.loggedIn);
 
@@ -287,7 +289,10 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
                 5P로 받기
               </button>
               <button
-                onClick={() => actions.watchFreezeAd()}
+                onClick={async () => {
+                  const r = await actions.watchFreezeAd();
+                  if (r.ok) openToast("스트릭 보호권이 생겼어요");
+                }}
                 style={{ flex: 1, padding: 9, border: "none", borderRadius: 10, fontWeight: 800, background: "#191f28", color: "#fff", cursor: "pointer", fontFamily: "inherit" }}
               >
                 📺 광고 보고 받기
