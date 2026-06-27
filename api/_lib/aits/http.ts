@@ -56,6 +56,14 @@ export function applyCors(
   opts: { methods?: string } = {},
 ): void {
   const origin = typeof req.headers.origin === "string" ? req.headers.origin : "";
+  // TEMP DEBUG — 미니앱 실제 origin/허용여부 확인용. 원인 잡으면 제거.
+  console.log(
+    "[aits/cors] origin=%s allowed=%s method=%s url=%s",
+    origin,
+    isAllowedByEnv(origin),
+    req.method,
+    req.url,
+  );
   if (isAllowedByEnv(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
   }
