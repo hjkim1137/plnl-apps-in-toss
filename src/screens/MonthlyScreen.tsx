@@ -188,7 +188,27 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
 
       {/* 표창장 */}
       {!state.loggedIn ? (
-        <LockCard emoji="🏅" title="표창장" desc="한 달 출석 기록으로 나만의 표창장이 만들어져요" onLogin={onOpenLogin} />
+        <div style={{ background: "#fff", borderRadius: 18, padding: 18, marginBottom: 14, boxShadow: "0 1px 2px rgba(0,0,0,.04)", position: "relative", overflow: "hidden" }}>
+          <p style={{ fontWeight: 700, color: "#6b7684", marginTop: 0 }}>🏅 표창장</p>
+          {/* 블러 — 실제 표창장 텍스트를 흐리게 보여줘 호기심 유발 */}
+          <div style={{ filter: "blur(3px)", opacity: 0.55, pointerEvents: "none", userSelect: "none" }}>
+            <div style={{ border: "2px solid #ffb800", borderRadius: 16, padding: "24px 20px 22px", textAlign: "center", background: "linear-gradient(180deg,#fffdf5,#fff8e6)" }}>
+              <div style={{ fontSize: 15, fontWeight: 800, color: "#a06800", letterSpacing: 2, marginBottom: 14 }}>헬스장 후원 표창장</div>
+              <div style={{ fontSize: 14, color: "#333d4b", lineHeight: 1.7, fontWeight: 600 }}>
+                회원님께서는 이번 달 금 ●●●●원을<br />아낌없이 기부하셨기에<br />이 상장을 수여합니다 👑
+              </div>
+            </div>
+          </div>
+          {/* 베일 오버레이 */}
+          <div style={{ position: "absolute", inset: 0, background: "rgba(255,255,255,0.55)", borderRadius: 18, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6, padding: 16, textAlign: "center" }}>
+            <div style={{ fontSize: 26 }}>🔒</div>
+            <div style={{ fontSize: 13.5, fontWeight: 800, color: "#333d4b" }}>표창장은 토스 로그인 후 받을 수 있어요</div>
+            <div style={{ fontSize: 11.5, color: "#8b95a1", lineHeight: 1.4 }}>한 달 출석 기록으로 나만의 표창장이 만들어져요</div>
+            <button onClick={onOpenLogin} style={{ marginTop: 6, background: "#5DC528", color: "#fff", border: "none", borderRadius: 999, padding: "9px 16px", fontSize: 12.5, fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}>
+              토스 로그인하고 표창장 받기
+            </button>
+          </div>
+        </div>
       ) : !monthly.monthEnded ? (
         <Card>
           <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>🏅 표창장</p>

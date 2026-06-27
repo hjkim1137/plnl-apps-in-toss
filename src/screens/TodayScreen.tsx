@@ -221,9 +221,20 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
             </div>
           )}
           <Card>
-            <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>🔥 연속 출석</p>
-            <div style={{ fontSize: 24, fontWeight: 800 }}>
-              <b style={{ color: "#ff8a00" }}>{game.streak}</b>일 연속
+            <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>🔥 나의 연속 방문 기록</p>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+              <div style={{ fontSize: 26 }}>🔥</div>
+              <div>
+                <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: -1 }}>
+                  <b style={{ color: "#ff8a00" }}>{game.streak}</b>일 연속 출석 중
+                </div>
+                <div style={{ fontSize: 12, color: "#8b95a1", fontWeight: 600 }}>
+                  {game.streak === 0 ? "오늘 출석하면 스트릭 시작!" : "이 불 끄지 마세요"}
+                </div>
+              </div>
+            </div>
+            <div style={{ height: 12, background: "#f2f4f6", borderRadius: 999, overflow: "hidden", marginBottom: 6 }}>
+              <div style={{ height: "100%", borderRadius: 999, background: "linear-gradient(90deg,#ff8a00,#ffb800)", width: `${Math.min(100, game.streak > 0 ? (game.streak / (game.milestoneChips[game.milestoneChips.length - 1]?.d ?? 30)) * 100 : 0)}%`, transition: "width .5s" }} />
             </div>
             <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
               {game.milestoneChips.map((c) => (
@@ -232,37 +243,52 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
                 </span>
               ))}
             </div>
-            {game.claimableMilestone && (
+            {game.claimableMilestone ? (
               <button
                 onClick={() => actions.claimMilestone()}
                 style={{ width: "100%", marginTop: 12, padding: 13, border: "none", borderRadius: 13, fontWeight: 800, background: "#191f28", color: "#fff", cursor: "pointer", fontFamily: "inherit" }}
               >
                 🎁 광고보고 포인트 받기 (+{game.claimableMilestone.p}P · {game.claimableMilestone.d}일)
               </button>
+            ) : (
+              <div style={{ fontSize: 11.5, color: "#ff8a00", fontWeight: 700, marginTop: 10, textAlign: "center" }}>
+                🎁 3·7·14·30일 달성마다 광고 보고 포인트 받기
+              </div>
             )}
           </Card>
           <Card>
-            <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>💰 출석 포인트</p>
-            <div style={{ fontSize: 24, fontWeight: 800 }}>
-              <b style={{ color: "#ffb800" }}>{game.points}</b> P
+            <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>🪙 출석 포인트</p>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+              <div style={{ width: 42, height: 42, borderRadius: 12, background: "#fff7e0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>🪙</div>
+              <div>
+                <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: -0.5 }}>
+                  <b style={{ color: "#ffb800" }}>{game.points}</b> P
+                </div>
+                <div style={{ fontSize: 12, color: "#8b95a1", fontWeight: 600 }}>출석 1회 = 1P 적립 중</div>
+              </div>
             </div>
-            <div style={{ fontSize: 13, marginTop: 8 }}>
-              🛡️ 스트릭 보호권 보유 {game.freezes}개
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 10, background: "#f9fafb", border: "1px solid #f2f4f6", borderRadius: 14, padding: 13, marginBottom: 10 }}>
+              <div style={{ fontSize: 22 }}>🛡️</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13, fontWeight: 800, color: "#333d4b" }}>
+                  스트릭 보호권 <span style={{ color: "#ff8a00", fontWeight: 700, fontSize: 11, marginLeft: 4 }}>보유 {game.freezes}개</span>
+                </div>
+                <div style={{ fontSize: 11.5, color: "#8b95a1", marginTop: 2, lineHeight: 1.4 }}>
+                  빠진 날에도 연속 출석이 끊기지 않게 막아줘요
+                </div>
+              </div>
             </div>
-            <div style={{ fontSize: 11.5, color: "#8b95a1", marginTop: 3 }}>
-              빠진 날엔 보호권으로 연속을 지킬지 물어봐요
-            </div>
-            <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+            <div style={{ display: "flex", gap: 8 }}>
               <button
                 onClick={() => actions.buyFreeze()}
                 disabled={!game.canBuyFreeze}
-                style={{ flex: 1, padding: 9, border: "none", borderRadius: 10, fontWeight: 800, background: game.canBuyFreeze ? "#5DC528" : "#e5e8eb", color: game.canBuyFreeze ? "#fff" : "#b0b8c1" }}
+                style={{ flex: 1, padding: 9, border: "none", borderRadius: 10, fontWeight: 800, background: game.canBuyFreeze ? "#5DC528" : "#e5e8eb", color: game.canBuyFreeze ? "#fff" : "#b0b8c1", cursor: game.canBuyFreeze ? "pointer" : "not-allowed", fontFamily: "inherit" }}
               >
                 5P로 받기
               </button>
               <button
                 onClick={() => actions.watchFreezeAd()}
-                style={{ flex: 1, padding: 9, border: "none", borderRadius: 10, fontWeight: 800, background: "#191f28", color: "#fff" }}
+                style={{ flex: 1, padding: 9, border: "none", borderRadius: 10, fontWeight: 800, background: "#191f28", color: "#fff", cursor: "pointer", fontFamily: "inherit" }}
               >
                 📺 광고 보고 받기
               </button>
