@@ -50,6 +50,7 @@ export default function App() {
           zIndex: 5,
         }}
       >
+        <img src="/logo.png" alt="뺄래낼래 로고" style={{ width: 32, height: 32, borderRadius: 8, objectFit: "cover" }} />
         <div style={{ fontSize: 18, fontWeight: 800 }}>
           뺄래 <span style={{ color: "#5DC528" }}>낼래</span>
         </div>
