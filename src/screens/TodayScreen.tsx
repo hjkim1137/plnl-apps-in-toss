@@ -226,7 +226,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
             )}
           </Card>
           <Card>
-            <p style={{ fontWeight: 700, color: "#6b7684", marginTop: 0 }}>🪙 출석 포인트</p>
+            <p style={{ fontWeight: 700, color: "#6b7684", marginTop: 0 }}>💰 출석 포인트</p>
             <div style={{ fontSize: 24, fontWeight: 800 }}>
               <b style={{ color: "#ffb800" }}>{game.points}</b> P
             </div>
@@ -257,7 +257,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
         <>
           <LockCard emoji="🏅" title="내 등급" desc="출석할수록 등급 상승 — 작심삼일러 → 회수 전문가 → 뽕 뽑기 달인 → 명예 헬창" onLogin={onOpenLogin} />
           <LockCard emoji="🔥" title="연속 출석 스트릭" desc="로그인하면 연속 출석 + 광고 보고 마일스톤 포인트를 받아요" onLogin={onOpenLogin} />
-          <LockCard emoji="🪙" title="출석 포인트" desc="출석마다 1P 적립 → 스트릭 보호권으로 연속 기록을 지켜요" onLogin={onOpenLogin} />
+          <LockCard emoji="💰" title="출석 포인트" desc="출석마다 1P 적립 → 스트릭 보호권으로 연속 기록을 지켜요" onLogin={onOpenLogin} />
         </>
       )}
 

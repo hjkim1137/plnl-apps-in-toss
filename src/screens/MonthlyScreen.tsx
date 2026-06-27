@@ -16,7 +16,7 @@ function Card({ children }: { children: React.ReactNode }) {
 const DOW = ["일", "월", "화", "수", "목", "금", "토"];
 
 export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpenLogin: () => void }) {
-  const { monthly, selectableMonths, actions, state, notif } = plnl;
+  const { monthly, selectableMonths, actions, state, notif, view } = plnl;
   const s = monthly.stats;
 
   return (
@@ -226,9 +226,14 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
           }}>
             {monthly.certificate.text.share}
           </div>
-          <button onClick={() => copyShareText(monthly.certificate.text.share)} style={fullBtn}>
+          <button onClick={() => copyShareText(monthly.certificate.text.share)} style={primaryBtn}>
             공유 문구 복사하기
           </button>
+          {view.previewEnd && monthly.isCurrent && (
+            <button onClick={() => actions.togglePreview()} style={{ ...ghostBtn, marginTop: 8 }}>
+              미리보기 끄기
+            </button>
+          )}
         </Card>
       )}
     </div>
@@ -245,6 +250,7 @@ function copyShareText(text: string) {
 
 const navBtn: React.CSSProperties = { border: "none", background: "#fff", width: 34, height: 34, borderRadius: 10, fontSize: 16, boxShadow: "0 1px 2px rgba(0,0,0,.06)", color: "#4e5968", cursor: "pointer", fontFamily: "inherit" };
 const fullBtn: React.CSSProperties = { width: "100%", padding: 14, border: "none", borderRadius: 14, fontWeight: 800, background: "#5DC528", color: "#fff", cursor: "pointer", fontFamily: "inherit", fontSize: 15 };
+const primaryBtn: React.CSSProperties = { width: "100%", padding: 14, border: "none", borderRadius: 14, fontWeight: 800, background: "#3182f6", color: "#fff", cursor: "pointer", fontFamily: "inherit", fontSize: 15 };
 const ghostBtn: React.CSSProperties = { width: "100%", padding: 12, border: "1px solid #e5e8eb", borderRadius: 13, background: "#fff", color: "#6b7684", fontWeight: 700, cursor: "pointer", fontFamily: "inherit", fontSize: 14 };
 
 function Stat({ k, v, color }: { k: string; v: string; color?: string }) {
