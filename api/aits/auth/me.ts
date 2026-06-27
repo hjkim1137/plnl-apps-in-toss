@@ -8,9 +8,9 @@
 // CORS: 미니앱(`*.apps.tossmini.com`)에서 호출 → AITS_ALLOWED_ORIGINS 화이트리스트(http.preflight).
 
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { extractBearer, verifySession } from "../../../lib/aits/session";
-import { fetchRow } from "../../../lib/aits/db";
-import { preflight } from "../../../lib/aits/http";
+import { extractBearer, verifySession } from "../../_lib/aits/session";
+import { fetchRow } from "../../_lib/aits/db";
+import { preflight } from "../../_lib/aits/http";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (preflight(req, res, "GET")) return;
