@@ -16,8 +16,8 @@ function Card({ children }: { children: React.ReactNode }) {
       style={{
         background: "#fff",
         borderRadius: 18,
-        padding: 18,
-        marginBottom: 14,
+        padding: "20px 18px",
+        marginBottom: 20,
         boxShadow: "0 1px 2px rgba(0,0,0,.04)",
       }}
     >
@@ -43,7 +43,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
     <div>
       {/* 1) 오늘의 선택 */}
       <Card>
-        <p style={{ fontWeight: 700, color: "#6b7684", marginTop: 0 }}>
+        <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>
           🔔 오늘의 선택{" "}
           {!state.loggedIn && (
             <small style={{ color: "#8b95a1" }}>
@@ -88,7 +88,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
               onClick={() => actions.checkIn("missed")}
               style={{ flex: 1, padding: 15, border: "none", borderRadius: 14, fontWeight: 800, background: today.todayValue === "missed" ? "#f04452" : "#f2f4f6", color: today.todayValue === "missed" ? "#fff" : "#4e5968", cursor: "pointer", fontFamily: "inherit", fontSize: 15 }}
             >
-              오늘 안 갔어요
+              오늘 안 갔어요 💸
             </button>
           </div>
         ) : (
@@ -128,7 +128,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
 
       {/* 3) 이번 달 회수율 게이지 */}
       <Card>
-        <p style={{ fontWeight: 700, color: "#6b7684", marginTop: 0 }}>📅 {today.monthLabel} 회수율</p>
+        <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>📅 {today.monthLabel} 회수율</p>
         <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
           <div style={{ fontSize: 42, fontWeight: 800, color: today.bracket.barColor }}>{s.rate}</div>
           <div style={{ fontSize: 15, color: "#8b95a1", fontWeight: 700 }}>% 회수</div>
@@ -141,7 +141,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
 
       {/* 4) 숫자로 보기 */}
       <Card>
-        <p style={{ fontWeight: 700, color: "#6b7684", marginTop: 0 }}>🧾 숫자로 보기</p>
+        <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>🧾 숫자로 보기</p>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
           <Stat k="1회 운동 단가" v={`${wonN(s.unit)}원/회`} />
           {s.rate >= 100 ? (
@@ -156,7 +156,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
       {state.loggedIn ? (
         <>
           <Card>
-            <p style={{ fontWeight: 700, color: "#6b7684", marginTop: 0 }}>🏅 내 등급</p>
+            <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>🏅 내 등급</p>
             <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 12 }}>
               <div style={{ width: 46, height: 46, borderRadius: 14, background: "#eef4ff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0 }}>
                 {game.title.current.emoji}
@@ -205,7 +205,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
             </div>
           )}
           <Card>
-            <p style={{ fontWeight: 700, color: "#6b7684", marginTop: 0 }}>🔥 연속 출석</p>
+            <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>🔥 연속 출석</p>
             <div style={{ fontSize: 24, fontWeight: 800 }}>
               <b style={{ color: "#ff8a00" }}>{game.streak}</b>일 연속
             </div>
@@ -226,7 +226,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
             )}
           </Card>
           <Card>
-            <p style={{ fontWeight: 700, color: "#6b7684", marginTop: 0 }}>💰 출석 포인트</p>
+            <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>💰 출석 포인트</p>
             <div style={{ fontSize: 24, fontWeight: 800 }}>
               <b style={{ color: "#ffb800" }}>{game.points}</b> P
             </div>
@@ -263,7 +263,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
 
       {/* 6) 회원님께 한마디 */}
       <Card>
-        <p style={{ fontWeight: 700, color: "#6b7684", marginTop: 0 }}>💬 회원님께 한마디</p>
+        <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>💬 회원님께 한마디</p>
         <ul style={{ margin: 0, paddingLeft: 18, color: "#4e5968", fontSize: 13.5, lineHeight: 1.7 }}>
           {today.captions.map((c, i) => (
             <li key={i}>{c}</li>
@@ -286,7 +286,7 @@ function Stat({ k, v, color }: { k: string; v: string; color?: string }) {
 function LockCard({ emoji, title, desc, onLogin }: { emoji: string; title: string; desc: string; onLogin: () => void }) {
   return (
     <div style={{ background: "#fff", borderRadius: 18, padding: 18, marginBottom: 14, boxShadow: "0 1px 2px rgba(0,0,0,.04)", position: "relative", overflow: "hidden" }}>
-      <p style={{ fontWeight: 700, color: "#6b7684", marginTop: 0 }}>{emoji} {title}</p>
+      <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>{emoji} {title}</p>
       {/* 블러 플레이스홀더 */}
       <div style={{ filter: "blur(4px)", opacity: 0.5, pointerEvents: "none", userSelect: "none" }}>
         <div style={{ height: 54, background: "#f2f4f6", borderRadius: 12, marginBottom: 8 }} />

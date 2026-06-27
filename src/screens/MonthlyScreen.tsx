@@ -7,7 +7,7 @@ import { won } from "../lib/format";
 
 function Card({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ background: "#fff", borderRadius: 18, padding: 18, marginBottom: 14, boxShadow: "0 1px 2px rgba(0,0,0,.04)" }}>
+    <div style={{ background: "#fff", borderRadius: 18, padding: "20px 18px", marginBottom: 20, boxShadow: "0 1px 2px rgba(0,0,0,.04)" }}>
       {children}
     </div>
   );
@@ -41,7 +41,7 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
 
       {/* 요약 */}
       <Card>
-        <p style={{ fontWeight: 700, color: "#6b7684", marginTop: 0 }}>
+        <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>
           📈 {monthly.year}년 {monthly.monthLabel} 요약
         </p>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
@@ -76,7 +76,7 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
 
       {/* 달력 */}
       <Card>
-        <p style={{ fontWeight: 700, color: "#6b7684", marginTop: 0 }}>
+        <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>
           🗓️ 출석 달력 <small>(날짜를 눌러 직접 기록)</small>
         </p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 5, marginBottom: 6 }}>
@@ -131,7 +131,7 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
         <LockCard emoji="📊" title="월간 결산 리포트" desc="한 달이 끝나면 이번 달 운동 성적표가 나와요" onLogin={onOpenLogin} />
       ) : !monthly.monthEnded ? (
         <Card>
-          <p style={{ fontWeight: 700, color: "#6b7684", marginTop: 0 }}>📊 월간 결산 리포트</p>
+          <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>📊 월간 결산 리포트</p>
           <p style={{ fontSize: 13, color: "#8b95a1" }}>
             이번 달이 끝나면 결산이 만들어져요 · D-{monthly.daysLeft}
           </p>
@@ -139,12 +139,12 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
         </Card>
       ) : !monthly.reportUnlocked ? (
         <Card>
-          <p style={{ fontWeight: 700, color: "#6b7684", marginTop: 0 }}>📊 월간 결산 리포트</p>
+          <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>📊 월간 결산 리포트</p>
           <button onClick={() => actions.watchReportAd()} style={fullBtn}>📺 광고 보고 결산 보기</button>
         </Card>
       ) : (
         <Card>
-          <p style={{ fontWeight: 700, color: "#6b7684", marginTop: 0 }}>
+          <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>
             📊 {monthly.report.year}년 {monthly.report.monthLabel} 결산 리포트
           </p>
           {/* 등급 헤더 */}
@@ -177,19 +177,19 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
         <LockCard emoji="🏅" title="표창장" desc="한 달 출석 기록으로 나만의 표창장이 만들어져요" onLogin={onOpenLogin} />
       ) : !monthly.monthEnded ? (
         <Card>
-          <p style={{ fontWeight: 700, color: "#6b7684", marginTop: 0 }}>🏅 표창장</p>
+          <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>🏅 표창장</p>
           <p style={{ fontSize: 13, color: "#8b95a1" }}>
             {monthly.monthLabel} 말에 표창장이 도착해요 · D-{monthly.daysLeft}
           </p>
         </Card>
       ) : !monthly.certUnlocked ? (
         <Card>
-          <p style={{ fontWeight: 700, color: "#6b7684", marginTop: 0 }}>🏅 표창장</p>
+          <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>🏅 표창장</p>
           <button onClick={() => actions.watchCertAd()} style={fullBtn}>📺 광고 보고 표창장 보기</button>
         </Card>
       ) : (
         <Card>
-          <p style={{ fontWeight: 700, color: "#6b7684", marginTop: 0 }}>
+          <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>
             🏅 {monthly.year}년 {monthly.monthLabel} 표창장 <small style={{ color: "#b0b8c1", fontWeight: 500 }}>(스샷 공유용)</small>
           </p>
           {/* 표창장 카드 */}
@@ -274,7 +274,7 @@ function Line({ k, v, color }: { k: string; v: string; color?: string }) {
 function LockCard({ emoji, title, desc, onLogin }: { emoji: string; title: string; desc: string; onLogin: () => void }) {
   return (
     <div style={{ background: "#fff", borderRadius: 18, padding: 18, marginBottom: 14, boxShadow: "0 1px 2px rgba(0,0,0,.04)", position: "relative", overflow: "hidden" }}>
-      <p style={{ fontWeight: 700, color: "#6b7684", marginTop: 0 }}>{emoji} {title}</p>
+      <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>{emoji} {title}</p>
       {/* 블러 플레이스홀더 */}
       <div style={{ filter: "blur(4px)", opacity: 0.5, pointerEvents: "none", userSelect: "none" }}>
         <div style={{ height: 54, background: "#f2f4f6", borderRadius: 12, marginBottom: 8 }} />

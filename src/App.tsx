@@ -64,6 +64,9 @@ export default function App() {
                 borderRadius: 999,
                 background: "#edfadf",
                 color: "#3a8a12",
+                display: "inline-flex",
+                alignItems: "center",
+                lineHeight: 1,
               }}
             >
               토스 로그인
@@ -79,6 +82,11 @@ export default function App() {
                 border: "none",
                 background: "#5DC528",
                 color: "#fff",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                lineHeight: 1,
               }}
             >
               로그인
