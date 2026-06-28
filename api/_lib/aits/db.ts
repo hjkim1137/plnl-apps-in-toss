@@ -22,10 +22,16 @@ export interface PlnlRow {
   /** 보호권으로 보호된 날짜 키 목록. 출석(done)이 아니라 스트릭 연속만 이어줌(streak.ts). */
   frozen: string[];
   claimed_milestones: number[];
+  /** 오늘탭 출석 날짜('YYYY-MM-DD') — 스트릭 소스(달력 수동보정과 분리). */
+  checkins: string[];
+  /** 결산 광고 본 달('YYYY-MM') 목록. */
+  report_seen: string[];
+  /** 표창장 광고 본 달('YYYY-MM') 목록. */
+  cert_seen: string[];
 }
 
 const ROW_COLUMNS =
-  "toss_user_key, fee, target, logs, points, freezes, frozen, claimed_milestones" as const;
+  "toss_user_key, fee, target, logs, points, freezes, frozen, claimed_milestones, checkins, report_seen, cert_seen" as const;
 
 let _client: ReturnType<typeof createClient> | null = null;
 export function getSupabase() {

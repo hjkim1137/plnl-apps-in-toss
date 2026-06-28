@@ -348,64 +348,66 @@ function mkState(over: Partial<PlnlState>): PlnlState {
 }
 const done = (...keys: string[]): Logs =>
   Object.fromEntries(keys.map((k) => [k, "done" as const]));
+// 오늘탭 출석(checkins) 헬퍼 — 스트릭/보호권은 이 날짜 집합으로만 센다(달력 logs 와 분리).
+const ci = (...keys: string[]): string[] => keys;
 
 // currentStreak — frozen 인지
 check(
   "J-1 오늘+직전 2일 done → 3",
-  currentStreak(done("2026-06-08", "2026-06-09", "2026-06-10"), [], J_NOW),
+  currentStreak(ci("2026-06-08", "2026-06-09", "2026-06-10"), [], J_NOW),
   3,
 );
 check(
   "J-2 오늘 미체크 → 0 (푸시 의도)",
-  currentStreak(done("2026-06-08", "2026-06-09"), [], J_NOW),
+  currentStreak(ci("2026-06-08", "2026-06-09"), [], J_NOW),
   0,
 );
 check(
   "J-3 중간 빠진 날 frozen 이면 이어짐(카운트는 done만=3)",
-  currentStreak(done("2026-06-07", "2026-06-08", "2026-06-10"), ["2026-06-09"], J_NOW),
+  currentStreak(ci("2026-06-07", "2026-06-08", "2026-06-10"), ["2026-06-09"], J_NOW),
   3,
 );
 check(
   "J-4 빠진 날 frozen 아니면 끊김 → 1",
-  currentStreak(done("2026-06-08", "2026-06-10"), [], J_NOW),
+  currentStreak(ci("2026-06-08", "2026-06-10"), [], J_NOW),
   1,
 );
 
 // detectFreezeRepair — 제안 감지 (차감 X)
 check(
   "J-5 빈틈 없음(어제 done) → 제안 없음",
-  detectFreezeRepair(mkState({ logs: done("2026-06-09"), freezes: 2 }), J_NOW),
+  detectFreezeRepair(mkState({ checkins: ci("2026-06-09"), freezes: 2 }), J_NOW),
   null,
 );
-const det6 = detectFreezeRepair(mkState({ logs: done("2026-06-08"), freezes: 2 }), J_NOW);
+const det6 = detectFreezeRepair(mkState({ checkins: ci("2026-06-08"), freezes: 2 }), J_NOW);
 check("J-6 빈 1일 + 보호권 충분 → 제안", det6, { days: ["2026-06-09"] });
 check(
   "J-7 빈 2일 + 보호권 1개 → all-or-nothing, 제안 없음",
-  detectFreezeRepair(mkState({ logs: done("2026-06-07"), freezes: 1 }), J_NOW),
+  detectFreezeRepair(mkState({ checkins: ci("2026-06-07"), freezes: 1 }), J_NOW),
   null,
 );
 check(
   "J-8 명시적 missed 만나면 → 제안 없음(본인 인정 결석)",
   detectFreezeRepair(
-    mkState({ logs: { "2026-06-08": "done", "2026-06-09": "missed" }, freezes: 2 }),
+    mkState({ logs: { "2026-06-09": "missed" }, checkins: ci("2026-06-08"), freezes: 2 }),
     J_NOW,
   ),
   null,
 );
 check(
   "J-9 앵커(done) 없으면 → 제안 없음",
-  detectFreezeRepair(mkState({ logs: {}, freezes: 2 }), J_NOW),
+  detectFreezeRepair(mkState({ freezes: 2 }), J_NOW),
   null,
 );
 
 // applyFreezeRepair — 동의 시 차감
-const base6 = mkState({ logs: done("2026-06-08"), freezes: 2 });
+const base6 = mkState({ checkins: ci("2026-06-08"), freezes: 2 });
 const applied = applyFreezeRepair(base6, det6!.days);
 check("J-10 동의 → 보호권 1 차감", applied.freezes, 1);
 check("J-10 frozen=[06-09]", applied.frozen, ["2026-06-09"]);
 check(
   "J-11 복구 뒤 오늘 체크 시 연속 유지(2)",
-  currentStreak({ ...applied.logs, "2026-06-10": "done" }, applied.frozen, J_NOW),
+  currentStreak([...applied.checkins, "2026-06-10"], applied.frozen, J_NOW),
   2,
 );
 check(

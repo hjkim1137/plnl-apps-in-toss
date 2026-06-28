@@ -35,6 +35,15 @@ export interface PlnlState {
   frozen: string[];
   /** 수령 완료한 스트릭 마일스톤 일수 목록 (중복 지급 방지). */
   claimed: number[];
+  /**
+   * 오늘 탭에서 실제로 출석 체크한 날짜('YYYY-MM-DD'). **스트릭은 이 집합으로만 센다.**
+   * 달력(cycleDay) 수동 보정은 회수율·칭호(logs)엔 반영되지만 스트릭엔 포함하지 않는다.
+   */
+  checkins: string[];
+  /** 결산 광고를 끝까지 본 달('YYYY-MM') 목록 — 재로그인·달이동해도 열람 유지(서버 영속). */
+  reportSeen: string[];
+  /** 표창장 광고를 끝까지 본 달('YYYY-MM') 목록 — 재로그인·달이동해도 열람 유지(서버 영속). */
+  certSeen: string[];
   /** 비로그인 무료 출석 사용 횟수. */
   freeUsed: number;
   /** 광고 시청으로 1회 출석이 언락된 상태(비로그인). */
@@ -55,6 +64,9 @@ export function createInitialState(): PlnlState {
     freezes: 0,
     frozen: [],
     claimed: [],
+    checkins: [],
+    reportSeen: [],
+    certSeen: [],
     freeUsed: 0,
     adUnlocked: false,
     lastSeenMonth: 0,
@@ -107,6 +119,16 @@ export function sanitizeDateList(v: unknown, now: Date = new Date()): string[] {
   return Array.from(seen).sort();
 }
 
+/** 'YYYY-MM' 월 키 목록 정규화 — 형식 맞는 것만, 중복 제거·정렬. */
+export function sanitizeMonthList(v: unknown): string[] {
+  if (!Array.isArray(v)) return [];
+  const seen = new Set<string>();
+  for (const item of v) {
+    if (typeof item === "string" && /^\d{4}-\d{2}$/.test(item)) seen.add(item);
+  }
+  return Array.from(seen).sort();
+}
+
 /** 마일스톤 일수 목록 정규화 — 양수 정수만, 중복 제거. */
 function sanitizeClaimed(v: unknown): number[] {
   if (!Array.isArray(v)) return [];
@@ -135,6 +157,9 @@ export function normalizeState(
     freezes: nonNegInt(o.freezes),
     frozen: sanitizeDateList(o.frozen, now),
     claimed: sanitizeClaimed(o.claimed),
+    checkins: sanitizeDateList(o.checkins, now),
+    reportSeen: sanitizeMonthList(o.reportSeen),
+    certSeen: sanitizeMonthList(o.certSeen),
     freeUsed: nonNegInt(o.freeUsed),
     adUnlocked: o.adUnlocked === true,
     lastSeenMonth: nonNegInt(o.lastSeenMonth),

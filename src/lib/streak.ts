@@ -22,17 +22,18 @@ import { MIN_DATE, type Logs, type PlnlState } from "./model";
  * 아직 빠진 게 아니므로 복구 대상이 아니다(detectFreezeRepair 도 오늘은 보지 않음).
  */
 export function currentStreak(
-  logs: Logs,
+  checkins: readonly string[],
   frozen: readonly string[] = [],
   now: Date = new Date(),
 ): number {
+  const checkinSet = new Set(checkins);
   const frozenSet = new Set(frozen);
   let s = 0;
   const d = new Date(now);
   for (;;) {
     const k = ymd(d);
-    if (logs[k] === "done") s++;
-    else if (!frozenSet.has(k)) break; // 'done' 도 'frozen' 도 아니면 끊김
+    if (checkinSet.has(k)) s++;
+    else if (!frozenSet.has(k)) break; // 오늘탭 출석(checkin)도 frozen 도 아니면 끊김
     d.setDate(d.getDate() - 1);
   }
   return s;
@@ -60,20 +61,20 @@ export function detectFreezeRepair(
   now: Date = new Date(),
 ): FreezeRepair | null {
   const frozenSet = new Set(state.frozen);
-  const days: string[] = []; // 직전 done 이후의 빈 날(어제→과거 순)
+  const checkinSet = new Set(state.checkins);
+  const days: string[] = []; // 직전 출석(checkin) 이후의 빈 날(어제→과거 순)
   const d = new Date(now);
   d.setDate(d.getDate() - 1); // 오늘 제외 — 어제부터
   let anchorFound = false;
   for (let i = 0; i < FREEZE_RECONCILE_LOOKBACK_DAYS; i++) {
     const k = ymd(d);
     if (k < MIN_DATE) break; // 기록 시작 이전
-    const v = state.logs[k];
-    if (v === "done") {
-      anchorFound = true; // 스트릭 앵커 — 여기서 멈춘다
+    if (checkinSet.has(k)) {
+      anchorFound = true; // 오늘탭 출석 앵커 — 여기서 멈춘다
       break;
     }
-    if (v === "missed") return null; // 본인이 인정한 결석 → 복구 대상 아님
-    if (!frozenSet.has(k)) days.push(k); // 기록 없는 빈 날(이미 frozen 이면 이어주되 제외)
+    if (state.logs[k] === "missed") return null; // 본인이 인정한 결석 → 복구 대상 아님
+    if (!frozenSet.has(k)) days.push(k); // 출석 아닌 빈 날(이미 frozen 이면 이어주되 제외)
     d.setDate(d.getDate() - 1);
   }
   if (!anchorFound || days.length === 0) return null; // 살릴 스트릭/빈 날 없음
@@ -102,14 +103,15 @@ export function declineFreezeRepair(state: PlnlState, days: string[]): PlnlState
   return { ...state, logs };
 }
 
-/** 특정 달(y, m: 0-based)의 최장 연속 출석. 결산 리포트용. */
-export function maxStreakInMonth(logs: Logs, y: number, m: number): number {
+/** 특정 달(y, m: 0-based)의 최장 연속 출석(오늘탭 checkin 기준). 결산 리포트용. */
+export function maxStreakInMonth(checkins: readonly string[], y: number, m: number): number {
+  const checkinSet = new Set(checkins);
   const days = daysInMonth(y, m);
   let mx = 0;
   let cur = 0;
   for (let d = 1; d <= days; d++) {
     const k = dayKey(y, m, d);
-    if (logs[k] === "done") {
+    if (checkinSet.has(k)) {
       cur++;
       mx = Math.max(mx, cur);
     } else {
@@ -119,11 +121,9 @@ export function maxStreakInMonth(logs: Logs, y: number, m: number): number {
   return mx;
 }
 
-/** 전체 기록 통틀어 최장 연속 출석(달 경계 무관). */
-export function bestStreakAll(logs: Logs): number {
-  const keys = Object.keys(logs)
-    .filter((k) => logs[k] === "done")
-    .sort();
+/** 전체 기록 통틀어 최장 연속 출석(오늘탭 checkin 기준, 달 경계 무관). */
+export function bestStreakAll(checkins: readonly string[]): number {
+  const keys = [...checkins].sort();
   let mx = 0;
   let cur = 0;
   let prev: Date | null = null;

@@ -17,9 +17,14 @@ export function parseYmd(s: string): Date | null {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
-/** 'YYYY-MM' 월 키. m 은 0-based(0=1월). */
+/** 'YYYY-MM' 월 키. m 은 0-based(0=1월). reportSeen/certSeen 등 '달' 키로 사용. */
+export function monthKey(y: number, m: number): string {
+  return `${y}-${pad(m + 1)}`;
+}
+
+/** 'YYYY-MM-' 월 접두어(logs startsWith 프리픽스 매칭용). monthKey 와 lockstep. */
 export function monthPrefix(y: number, m: number): string {
-  return `${y}-${pad(m + 1)}-`;
+  return monthKey(y, m) + "-";
 }
 
 /** (y, m: 0-based, d) → 'YYYY-MM-DD' 일자 키. */

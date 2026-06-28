@@ -81,6 +81,14 @@ export function applyCheckIn(
   } else {
     next.logs[dateStr] = value;
   }
+
+  // 오늘 탭 출석만 스트릭에 반영 — 최종 logs 값이 'done' 이면 checkins 포함, 아니면 제외.
+  // (달력 cycleDay 는 checkins 를 건드리지 않아 스트릭과 무관.)
+  const checkinSet = new Set(state.checkins);
+  if (next.logs[dateStr] === "done") checkinSet.add(dateStr);
+  else checkinSet.delete(dateStr);
+  next.checkins = Array.from(checkinSet).sort();
+
   return { ok: true, next, pointAwarded };
 }
 
@@ -104,12 +112,14 @@ export function cycleCalendarDay(state: PlnlState, dateStr: string): PlnlState {
   return { ...state, logs: { ...state.logs, [dateStr]: nextVal } };
 }
 
-/** 특정 달 출석 기록 전체 초기화 (목업 resetMonth). */
+/** 특정 달 출석 기록 전체 초기화 (목업 resetMonth). 해당 달의 checkins(스트릭) 도 함께 제거. */
 export function clearMonth(state: PlnlState, y: number, m: number): PlnlState {
   const prefix = monthPrefix(y, m);
   const logs: Logs = {};
   for (const [k, v] of Object.entries(state.logs)) {
     if (!k.startsWith(prefix)) logs[k] = v;
   }
-  return { ...state, logs };
+  const checkins = state.checkins.filter((k) => !k.startsWith(prefix));
+  // reportSeen/certSeen(광고 본 '달')은 의도적으로 보존 — 초기화해도 이미 본 광고를 다시 보게 하지 않음.
+  return { ...state, logs, checkins };
 }

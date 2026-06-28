@@ -29,6 +29,12 @@ create table if not exists public.plnl_aits_users (
   frozen jsonb not null default '[]'::jsonb,
   -- 수령 완료한 스트릭 마일스톤 일수 목록(중복 지급 방지).
   claimed_milestones integer[] not null default '{}'::integer[],
+  -- 오늘 탭 출석 날짜('YYYY-MM-DD') 목록 — 스트릭 소스(달력 logs 수동보정과 분리).
+  checkins jsonb not null default '[]'::jsonb,
+  -- 결산 광고 본 달('YYYY-MM') 목록 — 재로그인·달이동해도 열람 유지.
+  report_seen jsonb not null default '[]'::jsonb,
+  -- 표창장 광고 본 달('YYYY-MM') 목록.
+  cert_seen jsonb not null default '[]'::jsonb,
   created_at timestamp not null default (now() at time zone 'Asia/Seoul'),
   updated_at timestamp not null default (now() at time zone 'Asia/Seoul')
 );
@@ -42,6 +48,9 @@ alter table public.plnl_aits_users add column if not exists points integer not n
 alter table public.plnl_aits_users add column if not exists freezes integer not null default 0;
 alter table public.plnl_aits_users add column if not exists frozen jsonb not null default '[]'::jsonb;
 alter table public.plnl_aits_users add column if not exists claimed_milestones integer[] not null default '{}'::integer[];
+alter table public.plnl_aits_users add column if not exists checkins jsonb not null default '[]'::jsonb;
+alter table public.plnl_aits_users add column if not exists report_seen jsonb not null default '[]'::jsonb;
+alter table public.plnl_aits_users add column if not exists cert_seen jsonb not null default '[]'::jsonb;
 
 -- created_at/updated_at 을 KST wall-clock 으로 (timestamptz → timestamp). 이미 timestamp 면 건너뜀(재실행 안전).
 do $$

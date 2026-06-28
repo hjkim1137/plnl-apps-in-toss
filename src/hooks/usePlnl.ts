@@ -46,6 +46,7 @@ import {
   daysInMonth,
   firstWeekday,
   monthIndex,
+  monthKey,
   todayStr,
 } from "../lib/date";
 import { applyBuyFreeze, applyFreezeFromAd, canBuyFreeze } from "../lib/freeze";
@@ -128,8 +129,8 @@ export function usePlnl() {
   const [viewY, setViewY] = useState(curY);
   const [viewM, setViewM] = useState(curM);
   const [previewEnd, setPreviewEnd] = useState(false);
-  // 결산/표창장은 "해당 달 1회" 광고 시청 후 열람(세션). 달이 바뀌면 리셋.
-  const [adSeen, setAdSeen] = useState({ report: false, cert: false });
+  // 결산/표창장 광고 열람은 이제 state.reportSeen/certSeen(본 '달' 목록)로 영속 —
+  // 재로그인·달이동해도 유지. (기존 ephemeral adSeen 제거)
   // 이번 세션에 '도착'한 직전 달(월 경계를 넘어 처음 연 경우). null = 도착 없음.
   const [arrival, setArrival] = useState<{ y: number; m: number } | null>(null);
   // 보호권으로 메울 수 있는 빠진 날 제안(확인 후 복구). null = 제안 없음. 영속 아님(세션 UI).
@@ -239,7 +240,7 @@ export function usePlnl() {
       });
     }
 
-    const report = buildReport(stats, viewY, viewM, maxStreakInMonth(state.logs, viewY, viewM));
+    const report = buildReport(stats, viewY, viewM, maxStreakInMonth(state.checkins, viewY, viewM));
     const certificate = buildCertificate(stats, viewY, viewM);
 
     return {
@@ -258,25 +259,26 @@ export function usePlnl() {
     };
     // adSeen 은 의도적으로 의존성에서 제외 — 두 boolean(열람 여부)만 좌우하므로 무거운
     // 달력/결산/표창장 재계산을 일으키지 않도록 메모 밖(return)에서 합성한다.
-  }, [state.fee, state.target, state.logs, state.loggedIn, state.frozen, viewY, viewM, previewEnd, now, curY, curM, today]);
+  }, [state.fee, state.target, state.logs, state.checkins, state.loggedIn, state.frozen, viewY, viewM, previewEnd, now, curY, curM, today]);
 
   // ── 파생값: 게이미피케이션(로그인) ─────────────────────────────────────
   const gamification = useMemo(() => {
     const td = totalDone(state.logs);
-    const streak = currentStreak(state.logs, state.frozen, now);
+    // 스트릭은 오늘탭 출석(checkins)만으로 센다 — 달력 수동보정(logs)은 회수율·칭호엔 반영되나 스트릭 제외.
+    const streak = currentStreak(state.checkins, state.frozen, now);
     return {
       title: resolveTitle(td),
       totalDone: td,
       monthsGraduated: monthsGraduated(state.logs, state.target),
       streak,
-      bestStreak: bestStreakAll(state.logs),
+      bestStreak: bestStreakAll(state.checkins),
       milestoneChips: milestoneChips(streak, state.claimed),
       claimableMilestone: nextClaimableMilestone(streak, state.claimed),
       points: state.points,
       freezes: state.freezes,
       canBuyFreeze: canBuyFreeze(state),
     };
-  }, [state.logs, state.target, state.claimed, state.points, state.freezes, state.frozen, now]);
+  }, [state.logs, state.checkins, state.target, state.claimed, state.points, state.freezes, state.frozen, now]);
 
   // ── 액션 ───────────────────────────────────────────────────────────────
 
@@ -330,7 +332,7 @@ export function usePlnl() {
   /** 스트릭 마일스톤 수령 — 전면형 광고 보고 포인트. */
   const claimMilestone = useCallback(async () => {
     const m = nextClaimableMilestone(
-      currentStreak(stateRef.current.logs, stateRef.current.frozen, now),
+      currentStreak(stateRef.current.checkins, stateRef.current.frozen, now),
       stateRef.current.claimed,
     );
     if (!m) return { ok: false as const, reason: "none" as const };
@@ -372,18 +374,27 @@ export function usePlnl() {
   }, [freezeRepair]);
 
   /** 월간 결산 열람용 전면형 광고. */
+  // 현재 보는 달을 광고-열람 목록(reportSeen/certSeen)에 추가 — 중복 방지·정렬. 영속(자동 저장).
+  const addSeenMonth = useCallback(
+    (key: "reportSeen" | "certSeen") => {
+      const ym = monthKey(viewY, viewM);
+      setState((s) => (s[key].includes(ym) ? s : { ...s, [key]: [...s[key], ym].sort() }));
+    },
+    [viewY, viewM],
+  );
+
   const watchReportAd = useCallback(async () => {
     const earned = await playAdSafe("interstitial");
-    if (earned) setAdSeen((a) => ({ ...a, report: true }));
+    if (earned) addSeenMonth("reportSeen");
     return { ok: earned };
-  }, []);
+  }, [addSeenMonth]);
 
   /** 표창장 열람용 전면형 광고. */
   const watchCertAd = useCallback(async () => {
     const earned = await playAdSafe("interstitial");
-    if (earned) setAdSeen((a) => ({ ...a, cert: true }));
+    if (earned) addSeenMonth("certSeen");
     return { ok: earned };
-  }, []);
+  }, [addSeenMonth]);
 
   // ── 월 이동 ────────────────────────────────────────────────────────────
   const goToMonth = useCallback(
@@ -396,7 +407,7 @@ export function usePlnl() {
       setViewY(ny);
       setViewM(nm);
       if (!(ny === curY && nm === curM)) setPreviewEnd(false);
-      setAdSeen({ report: false, cert: false }); // 달 바뀌면 광고 다시
+      // 광고 열람은 달별 영속(reportSeen/certSeen)이라 달 이동 시 리셋 불필요.
     },
     [curY, curM],
   );
@@ -412,7 +423,6 @@ export function usePlnl() {
   /** 월말 미리보기(표창장/결산 해제) 토글 — 출시 전 데모/검증용. */
   const togglePreview = useCallback(() => {
     setPreviewEnd((p) => !p);
-    setAdSeen({ report: false, cert: false });
   }, []);
 
   // ── 알림 (F17) ─────────────────────────────────────────────────────────
@@ -487,15 +497,19 @@ export function usePlnl() {
     return { ok: true as const };
   }, [now]);
 
+  // 현재 보는 달의 'YYYY-MM' 키 — 광고 열람(reportSeen/certSeen) 합성에 재사용.
+  const viewMonthKey = monthKey(viewY, viewM);
+
   return {
     state,
     today: todayData,
     checkin,
-    // 광고 열람 여부(adSeen)는 가벼운 합성 — monthlyData 메모를 재계산시키지 않음.
+    // 광고 열람 여부는 영속 reportSeen/certSeen(본 '달' 목록)에서 현재 보는 달로 합성 —
+    // 재로그인·달이동해도 유지. monthlyData 메모는 재계산시키지 않음(가벼운 합성).
     monthly: {
       ...monthlyData,
-      reportUnlocked: adSeen.report,
-      certUnlocked: adSeen.cert,
+      reportUnlocked: state.reportSeen.includes(viewMonthKey),
+      certUnlocked: state.certSeen.includes(viewMonthKey),
     },
     game: gamification,
     selectableMonths,

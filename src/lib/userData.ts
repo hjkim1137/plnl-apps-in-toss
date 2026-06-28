@@ -60,6 +60,9 @@ interface PlnlRow {
   freezes: number;
   frozen: string[] | null;
   claimed_milestones: number[] | null;
+  checkins: string[] | null;
+  report_seen: string[] | null;
+  cert_seen: string[] | null;
 }
 
 function rowToState(row: PlnlRow, now: Date): PlnlState {
@@ -74,6 +77,9 @@ function rowToState(row: PlnlRow, now: Date): PlnlState {
       freezes: row.freezes,
       frozen: row.frozen ?? [],
       claimed: row.claimed_milestones ?? [],
+      checkins: row.checkins ?? [],
+      reportSeen: row.report_seen ?? [],
+      certSeen: row.cert_seen ?? [],
       freeUsed: 0,
       adUnlocked: false,
     },
@@ -91,6 +97,9 @@ function stateToRow(tossUserKey: string, state: PlnlState): PlnlRow {
     freezes: state.freezes,
     frozen: state.frozen,
     claimed_milestones: state.claimed,
+    checkins: state.checkins,
+    report_seen: state.reportSeen,
+    cert_seen: state.certSeen,
   };
 }
 
@@ -110,6 +119,9 @@ export function mergeForLogin(local: PlnlState, remote: PlnlState): PlnlState {
     ...remote,
     loggedIn: true,
     logs,
+    // 오늘탭 출석(스트릭) — 로컬(비로그인 무료체크 포함)과 서버 합집합으로 보존.
+    checkins: Array.from(new Set([...remote.checkins, ...local.checkins])).sort(),
+    // reportSeen/certSeen 은 서버 권위(...remote 로 전달) — 비로그인엔 결산/표창장이 없어 로컬값 없음.
     fee: remote.fee || local.fee,
     target: remote.target || local.target,
     // 기기 로컬 전용 — 서버 row 에 없으므로 이 기기 값을 유지(로그인해도 도착 트리거/동의 보존).
@@ -135,7 +147,7 @@ export async function loadRemoteState(
   // dev/MVP — supabase 직접
   const { data, error } = await supabase
     .from(TABLE)
-    .select("toss_user_key, fee, target, logs, points, freezes, frozen, claimed_milestones")
+    .select("toss_user_key, fee, target, logs, points, freezes, frozen, claimed_milestones, checkins, report_seen, cert_seen")
     .eq("toss_user_key", tossUserKey)
     .maybeSingle();
   if (error) throw new Error(`loadRemoteState failed: ${error.message}`);
