@@ -82,13 +82,13 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
           <div style={{ display: "flex", gap: 10 }}>
             <button
               onClick={() => actions.checkIn("done")}
-              style={{ flex: 1, padding: 15, border: "none", borderRadius: 14, fontWeight: 800, background: today.todayValue === "missed" ? "#f2f4f6" : today.todayValue === "done" ? "#5DC528" : "#191f28", color: today.todayValue === "missed" ? "#b0b8c1" : "#fff", cursor: "pointer", fontFamily: "inherit", fontSize: 15 }}
+              style={{ flex: 1, padding: 15, border: "none", borderRadius: 14, fontWeight: 800, background: today.todayValue === "done" ? "#5DC528" : "#edfadf", color: today.todayValue === "missed" ? "#b0b8c1" : today.todayValue === "done" ? "#fff" : "#4e5968", cursor: "pointer", fontFamily: "inherit", fontSize: 15 }}
             >
               오늘 갔어요 💪
             </button>
             <button
               onClick={() => actions.checkIn("missed")}
-              style={{ flex: 1, padding: 15, border: "none", borderRadius: 14, fontWeight: 800, background: today.todayValue === "missed" ? "#f04452" : "#f2f4f6", color: today.todayValue === "done" ? "#b0b8c1" : today.todayValue === "missed" ? "#fff" : "#4e5968", cursor: "pointer", fontFamily: "inherit", fontSize: 15 }}
+              style={{ flex: 1, padding: 15, border: "none", borderRadius: 14, fontWeight: 800, background: today.todayValue === "missed" ? "#f04452" : "#fff0f1", color: today.todayValue === "done" ? "#b0b8c1" : today.todayValue === "missed" ? "#fff" : "#4e5968", cursor: "pointer", fontFamily: "inherit", fontSize: 15 }}
             >
               오늘 안 갔어요 💸
             </button>
