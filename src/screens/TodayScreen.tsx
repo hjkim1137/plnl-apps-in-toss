@@ -225,12 +225,12 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
             </div>
           )}
           <Card>
-            <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>🔥 나의 연속 방문 기록</p>
+            <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>🔥 나의 연속 인증 기록</p>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
               <div style={{ fontSize: 26 }}>🔥</div>
               <div>
                 <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: -1 }}>
-                  <b style={{ color: "#ff8a00" }}>{game.streak}</b>일 연속 출석 중
+                  <b style={{ color: "#ff8a00" }}>{game.streak}</b>일 연속 인증 중
                 </div>
                 <div style={{ fontSize: 12, color: "#8b95a1", fontWeight: 600 }}>
                   {game.streak === 0 ? "오늘 출석하면 스트릭 시작!" : "이 불 끄지 마세요"}
@@ -261,7 +261,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
             )}
           </Card>
           <Card>
-            <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>💰 출석 포인트</p>
+            <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>💰 출석 인증 포인트</p>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
               <div style={{ width: 42, height: 42, borderRadius: 12, background: "#fff7e0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>💰</div>
               <div>
@@ -307,7 +307,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
         <>
           <LockCard emoji="🏅" title="내 등급" desc="출석할수록 등급 상승 — 작심삼일러 → 회수 전문가 → 뽕 뽑기 달인 → 명예 헬창" onLogin={onOpenLogin} />
           <LockCard emoji="🔥" title="연속 출석 스트릭" desc="로그인하면 연속 출석 + 광고 보고 마일스톤 포인트를 받아요" onLogin={onOpenLogin} />
-          <LockCard emoji="💰" title="출석 포인트" desc="출석마다 1P 적립 → 스트릭 보호권으로 연속 기록을 지켜요" onLogin={onOpenLogin} />
+          <LockCard emoji="💰" title="출석 인증 포인트" desc="출석마다 1P 적립 → 스트릭 보호권으로 연속 기록을 지켜요" onLogin={onOpenLogin} />
         </>
       )}
 
