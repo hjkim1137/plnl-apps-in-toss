@@ -18,9 +18,10 @@ export default function App() {
 
   const openLogin = () => setShowLoginSheet(true);
   const closeLogin = () => setShowLoginSheet(false);
-  const doLogin = async () => {
-    await plnl.actions.login();
-    closeLogin();
+  // 앱인토스 웹뷰는 async 이벤트 핸들러에서 토스 SDK 호출(appLogin 등)을 막는다 →
+  // sync 핸들러로 login() 을 동기 호출하고, 완료 후 .then 으로 시트만 닫는다.
+  const doLogin = () => {
+    plnl.actions.login().then(() => closeLogin());
   };
 
   if (!isInsideTossApp()) {
