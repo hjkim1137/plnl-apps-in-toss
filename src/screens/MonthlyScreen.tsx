@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { PlnlController } from "../hooks/usePlnl";
 import { NOTIFY_COPY } from "../lib/content";
 import { won } from "../lib/format";
@@ -19,6 +20,7 @@ const DOW = ["일", "월", "화", "수", "목", "금", "토"];
 export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpenLogin: () => void }) {
   const { monthly, selectableMonths, actions, state, notif, view } = plnl;
   const { openToast } = useToast();
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
   const s = monthly.stats;
 
   return (
@@ -135,7 +137,7 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
           </span>
         </div>
         <button
-          onClick={() => actions.clearMonth(monthly.year, monthly.month)}
+          onClick={() => setShowResetConfirm(true)}
           style={{ width: "100%", marginTop: 8, padding: 13, border: "1px solid #e5e8eb", borderRadius: 13, background: "#fff", color: "#6b7684", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
         >
           이번 달 기록 초기화
@@ -271,6 +273,44 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
             </button>
           )}
         </Card>
+      )}
+
+      {/* 이번 달 기록 초기화 확인 다이얼로그 (실수 방지) */}
+      {showResetConfirm && (
+        <>
+          <div
+            onClick={() => setShowResetConfirm(false)}
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 30 }}
+          />
+          <div
+            style={{
+              position: "fixed", left: "50%", top: "50%", transform: "translate(-50%,-50%)",
+              width: "calc(100% - 80px)", maxWidth: 340, background: "#fff", borderRadius: 16,
+              padding: 22, zIndex: 31, boxShadow: "0 8px 24px rgba(0,0,0,.18)",
+            }}
+          >
+            <div style={{ fontSize: 16, fontWeight: 800, color: "#191f28", marginBottom: 8 }}>
+              이번 달 기록을 초기화할까요?
+            </div>
+            <div style={{ fontSize: 13.5, color: "#6b7684", lineHeight: 1.5, marginBottom: 18 }}>
+              {monthly.year}년 {monthly.monthLabel}의 출석 기록이 모두 지워져요. 되돌릴 수 없어요.
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button
+                onClick={() => setShowResetConfirm(false)}
+                style={{ flex: 1, padding: 12, border: "1px solid #e5e8eb", borderRadius: 12, background: "#fff", color: "#4e5968", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
+              >
+                취소
+              </button>
+              <button
+                onClick={() => { actions.clearMonth(monthly.year, monthly.month); setShowResetConfirm(false); }}
+                style={{ flex: 1, padding: 12, border: "none", borderRadius: 12, background: "#f04452", color: "#fff", fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}
+              >
+                초기화
+              </button>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );
