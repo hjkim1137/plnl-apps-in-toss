@@ -229,7 +229,7 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
             🏅 {monthly.year}년 {monthly.monthLabel} 표창장 <small style={{ color: "#b0b8c1", fontWeight: 500 }}>(스샷 공유용)</small>
           </p>
           {/* 표창장 카드 */}
-          <div style={{ position: "relative", marginBottom: 14 }}>
+          <div style={{ position: "relative", marginBottom: 14, marginTop: 24 }}>
             {/* 상단 메달 */}
             <div style={{
               position: "absolute", top: -18, left: "50%", transform: "translateX(-50%)",
