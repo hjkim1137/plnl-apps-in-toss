@@ -1,12 +1,11 @@
 // QA 로직 검증 스크립트 — 순수 함수 전수 테스트
 // 실행: npx tsx scripts/qa_verify.ts
 
-import { computeMonth, unitCost } from "../src/lib/calc";
+import { computeMonth } from "../src/lib/calc";
 import { resolveBracketKey, isGraduated } from "../src/lib/brackets";
 import {
   BRACKET_VISUALS,
   LEVELS,
-  STREAK_MILESTONES,
   captionsFor,
   certificateText,
   reportGrade,
@@ -34,7 +33,6 @@ import {
   sanitizeLogs,
   sanitizeDateList,
   createInitialState,
-  type Logs,
   type PlnlState,
 } from "../src/lib/model";
 
@@ -346,8 +344,6 @@ const J_NOW = new Date(2026, 5, 10); // 2026-06-10 (로컬)
 function mkState(over: Partial<PlnlState>): PlnlState {
   return { ...createInitialState(), loggedIn: true, ...over };
 }
-const done = (...keys: string[]): Logs =>
-  Object.fromEntries(keys.map((k) => [k, "done" as const]));
 // 오늘탭 출석(checkins) 헬퍼 — 스트릭/보호권은 이 날짜 집합으로만 센다(달력 logs 와 분리).
 const ci = (...keys: string[]): string[] => keys;
 

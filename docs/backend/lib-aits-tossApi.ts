@@ -61,7 +61,7 @@ export async function tossFetch<T>(
           try {
             const parsed = JSON.parse(raw) as TossResult<T>;
             resolve(parsed);
-          } catch (e) {
+          } catch {
             reject(new Error(`Toss API parse error: ${raw}`));
           }
         });
