@@ -159,7 +159,7 @@ export default function App() {
       )}
 
       {/* 온보딩 — 처음 쓰는 유저 (출석 기록 없음 + 무료 미사용) */}
-      {Object.keys(plnl.state.logs).length === 0 && plnl.state.freeUsed === 0 && !showSettings && (
+      {!plnl.state.loggedIn && Object.keys(plnl.state.logs).length === 0 && plnl.state.freeUsed === 0 && !showSettings && (
         <div style={{ padding: "12px 18px 0" }}>
           <div style={{
             background: "linear-gradient(135deg, #edfadf, #d4f5b8)",
