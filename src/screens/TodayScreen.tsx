@@ -46,14 +46,22 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
     <div>
       {/* 1) 오늘의 선택 */}
       <Card>
-        <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>
-          🔔 오늘의 선택{" "}
-          {!state.loggedIn && (
-            <small style={{ color: "#8b95a1" }}>
-              · 무료 {checkin.freeLeft}/3
-            </small>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+          <p style={{ fontWeight: 700, color: "#6b7684", margin: 0 }}>
+            🔔 오늘의 선택{" "}
+            {!state.loggedIn && (
+              <small style={{ color: "#8b95a1" }}>
+                · 무료 {checkin.freeLeft}/3
+              </small>
+            )}
+          </p>
+          {state.loggedIn && (
+            <div style={{ display: "flex", alignItems: "center", gap: 5, background: "#fff7e0", border: "1px solid #ffe4a0", borderRadius: 999, padding: "5px 12px" }}>
+              <span style={{ fontSize: 14 }}>🪙</span>
+              <span style={{ fontSize: 14, fontWeight: 800, color: "#b07a00" }}>{state.points}P</span>
+            </div>
           )}
-        </p>
+        </div>
         <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
           <div style={{ flex: 1, background: "#edfadf", borderRadius: 14, padding: 12, textAlign: "center" }}>
             <div style={{ fontSize: 12, color: "#3a8a12", fontWeight: 700 }}>오늘 가면</div>
