@@ -57,7 +57,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
           </p>
           {state.loggedIn && (
             <div style={{ display: "flex", alignItems: "center", gap: 5, background: "#fff7e0", border: "1px solid #ffe4a0", borderRadius: 999, padding: "5px 12px" }}>
-              <span style={{ fontSize: 14 }}>🪙</span>
+              <span style={{ fontSize: 14 }}>💰</span>
               <span style={{ fontSize: 14, fontWeight: 800, color: "#b07a00" }}>{state.points}P</span>
             </div>
           )}
