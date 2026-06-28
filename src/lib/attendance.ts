@@ -50,9 +50,11 @@ export type CheckInResult =
 
 /**
  * 출석 체크 1회 시도.
- * - 이미 같은 값이면 취소(토글 off), 다른 값이면 교체 — 이 경우 비용/포인트 미적용.
- * - 새로 기록할 때만: 로그인=+1P / 비로그인=무료차감 → 광고언락소진 → 둘 다 없으면 needAd.
- * 목업 attemptCheckIn 과 동일 정책.
+ * - 이미 같은 값이면 취소(토글 off), 다른 값이면 교체.
+ * - 포인트/게이팅은 **'done(출석)' 상태의 진입·이탈에만** 반응한다 → 하루 한 번 1P.
+ *   같은 날을 껐다 켜거나 done↔missed 를 왕복해도 누적되지 않고(진입 +1P / 이탈 -1P 로 상쇄),
+ *   '안 갔어요'(missed) 기록은 적립하지 않는다.
+ *   로그인=±1P / 비로그인=무료차감·복구 → 무료 소진 시 광고언락소진 → 둘 다 없으면 needAd.
  */
 export function applyCheckIn(
   state: PlnlState,
@@ -63,7 +65,12 @@ export function applyCheckIn(
   const next: PlnlState = { ...state, logs: { ...state.logs } };
   let pointAwarded = false;
 
-  if (!already) {
+  const toggleOff = already === value; // 같은 값 재탭 = 취소
+  const willDone = !toggleOff && value === "done";
+  const wasDone = already === "done";
+
+  if (willDone && !wasDone) {
+    // 새로 출석(done) 기록 → 적립/소진
     if (state.loggedIn) {
       next.points = state.points + POINT_PER_CHECKIN;
       pointAwarded = true;
@@ -74,9 +81,16 @@ export function applyCheckIn(
     } else {
       return { ok: false, reason: "need_ad" };
     }
+  } else if (wasDone && !willDone) {
+    // 출석 취소(done → off/missed) → 적립 회수(로그인) / 무료 카운트 복구(비로그인)
+    if (state.loggedIn) {
+      next.points = Math.max(0, state.points - POINT_PER_CHECKIN);
+    } else if (state.freeUsed > 0) {
+      next.freeUsed = state.freeUsed - 1;
+    }
   }
 
-  if (already === value) {
+  if (toggleOff) {
     delete next.logs[dateStr]; // 같은 값 다시 누르면 취소
   } else {
     next.logs[dateStr] = value;

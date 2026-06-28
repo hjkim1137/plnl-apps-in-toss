@@ -251,6 +251,23 @@ const rSwitch = applyCheckIn(initDone, "2026-06-23", "missed");
 check("F-6 done→missed 교체 ok", rSwitch.ok, true);
 if (rSwitch.ok) check("F-6 log=missed", rSwitch.next.logs["2026-06-23"], "missed");
 
+// 하루 한 번만 적립 — 토글 off→on 해도 누적 안 함(진입 +1 / 이탈 -1 상쇄)
+const sDoneA = applyCheckIn(initLogin, "2026-06-23", "done"); // empty→done +1P
+const sOff = sDoneA.ok ? applyCheckIn(sDoneA.next, "2026-06-23", "done") : sDoneA; // done→off -1P
+check("F-5b off 시 적립 회수", sOff.ok ? sOff.next.points : -1, 0);
+const sOnAgain = sOff.ok ? applyCheckIn(sOff.next, "2026-06-23", "done") : sOff; // empty→done +1P
+check("F-5c 토글 off→on 누적 안 함(net 1P)", sOnAgain.ok ? sOnAgain.next.points : -1, 1);
+
+// done → missed 는 적립 회수(출석 취소)
+const sDoneToMissed = sDoneA.ok ? applyCheckIn(sDoneA.next, "2026-06-23", "missed") : sDoneA;
+check("F-6b done→missed 적립 회수", sDoneToMissed.ok ? sDoneToMissed.next.points : -1, 0);
+
+// '안 갔어요'(missed)는 적립/무료차감 없음
+const rMissedLogin = applyCheckIn(initLogin, "2026-06-23", "missed");
+check("F-6c 로그인 missed 적립 없음", rMissedLogin.ok ? rMissedLogin.next.points : -1, 0);
+const rMissedFree = applyCheckIn(init, "2026-06-23", "missed");
+check("F-6d 비로그인 missed 무료 미차감", rMissedFree.ok ? rMissedFree.next.freeUsed : -1, 0);
+
 // totalDone
 const logs = { "2026-06-01": "done" as const, "2026-06-02": "missed" as const, "2026-06-03": "done" as const };
 check("F-7 totalDone=2", totalDone(logs), 2);
