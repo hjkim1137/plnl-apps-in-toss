@@ -56,23 +56,8 @@ export default function App() {
           뺄래 <span style={{ color: "#5DC528" }}>낼래</span>
         </div>
         <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
-          {plnl.state.loggedIn ? (
-            <span
-              style={{
-                fontSize: 11,
-                fontWeight: 800,
-                padding: "5px 10px",
-                borderRadius: 999,
-                background: "#edfadf",
-                color: "#3a8a12",
-                display: "inline-flex",
-                alignItems: "center",
-                lineHeight: 1,
-              }}
-            >
-              토스 로그인
-            </span>
-          ) : (
+          {/* 로그인 완료 시에는 숨김 — 비로그인일 때만 로그인 버튼 노출 */}
+          {!plnl.state.loggedIn && (
             <button
               onClick={() => plnl.actions.login()}
               style={{
