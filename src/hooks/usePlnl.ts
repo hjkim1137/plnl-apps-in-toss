@@ -22,6 +22,7 @@ import {
   unlockAfterCheckinAd,
 } from "../lib/attendance";
 import {
+  getStoredSession,
   isAuthConfigured,
   loginWithToss,
   makeMockSession,
@@ -141,6 +142,12 @@ export function usePlnl() {
 
   // ── 영속: 상태 변경 시 디바운스 저장(로컬 + 로그인 시 서버) ──────────────
   const sessionRef = useRef<Session | null>(null);
+  // 앱 재시작(이미 로그인 상태로 localStorage 복원) 시 저장된 세션을 ref 에 복원한다.
+  // login() 은 새 로그인 때만 호출되므로 이게 없으면 재진입 후 자동 원격저장이 sessionRef=null
+  // 가드에 막혀 통째로 스킵된다 → 로컬에만 쌓이고 Supabase 미반영(부분 저장 버그). 마운트 1회.
+  useEffect(() => {
+    if (!sessionRef.current) sessionRef.current = getStoredSession();
+  }, []);
   useEffect(() => {
     saveLocalState(state);
     if (!state.loggedIn || !sessionRef.current) return;
@@ -218,6 +225,7 @@ export function usePlnl() {
     const stats = statsForMonth(state, viewY, viewM);
     const bracket = resolveBracketView(stats.rate, stats.done);
     const ended = isMonthEnded(viewY, viewM, now, previewEnd);
+    const isCurrent = viewY === curY && viewM === curM;
 
     // 달력 셀
     const cells: CalendarCell[] = [];
@@ -248,13 +256,14 @@ export function usePlnl() {
       year: viewY,
       month: viewM,
       monthLabel: MONTH_LABELS[viewM],
-      isCurrent: viewY === curY && viewM === curM,
+      isCurrent,
       monthEnded: ended,
       daysLeft: daysUntilMonthEnd(viewY, viewM, now),
       calendar: cells,
       report,
       certificate,
-      showNotif: state.loggedIn && ended,
+      // 도착 배너는 '현재 달'(미리보기 포함)에서만 — 과거 달로 이동할 때마다 뜨던 문제 차단.
+      showNotif: state.loggedIn && ended && isCurrent,
     };
     // adSeen 은 의도적으로 의존성에서 제외 — 두 boolean(열람 여부)만 좌우하므로 무거운
     // 달력/결산/표창장 재계산을 일으키지 않도록 메모 밖(return)에서 합성한다.
@@ -309,13 +318,13 @@ export function usePlnl() {
     return { ok: true as const };
   }, []);
 
-  /** 달력 날짜 직접 토글(과거 보정). */
+  /** 달력 날짜 직접 토글(과거 보정). 연속 탭이 서로 덮어쓰지 않도록 함수형 업데이트 사용. */
   const cycleDay = useCallback((dateStr: string) => {
-    setState(cycleCalendarDay(stateRef.current, dateStr));
+    setState((s) => cycleCalendarDay(s, dateStr));
   }, []);
 
   const clearMonth = useCallback((y: number, m: number) => {
-    setState(clearMonthLogs(stateRef.current, y, m));
+    setState((s) => clearMonthLogs(s, y, m));
   }, []);
 
   const setSettings = useCallback(
