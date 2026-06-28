@@ -1,3 +1,4 @@
+import { AdButton } from "../components/AdButton";
 import type { PlnlController } from "../hooks/usePlnl";
 import {
   AD_UNLOCKED_TAG,
@@ -96,12 +97,12 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
         ) : (
           // 무료 소진 → 전면형 광고 게이트. 시청 완료 시 1회 언락되고 위 버튼이 나타남.
           <>
-            <button
-              onClick={() => actions.watchCheckinAd()}
+            <AdButton
+              onRun={() => actions.watchCheckinAd()}
               style={{ width: "100%", padding: 15, border: "none", borderRadius: 14, fontWeight: 800, background: "#191f28", color: "#fff", cursor: "pointer", fontFamily: "inherit", fontSize: 15 }}
             >
               📺 짧은 광고 보고 출석 체크하기
-            </button>
+            </AdButton>
             <div style={{ textAlign: "center", fontSize: 12, color: "#8b95a1", marginTop: 10 }}>
               또는{" "}
               <span
@@ -248,12 +249,12 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
               ))}
             </div>
             {game.claimableMilestone ? (
-              <button
-                onClick={() => actions.claimMilestone()}
+              <AdButton
+                onRun={() => actions.claimMilestone()}
                 style={{ width: "100%", marginTop: 12, padding: 13, border: "none", borderRadius: 13, fontWeight: 800, background: "#191f28", color: "#fff", cursor: "pointer", fontFamily: "inherit" }}
               >
                 🎁 광고보고 포인트 받기 (+{game.claimableMilestone.p}P · {game.claimableMilestone.d}일)
-              </button>
+              </AdButton>
             ) : (
               <div style={{ fontSize: 11.5, color: "#ff8a00", fontWeight: 700, marginTop: 10, textAlign: "center" }}>
                 🎁 3·7·14·30일 달성마다 광고 보고 포인트 받기
@@ -290,16 +291,14 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
               >
                 5P로 받기
               </button>
-              <button
-                onClick={() => {
-                  actions.watchFreezeAd().then((r) => {
-                    if (r.ok) openToast("스트릭 보호권이 생겼어요");
-                  });
-                }}
+              <AdButton
+                onRun={() => actions.watchFreezeAd()}
+                onDone={(r) => { if (r.ok) openToast("스트릭 보호권이 생겼어요"); }}
+                loadingLabel=""
                 style={{ flex: 1, padding: 9, border: "none", borderRadius: 10, fontWeight: 800, background: "#191f28", color: "#fff", cursor: "pointer", fontFamily: "inherit" }}
               >
                 📺 광고 보고 받기
-              </button>
+              </AdButton>
             </div>
           </Card>
         </>

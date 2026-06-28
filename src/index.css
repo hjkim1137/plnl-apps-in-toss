@@ -29,3 +29,8 @@ body {
   margin: 0 auto;
   min-height: 100vh;
 }
+@keyframes plnl-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

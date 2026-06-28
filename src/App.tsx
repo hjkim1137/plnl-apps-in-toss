@@ -15,13 +15,20 @@ export default function App() {
   const [tab, setTab] = useState<"today" | "monthly">("today");
   const [showSettings, setShowSettings] = useState(false);
   const [showLoginSheet, setShowLoginSheet] = useState(false);
+  const [loggingIn, setLoggingIn] = useState(false);
 
   const openLogin = () => setShowLoginSheet(true);
   const closeLogin = () => setShowLoginSheet(false);
   // 앱인토스 웹뷰는 async 이벤트 핸들러에서 토스 SDK 호출(appLogin 등)을 막는다 →
-  // sync 핸들러로 login() 을 동기 호출하고, 완료 후 .then 으로 시트만 닫는다.
+  // sync 핸들러로 login() 을 동기 호출하고, 완료 후 .then 으로 처리한다. 로그인 동안엔
+  // 스피너 표시(loggingIn) + 중복 탭 방지. login() 은 throw 없이 {ok} 를 resolve 한다.
   const doLogin = () => {
-    plnl.actions.login().then(() => closeLogin());
+    if (loggingIn) return;
+    setLoggingIn(true);
+    plnl.actions.login().then((r) => {
+      setLoggingIn(false);
+      if (r.ok) closeLogin(); // 실패 시 시트 유지 → 재시도 가능
+    });
   };
 
   if (!isInsideTossApp()) {
@@ -313,9 +320,23 @@ export default function App() {
             ))}
             <button
               onClick={doLogin}
-              style={{ width: "100%", border: "none", background: "#5DC528", color: "#fff", fontSize: 16, fontWeight: 800, padding: 16, borderRadius: 14, marginTop: 18 }}
+              disabled={loggingIn}
+              style={{ width: "100%", border: "none", background: "#5DC528", color: "#fff", fontSize: 16, fontWeight: 800, padding: 16, borderRadius: 14, marginTop: 18, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, cursor: loggingIn ? "default" : "pointer", opacity: loggingIn ? 0.9 : 1 }}
             >
-              토스로 3초 만에 로그인
+              {loggingIn ? (
+                <>
+                  <span
+                    style={{
+                      width: 17, height: 17, borderRadius: "50%",
+                      border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "#fff",
+                      display: "inline-block", animation: "plnl-spin 0.7s linear infinite",
+                    }}
+                  />
+                  로그인 중…
+                </>
+              ) : (
+                "토스로 3초 만에 로그인"
+              )}
             </button>
             <div
               onClick={closeLogin}
