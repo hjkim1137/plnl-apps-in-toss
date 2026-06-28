@@ -151,7 +151,7 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
           <p style={{ fontSize: 13, color: "#8b95a1" }}>
             이번 달이 끝나면 결산이 만들어져요 · D-{monthly.daysLeft}
           </p>
-          <button onClick={() => actions.togglePreview()} style={ghostBtn}>🔔 월말 도착 미리보기</button>
+          <button onClick={() => actions.togglePreview()} style={{ ...ghostBtn, marginTop: 8 }}>🔔 월말 도착 미리보기</button>
         </Card>
       ) : !monthly.reportUnlocked ? (
         <Card>

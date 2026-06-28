@@ -259,9 +259,9 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
             )}
           </Card>
           <Card>
-            <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>🪙 출석 포인트</p>
+            <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>💰 출석 포인트</p>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-              <div style={{ width: 42, height: 42, borderRadius: 12, background: "#fff7e0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>🪙</div>
+              <div style={{ width: 42, height: 42, borderRadius: 12, background: "#fff7e0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>💰</div>
               <div>
                 <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: -0.5 }}>
                   <b style={{ color: "#ffb800" }}>{game.points}</b> P
