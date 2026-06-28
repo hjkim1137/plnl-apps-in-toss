@@ -334,10 +334,11 @@ function LockCard({ emoji, title, desc, onLogin }: { emoji: string; title: strin
   return (
     <div style={{ background: "#fff", borderRadius: 18, padding: 18, marginBottom: 14, boxShadow: "0 1px 2px rgba(0,0,0,.04)", position: "relative", overflow: "hidden" }}>
       <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>{emoji} {title}</p>
-      {/* 블러 플레이스홀더 */}
+      {/* 블러 플레이스홀더 — 버튼이 잘리지 않도록 충분한 높이 확보 */}
       <div style={{ filter: "blur(4px)", opacity: 0.5, pointerEvents: "none", userSelect: "none" }}>
         <div style={{ height: 54, background: "#f2f4f6", borderRadius: 12, marginBottom: 8 }} />
-        <div style={{ height: 14, width: "60%", background: "#f2f4f6", borderRadius: 6 }} />
+        <div style={{ height: 14, width: "60%", background: "#f2f4f6", borderRadius: 6, marginBottom: 8 }} />
+        <div style={{ height: 38, background: "#f2f4f6", borderRadius: 999 }} />
       </div>
       {/* 베일 오버레이 */}
       <div style={{
