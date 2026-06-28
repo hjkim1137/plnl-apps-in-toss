@@ -93,9 +93,9 @@ export function monthStatusText(s: MonthStats): string {
   return "이번 달 운동비 완전 회수! 🎉";
 }
 
-// ── 대표 칭호(누적 출석 레벨) — 기획 §6.2 ─────────────────────────────────
+// ── 대표 칭호(누적 인증 레벨) — 기획 §6.2 ─────────────────────────────────
 export interface Level {
-  /** 이 등급에 진입하는 누적 출석 최소치. */
+  /** 이 등급에 진입하는 누적 인증(오늘탭 출석) 최소치. */
   min: number;
   name: string;
   emoji: string;

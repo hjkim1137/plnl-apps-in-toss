@@ -186,7 +186,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
                   {game.title.current.name}
                 </div>
                 <div style={{ fontSize: 12, color: "#8b95a1", fontWeight: 600, marginTop: 2 }}>
-                  누적 출석 {game.totalDone}회 · 본전 졸업 {game.monthsGraduated}회
+                  누적 인증 {game.totalDone}회 · 본전 졸업 {game.monthsGraduated}회
                 </div>
               </div>
             </div>
@@ -195,7 +195,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
             </div>
             <div style={{ fontSize: 11.5, color: "#8b95a1", fontWeight: 600, textAlign: "right" }}>
               {game.title.next
-                ? `다음 등급 「${game.title.next.name}」까지 출석 ${game.title.remainingToNext}회`
+                ? `다음 등급 「${game.title.next.name}」까지 인증 ${game.title.remainingToNext}회`
                 : "최고 등급 달성! 👑"}
             </div>
           </Card>

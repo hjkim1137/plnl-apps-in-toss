@@ -15,7 +15,7 @@ export function monthLogs(logs: Logs, y: number, m: number): Logs {
   return out;
 }
 
-/** 전체 누적 출석('done') 일수 — 칭호 레벨 산정용. */
+/** 전체 누적 출석('done') 일수 — 회수 통계용(logs 기준). 등급/스트릭은 checkins 사용. */
 export function totalDone(logs: Logs): number {
   let n = 0;
   for (const v of Object.values(logs)) if (v === "done") n++;

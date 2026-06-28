@@ -19,7 +19,6 @@ import {
   freeCheckinsLeft,
   monthLogs,
   monthsGraduated,
-  totalDone,
   unlockAfterCheckinAd,
 } from "../lib/attendance";
 import {
@@ -263,8 +262,9 @@ export function usePlnl() {
 
   // ── 파생값: 게이미피케이션(로그인) ─────────────────────────────────────
   const gamification = useMemo(() => {
-    const td = totalDone(state.logs);
-    // 스트릭은 오늘탭 출석(checkins)만으로 센다 — 달력 수동보정(logs)은 회수율·칭호엔 반영되나 스트릭 제외.
+    // 누적 인증(등급)·스트릭 모두 오늘탭 출석(checkins)만으로 센다 — 월간현황 달력 수동보정
+    // (logs)은 회수율·본전졸업 통계에만 반영되고 등급/스트릭엔 포함하지 않는다.
+    const td = state.checkins.length;
     const streak = currentStreak(state.checkins, state.frozen, now);
     return {
       title: resolveTitle(td),

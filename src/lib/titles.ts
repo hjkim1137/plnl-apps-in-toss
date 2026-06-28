@@ -1,5 +1,5 @@
-// 대표 칭호(누적 출석 레벨) 판정 — 기획 §6.2. 누적 출석 기준 등급 1개 + 다음까지 진행바.
-// 이달 회수율 구간(brackets.ts)과 분리: 구간은 매달 리셋, 칭호는 누적 장기 등급.
+// 대표 칭호(누적 인증 레벨) 판정 — 기획 §6.2. 누적 인증(오늘탭 출석=checkins) 기준 등급 1개
+// + 다음까지 진행바. 이달 회수율 구간(brackets.ts)과 분리: 구간은 매달 리셋, 칭호는 누적 장기 등급.
 
 import { LEVELS, type Level } from "./content";
 
@@ -11,11 +11,11 @@ export interface TitleProgress {
   next: Level | null;
   /** 현재 등급 내 진행률(0~100). 최고 등급이면 100. */
   progressPct: number;
-  /** 다음 등급까지 남은 출석 횟수(최고 등급이면 0). */
+  /** 다음 등급까지 남은 인증 횟수(최고 등급이면 0). */
   remainingToNext: number;
 }
 
-/** 누적 출석 횟수로 대표 칭호 + 진행도 산정. */
+/** 누적 인증 횟수(오늘탭 출석 수)로 대표 칭호 + 진행도 산정. */
 export function resolveTitle(totalDone: number): TitleProgress {
   let index = 0;
   for (let i = 0; i < LEVELS.length; i++) {
