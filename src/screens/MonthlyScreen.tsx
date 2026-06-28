@@ -156,7 +156,7 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
       ) : !monthly.reportUnlocked ? (
         <Card>
           <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>📊 월간 결산 리포트</p>
-          <button onClick={async () => { const r = await actions.watchReportAd(); if (r.ok) openToast("결산 리포트가 도착했어요"); }} style={fullBtn}>📺 광고 보고 결산 보기</button>
+          <button onClick={() => { actions.watchReportAd().then((r) => { if (r.ok) openToast("결산 리포트가 도착했어요"); }); }} style={fullBtn}>📺 광고 보고 결산 보기</button>
         </Card>
       ) : (
         <Card>
@@ -221,7 +221,7 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
       ) : !monthly.certUnlocked ? (
         <Card>
           <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>🏅 표창장</p>
-          <button onClick={async () => { const r = await actions.watchCertAd(); if (r.ok) openToast("표창장이 열렸어요"); }} style={fullBtn}>📺 광고 보고 표창장 보기</button>
+          <button onClick={() => { actions.watchCertAd().then((r) => { if (r.ok) openToast("표창장이 열렸어요"); }); }} style={fullBtn}>📺 광고 보고 표창장 보기</button>
         </Card>
       ) : (
         <Card>

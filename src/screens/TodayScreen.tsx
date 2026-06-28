@@ -289,9 +289,10 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
                 5P로 받기
               </button>
               <button
-                onClick={async () => {
-                  const r = await actions.watchFreezeAd();
-                  if (r.ok) openToast("스트릭 보호권이 생겼어요");
+                onClick={() => {
+                  actions.watchFreezeAd().then((r) => {
+                    if (r.ok) openToast("스트릭 보호권이 생겼어요");
+                  });
                 }}
                 style={{ flex: 1, padding: 9, border: "none", borderRadius: 10, fontWeight: 800, background: "#191f28", color: "#fff", cursor: "pointer", fontFamily: "inherit" }}
               >
