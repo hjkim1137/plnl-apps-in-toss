@@ -255,18 +255,6 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
               </div>
             </div>
           </div>
-          {/* 공유 문구 박스 */}
-          <div style={{
-            background: "#f9fafb", border: "1px solid #f2f4f6",
-            borderRadius: 14, padding: 16, fontSize: 14,
-            whiteSpace: "pre-line", color: "#4e5968", lineHeight: 1.7,
-            fontWeight: 500, marginBottom: 12,
-          }}>
-            {monthly.certificate.text.share}
-          </div>
-          <button onClick={() => copyShareText(monthly.certificate.text.share)} style={primaryBtn}>
-            공유 문구 복사하기
-          </button>
           {view.previewEnd && monthly.isCurrent && (
             <button onClick={() => actions.togglePreview()} style={{ ...ghostBtn, marginTop: 8 }}>
               미리보기 끄기
@@ -304,7 +292,7 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
               </button>
               <button
                 onClick={() => { actions.clearMonth(monthly.year, monthly.month); setShowResetConfirm(false); }}
-                style={{ flex: 1, padding: 12, border: "none", borderRadius: 12, background: "#f04452", color: "#fff", fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}
+                style={{ flex: 1, padding: 12, border: "none", borderRadius: 12, background: "#5DC528", color: "#fff", fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}
               >
                 초기화
               </button>
@@ -316,17 +304,8 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
   );
 }
 
-function copyShareText(text: string) {
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(text).catch(() => alert("복사:\n\n" + text));
-  } else {
-    alert("복사:\n\n" + text);
-  }
-}
-
 const navBtn: React.CSSProperties = { border: "none", background: "#fff", width: 34, height: 34, borderRadius: 10, fontSize: 16, boxShadow: "0 1px 2px rgba(0,0,0,.06)", color: "#4e5968", cursor: "pointer", fontFamily: "inherit" };
 const fullBtn: React.CSSProperties = { width: "100%", padding: 14, border: "none", borderRadius: 14, fontWeight: 800, background: "#5DC528", color: "#fff", cursor: "pointer", fontFamily: "inherit", fontSize: 15 };
-const primaryBtn: React.CSSProperties = { width: "100%", padding: 14, border: "none", borderRadius: 14, fontWeight: 800, background: "#3182f6", color: "#fff", cursor: "pointer", fontFamily: "inherit", fontSize: 15 };
 const ghostBtn: React.CSSProperties = { width: "100%", padding: 12, border: "1px solid #e5e8eb", borderRadius: 13, background: "#fff", color: "#6b7684", fontWeight: 700, cursor: "pointer", fontFamily: "inherit", fontSize: 14 };
 
 function Stat({ k, v, color }: { k: string; v: string; color?: string }) {
