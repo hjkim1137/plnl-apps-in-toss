@@ -125,7 +125,9 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
           background: statusMsg.kind === "done" ? "#e7f9f1" : statusMsg.kind === "missed" ? "#fdeced" : "#f2f4f6",
           color: statusMsg.kind === "done" ? "#15b877" : statusMsg.kind === "missed" ? "#f04452" : "#6b7684",
         }}>
-          {statusMsg.text}
+          {statusMsg.text.split("…").map((part, i, arr) =>
+            i < arr.length - 1 ? <span key={i}>{part}…<br /></span> : <span key={i}>{part}</span>
+          )}
           {statusMsg.kind === "done" && state.loggedIn && (
             <span style={{ display: "inline-block", background: "#fff7e0", color: "#b07a00", fontWeight: 800, fontSize: 11, padding: "2px 8px", borderRadius: 999, marginLeft: 6 }}>
               +1P
@@ -289,9 +291,10 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
                 5P로 받기
               </button>
               <button
-                onClick={async () => {
-                  const r = await actions.watchFreezeAd();
-                  if (r.ok) openToast("스트릭 보호권이 생겼어요");
+                onClick={() => {
+                  actions.watchFreezeAd().then((r) => {
+                    if (r.ok) openToast("스트릭 보호권이 생겼어요");
+                  });
                 }}
                 style={{ flex: 1, padding: 9, border: "none", borderRadius: 10, fontWeight: 800, background: "#191f28", color: "#fff", cursor: "pointer", fontFamily: "inherit" }}
               >
