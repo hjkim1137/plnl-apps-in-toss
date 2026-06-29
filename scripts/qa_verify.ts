@@ -32,6 +32,7 @@ import {
   normalizeState,
   sanitizeLogs,
   sanitizeDateList,
+  sanitizeMonthSettings,
   createInitialState,
   type PlnlState,
 } from "../src/lib/model";
@@ -331,6 +332,24 @@ check("H-5 fee 음수 → 기본값", normalized.fee, 100000);
 check("H-6 target 0 → 기본값", normalized.target, 12);
 check("H-7 points 음수 → 0", normalized.points, 0);
 check("H-8 freeUsed 문자 → 0", normalized.freeUsed, 0);
+
+// 월별 설정 스냅샷 정규화 (model.ts)
+const ms = sanitizeMonthSettings({
+  "2026-05": { fee: 80000, target: 10 },
+  "2026-06": { fee: -5, target: 0 }, // fee 음수→기본, target 0→기본
+  "badkey": { fee: 1, target: 1 }, // 형식 불일치 → 제외
+  "2026-07": "nope", // 객체 아님 → 제외
+});
+check("H-9 유효 월만 통과", Object.keys(ms).sort().join(","), "2026-05,2026-06");
+check("H-10 정상 스냅샷 유지", ms["2026-05"].fee, 80000);
+check("H-11 fee 음수 → 기본값", ms["2026-06"].fee, 100000);
+check("H-12 target 0 → 기본값", ms["2026-06"].target, 12);
+check("H-13 normalizeState 기본 monthSettings {}", Object.keys(normalizeState({}).monthSettings).length, 0);
+check(
+  "H-14 normalizeState monthSettings 보존",
+  normalizeState({ monthSettings: { "2026-05": { fee: 50000, target: 8 } } }).monthSettings["2026-05"].target,
+  8,
+);
 
 // ────────────────────────────────────────────────────────
 section("I. 출석 상태 메시지 (content.ts)");

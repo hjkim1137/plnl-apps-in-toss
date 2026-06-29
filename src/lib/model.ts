@@ -14,6 +14,12 @@ import { monthPrefix, parseYmd, ymd } from "./date";
 export type LogValue = "done" | "missed";
 export type Logs = Record<string, LogValue>;
 
+/** 한 달치 운동 설정(운동비/목표 횟수) 스냅샷. */
+export interface MonthSetting {
+  fee: number;
+  target: number;
+}
+
 export interface PlnlState {
   /** 한 달 운동 비용(원). */
   fee: number;
@@ -53,6 +59,12 @@ export interface PlnlState {
   lastSeenMonth: number;
   /** 알림(스마트 발송) 수신 동의 완료 — 중복 동의 요청 방지. */
   notifyAgreed: boolean;
+  /**
+   * 월별 운동 설정 스냅샷 'YYYY-MM' → {fee, target}. 과거 달은 그 달에 설정한 값으로 동결되고,
+   * 편집은 현재 달만 가능하다(usePlnl.setSettings). 통계(낸돈/회수/기부)는 이 값으로 계산.
+   * 스냅샷이 없는 달은 현재 fee/target 으로 폴백.
+   */
+  monthSettings: Record<string, MonthSetting>;
 }
 
 export function createInitialState(): PlnlState {
@@ -72,6 +84,7 @@ export function createInitialState(): PlnlState {
     adUnlocked: false,
     lastSeenMonth: 0,
     notifyAgreed: false,
+    monthSettings: {},
   };
 }
 
@@ -130,6 +143,18 @@ export function sanitizeMonthList(v: unknown): string[] {
   return Array.from(seen).sort();
 }
 
+/** 월별 설정 정규화 — 'YYYY-MM' 키 + {fee≥0, target≥1} 만 통과. */
+export function sanitizeMonthSettings(v: unknown): Record<string, MonthSetting> {
+  const out: Record<string, MonthSetting> = {};
+  if (v == null || typeof v !== "object") return out;
+  for (const [k, val] of Object.entries(v as Record<string, unknown>)) {
+    if (!/^\d{4}-\d{2}$/.test(k) || val == null || typeof val !== "object") continue;
+    const o = val as Record<string, unknown>;
+    out[k] = { fee: nonNegInt(o.fee, DEFAULT_FEE), target: posInt(o.target, DEFAULT_TARGET) };
+  }
+  return out;
+}
+
 /** 마일스톤 일수 목록 정규화 — 양수 정수만, 중복 제거. */
 function sanitizeClaimed(v: unknown): number[] {
   if (!Array.isArray(v)) return [];
@@ -165,5 +190,6 @@ export function normalizeState(
     adUnlocked: o.adUnlocked === true,
     lastSeenMonth: nonNegInt(o.lastSeenMonth),
     notifyAgreed: o.notifyAgreed === true,
+    monthSettings: sanitizeMonthSettings(o.monthSettings),
   };
 }

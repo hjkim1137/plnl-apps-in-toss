@@ -67,7 +67,7 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
       {/* 달력 */}
       <Card>
         <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>
-          🗓️ 출석 달력 <small>(날짜를 눌러 직접 기록하세요)</small>
+          🗓️ 출석 달력 {monthly.isCurrent && <small>(날짜를 눌러 직접 기록하세요)</small>}
         </p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 5, marginBottom: 6 }}>
           {DOW.map((d, i) => (
@@ -81,7 +81,7 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
             ) : (
               <button
                 key={cell.dateStr}
-                disabled={cell.isFuture}
+                disabled={cell.isFuture || !monthly.isCurrent}
                 onClick={() => { generateHapticFeedback({ type: "tap" }); actions.cycleDay(cell.dateStr); }}
                 title={cell.isFrozen ? "🛡️ 보호권으로 지킨 날" : undefined}
                 style={{
@@ -119,12 +119,15 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
             못 감 💸
           </span>
         </div>
-        <button
-          onClick={() => setShowResetConfirm(true)}
-          style={{ width: "100%", marginTop: 8, padding: 13, border: "1px solid #e5e8eb", borderRadius: 13, background: "#fff", color: "#6b7684", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
-        >
-          이번 달 기록 초기화
-        </button>
+        {/* 초기화는 현재 달만 — 과거 달은 조회 전용이라 버튼 숨김 */}
+        {monthly.isCurrent && (
+          <button
+            onClick={() => setShowResetConfirm(true)}
+            style={{ width: "100%", marginTop: 8, padding: 13, border: "1px solid #e5e8eb", borderRadius: 13, background: "#fff", color: "#6b7684", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
+          >
+            이번 달 기록 초기화
+          </button>
+        )}
       </Card>
 
       {/* 월간 결산 (로그인 + 월말 + 광고) */}

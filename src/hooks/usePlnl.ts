@@ -92,8 +92,8 @@ export interface CalendarCell {
 
 /**
  * 특정 달(y, m: 0-based)의 진실 숫자. 오늘/월간 탭이 공유.
- * 설정값(fee/target)은 '현재 달'에만 귀속 — 활동(로그)도 없는 과거 달은 0원·0회로 처리해
- * 달력을 넘길 때 쓰지도 않은 달에 낸 돈/기부액이 뜨는 문제를 막는다.
+ * 그 달 설정은 월별 스냅샷(monthSettings)을 쓰고 없으면 현재 fee/target 으로 폴백한다.
+ * 스냅샷도 로그도 없는 과거 달은 0원·0회(EMPTY)로 처리해, 안 쓴 달에 낸 돈/기부액이 뜨지 않게 한다.
  */
 function statsForMonth(
   state: PlnlState,
@@ -104,8 +104,10 @@ function statsForMonth(
 ): MonthStats {
   const ml = monthLogs(state.logs, y, m);
   const isCurrent = y === curY && m === curM;
-  if (!isCurrent && Object.keys(ml).length === 0) return EMPTY_MONTH_STATS;
-  return computeMonth(state.fee, state.target, ml);
+  const snap = state.monthSettings[monthKey(y, m)];
+  if (!isCurrent && !snap && Object.keys(ml).length === 0) return EMPTY_MONTH_STATS;
+  const { fee, target } = snap ?? { fee: state.fee, target: state.target };
+  return computeMonth(fee, target, ml);
 }
 
 export function usePlnl() {
@@ -136,6 +138,18 @@ export function usePlnl() {
   useEffect(() => {
     if (!sessionRef.current) sessionRef.current = getStoredSession();
   }, []);
+
+  // 현재 달 설정 스냅샷 보장 — 없으면 현재 fee/target 으로 기록해 둔다. 달이 바뀌어 과거 달이
+  // 됐을 때 그 달 값으로 동결되도록(이후 fee/target 변경에 영향받지 않게). 마운트/월 변경 시 1회.
+  useEffect(() => {
+    const ym = monthKey(curY, curM);
+    setState((s) =>
+      s.monthSettings[ym]
+        ? s
+        : { ...s, monthSettings: { ...s.monthSettings, [ym]: { fee: s.fee, target: s.target } } },
+    );
+  }, [curY, curM]);
+
   useEffect(() => {
     saveLocalState(state);
     if (!state.loggedIn || !sessionRef.current) return;
@@ -195,7 +209,7 @@ export function usePlnl() {
       /** 오늘 이미 체크한 값(없으면 null). */
       todayValue: state.logs[today] ?? null,
     };
-  }, [state.fee, state.target, state.logs, curY, curM, today]);
+  }, [state.fee, state.target, state.monthSettings, state.logs, curY, curM, today]);
 
   // ── 파생값: 출석 체크 UI 분기 ──────────────────────────────────────────
   const checkin = useMemo(() => {
@@ -251,7 +265,7 @@ export function usePlnl() {
     };
     // adSeen 은 의도적으로 의존성에서 제외 — 두 boolean(열람 여부)만 좌우하므로 무거운
     // 달력/결산/표창장 재계산을 일으키지 않도록 메모 밖(return)에서 합성한다.
-  }, [state.fee, state.target, state.logs, state.checkins, state.loggedIn, state.frozen, viewY, viewM, now, curY, curM, today]);
+  }, [state.fee, state.target, state.monthSettings, state.logs, state.checkins, state.loggedIn, state.frozen, viewY, viewM, now, curY, curM, today]);
 
   // ── 파생값: 게이미피케이션(로그인) ─────────────────────────────────────
   const gamification = useMemo(() => {
@@ -302,10 +316,14 @@ export function usePlnl() {
     return { ok: true as const };
   }, []);
 
-  /** 달력 날짜 직접 토글(과거 보정). 연속 탭이 서로 덮어쓰지 않도록 함수형 업데이트 사용. */
-  const cycleDay = useCallback((dateStr: string) => {
-    setState((s) => cycleCalendarDay(s, dateStr));
-  }, []);
+  /** 달력 날짜 직접 토글. 입력은 현재 달만 — 과거 달은 조회 전용(UI 비활성 + 방어 가드). */
+  const cycleDay = useCallback(
+    (dateStr: string) => {
+      if (dateStr.slice(0, 7) !== monthKey(curY, curM)) return;
+      setState((s) => cycleCalendarDay(s, dateStr));
+    },
+    [curY, curM],
+  );
 
   const clearMonth = useCallback((y: number, m: number) => {
     setState((s) => clearMonthLogs(s, y, m));
@@ -313,13 +331,20 @@ export function usePlnl() {
 
   const setSettings = useCallback(
     (next: { fee?: number; target?: number }) => {
-      setState((s) => ({
-        ...s,
-        fee: next.fee != null ? Math.max(0, next.fee) : s.fee,
-        target: next.target != null ? Math.max(1, next.target) : s.target,
-      }));
+      // 편집은 현재 달만 — fee/target(현재 기본값)과 현재 달 스냅샷을 함께 갱신한다. 과거 달은
+      // 자기 스냅샷으로 동결돼 영향받지 않는다.
+      setState((s) => {
+        const fee = next.fee != null ? Math.max(0, next.fee) : s.fee;
+        const target = next.target != null ? Math.max(1, next.target) : s.target;
+        return {
+          ...s,
+          fee,
+          target,
+          monthSettings: { ...s.monthSettings, [monthKey(curY, curM)]: { fee, target } },
+        };
+      });
     },
-    [],
+    [curY, curM],
   );
 
   /** 스트릭 마일스톤 수령 — 전면형 광고 보고 포인트. */
