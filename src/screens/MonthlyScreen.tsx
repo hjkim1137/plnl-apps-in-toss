@@ -3,6 +3,7 @@ import { AdButton } from "../components/AdButton";
 import type { PlnlController } from "../hooks/usePlnl";
 import { won } from "../lib/format";
 import { useToast } from "@toss/tds-mobile";
+import { generateHapticFeedback } from "@apps-in-toss/web-bridge";
 
 // ── 월간 현황 탭 ─────────────────────────────────────────────────────────
 // TODO(인정/A): TDS 컴포넌트로 교체. 데이터/액션은 plnl 그대로 사용.
@@ -81,7 +82,7 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
               <button
                 key={cell.dateStr}
                 disabled={cell.isFuture}
-                onClick={() => actions.cycleDay(cell.dateStr)}
+                onClick={() => { generateHapticFeedback({ type: "tap" }); actions.cycleDay(cell.dateStr); }}
                 title={cell.isFrozen ? "🛡️ 보호권으로 지킨 날" : undefined}
                 style={{
                   position: "relative",

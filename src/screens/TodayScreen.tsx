@@ -7,6 +7,7 @@ import {
 } from "../lib/content";
 import { won, wonN } from "../lib/format";
 import { useToast } from "@toss/tds-mobile";
+import { generateHapticFeedback } from "@apps-in-toss/web-bridge";
 
 // ── 오늘 탭 ──────────────────────────────────────────────────────────────
 // TODO(인정/A): 아래 plain DOM 을 TDS 컴포넌트로 교체. 데이터/액션은 plnl 에서 그대로 사용.
@@ -90,13 +91,13 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
         {checkin.mode === "buttons" ? (
           <div style={{ display: "flex", gap: 10 }}>
             <button
-              onClick={() => { if (today.todayValue !== "done") actions.checkIn("done"); }}
+              onClick={() => { if (today.todayValue !== "done") { generateHapticFeedback({ type: "tap" }); actions.checkIn("done"); } }}
               style={{ flex: 1, padding: 15, border: "none", borderRadius: 14, fontWeight: 800, background: today.todayValue === "done" ? "#5DC528" : "#edfadf", color: today.todayValue === "missed" ? "#b0b8c1" : today.todayValue === "done" ? "#fff" : "#4e5968", cursor: today.todayValue === "done" ? "default" : "pointer", fontFamily: "inherit", fontSize: 15 }}
             >
               오늘 갔어요 💪
             </button>
             <button
-              onClick={() => { if (today.todayValue !== "missed") actions.checkIn("missed"); }}
+              onClick={() => { if (today.todayValue !== "missed") { generateHapticFeedback({ type: "tap" }); actions.checkIn("missed"); } }}
               style={{ flex: 1, padding: 15, border: "none", borderRadius: 14, fontWeight: 800, background: today.todayValue === "missed" ? "#f04452" : "#fff0f1", color: today.todayValue === "done" ? "#b0b8c1" : today.todayValue === "missed" ? "#fff" : "#4e5968", cursor: today.todayValue === "missed" ? "default" : "pointer", fontFamily: "inherit", fontSize: 15 }}
             >
               오늘 안 갔어요 💸
