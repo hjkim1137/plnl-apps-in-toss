@@ -145,28 +145,26 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
         </div>
       </Card>
 
-      {/* 2) 회수율 헤드라인 */}
+      {/* 2+3) 회수율 헤드라인 + 이번 달 회수율 게이지 */}
       <div style={{ borderRadius: 18, padding: 22, marginBottom: 14, color: "#fff", background: today.bracket.bgGradient }}>
-        <span style={{ display: "inline-block", background: "rgba(255,255,255,.22)", fontSize: 12, fontWeight: 800, padding: "5px 11px", borderRadius: 999 }}>
-          회수율 {s.rate}%
-        </span>
-        <div style={{ fontSize: 34, marginTop: 8 }}>{today.bracket.emoji}</div>
-        <h2 style={{ margin: "4px 0", fontSize: 23, fontWeight: 800 }}>{today.bracket.label}</h2>
-        <div style={{ fontSize: 13.5, opacity: 0.92 }}>{today.headline}</div>
+        <p style={{ fontWeight: 700, color: "rgba(255,255,255,.85)", margin: "0 0 14px", fontSize: 14 }}>
+          📅 {today.monthLabel} 회수율
+        </p>
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 10 }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+            <div style={{ fontSize: 46, fontWeight: 800, lineHeight: 1 }}>{s.rate}</div>
+            <div style={{ fontSize: 18, fontWeight: 700, opacity: 0.85 }}>% 회수</div>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontSize: 26, lineHeight: 1 }}>{today.bracket.emoji}</div>
+            <div style={{ fontSize: 13, fontWeight: 800, marginTop: 3 }}>{today.bracket.label}</div>
+          </div>
+        </div>
+        <div style={{ height: 12, background: "rgba(255,255,255,.28)", borderRadius: 999, overflow: "hidden", marginBottom: 10 }}>
+          <div style={{ height: "100%", width: `${Math.min(100, s.rateRaw)}%`, background: "rgba(255,255,255,.75)", borderRadius: 999, transition: "width .4s ease" }} />
+        </div>
+        <div style={{ fontSize: 13, opacity: 0.9 }}>{today.headline}</div>
       </div>
-
-      {/* 3) 이번 달 회수율 게이지 */}
-      <Card>
-        <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>📅 {today.monthLabel} 회수율</p>
-        <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-          <div style={{ fontSize: 42, fontWeight: 800, color: today.bracket.barColor }}>{s.rate}</div>
-          <div style={{ fontSize: 15, color: "#8b95a1", fontWeight: 700 }}>% 회수</div>
-        </div>
-        <div style={{ height: 14, background: "#f2f4f6", borderRadius: 999, overflow: "hidden", marginTop: 8 }}>
-          <div style={{ height: "100%", width: `${Math.min(100, s.rateRaw)}%`, background: today.bracket.barColor, borderRadius: 999, transition: "width .4s ease" }} />
-        </div>
-        <div style={{ fontSize: 13, color: "#6b7684", marginTop: 8 }}>{today.monthStatus}</div>
-      </Card>
 
       {/* 4) 숫자로 보기 */}
       <Card>
