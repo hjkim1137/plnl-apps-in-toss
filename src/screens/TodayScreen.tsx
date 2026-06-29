@@ -21,7 +21,7 @@ function Card({ children }: { children: React.ReactNode }) {
         borderRadius: 18,
         padding: "20px 18px",
         marginBottom: 20,
-        boxShadow: "0 1px 2px rgba(0,0,0,.04)",
+        boxShadow: "0 1px 4px rgba(0,0,0,.06)",
       }}
     >
       {children}
@@ -49,7 +49,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
       <Card>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
           <p style={{ fontWeight: 700, color: "#6b7684", margin: 0 }}>
-            🔔 오늘의 선택{" "}
+            오늘의 선택{" "}
             {!state.loggedIn && (
               <small style={{ color: "#8b95a1" }}>
                 · 무료 {checkin.freeLeft}/3
@@ -63,24 +63,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
             </div>
           )}
         </div>
-        <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
-          <div style={{ flex: 1, background: "#f2f4f6", borderRadius: 14, padding: 12, textAlign: "center" }}>
-            <div style={{ fontSize: 12, color: "#3a8a12", fontWeight: 700 }}>오늘 가면</div>
-            <div style={{ fontSize: 18, fontWeight: 800, color: "#3a8a12" }}>
-              +{won(today.choice.goReward)}
-            </div>
-            <div style={{ fontSize: 11, color: "#8b95a1" }}>
-              회수율 {today.choice.projectedRateIfGo}% 로
-            </div>
-          </div>
-          <div style={{ flex: 1, background: "#f2f4f6", borderRadius: 14, padding: 12, textAlign: "center" }}>
-            <div style={{ fontSize: 12, color: "#f04452", fontWeight: 700 }}>안 가면</div>
-            <div style={{ fontSize: 18, fontWeight: 800, color: "#f04452" }}>
-              {won(today.choice.skipLoss)}
-            </div>
-            <div style={{ fontSize: 11, color: "#8b95a1" }}>회수 기회 증발 😢</div>
-          </div>
-        </div>
+
 
         {freeTag && (
           <div style={{ fontSize: 12, fontWeight: 700, color: state.adUnlocked ? "#15b877" : "#5DC528", textAlign: "center", marginBottom: 10 }}>
@@ -94,13 +77,13 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
               onClick={() => { if (today.todayValue !== "done") { generateHapticFeedback({ type: "tap" }); actions.checkIn("done"); } }}
               style={{ flex: 1, padding: 15, border: "none", borderRadius: 14, fontWeight: 800, background: today.todayValue === "done" ? "#5DC528" : "#edfadf", color: today.todayValue === "missed" ? "#b0b8c1" : today.todayValue === "done" ? "#fff" : "#4e5968", cursor: today.todayValue === "done" ? "default" : "pointer", fontFamily: "inherit", fontSize: 15 }}
             >
-              오늘 갔어요 💪
+              오늘 갔어요
             </button>
             <button
               onClick={() => { if (today.todayValue !== "missed") { generateHapticFeedback({ type: "tap" }); actions.checkIn("missed"); } }}
               style={{ flex: 1, padding: 15, border: "none", borderRadius: 14, fontWeight: 800, background: today.todayValue === "missed" ? "#f04452" : "#fff0f1", color: today.todayValue === "done" ? "#b0b8c1" : today.todayValue === "missed" ? "#fff" : "#4e5968", cursor: today.todayValue === "missed" ? "default" : "pointer", fontFamily: "inherit", fontSize: 15 }}
             >
-              오늘 안 갔어요 💸
+              오늘 안 갔어요
             </button>
           </div>
         ) : (
@@ -138,18 +121,13 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
           {statusMsg.text.split("…").map((part, i, arr) =>
             i < arr.length - 1 ? <span key={i}>{part}…<br /></span> : <span key={i}>{part}</span>
           )}
-          {statusMsg.kind === "done" && state.loggedIn && (
-            <span style={{ display: "inline-block", background: "#fff7e0", color: "#b07a00", fontWeight: 800, fontSize: 11, padding: "2px 8px", borderRadius: 999, marginLeft: 6 }}>
-              +1P
-            </span>
-          )}
         </div>
       </Card>
 
       {/* 2+3) 회수율 헤드라인 + 이번 달 회수율 게이지 */}
       <div style={{ borderRadius: 18, padding: 22, marginBottom: 14, color: "#fff", background: today.bracket.bgGradient }}>
-        <p style={{ fontWeight: 700, color: "rgba(255,255,255,.85)", margin: "0 0 14px", fontSize: 14 }}>
-          📅 {today.monthLabel} 회수율
+        <p style={{ fontWeight: 700, color: "rgba(255,255,255,.85)", margin: "0 0 14px" }}>
+          {today.monthLabel} 회수율
         </p>
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 10 }}>
           <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
@@ -169,7 +147,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
 
       {/* 4) 숫자로 보기 */}
       <Card>
-        <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>🧾 숫자로 보기</p>
+        <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>숫자로 보기</p>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
           <Stat k="1회 운동 단가" v={`${wonN(s.unit)}원/회`} />
           {s.rate >= 100 ? (
@@ -184,7 +162,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
       {state.loggedIn ? (
         <>
           <Card>
-            <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>🏅 내 등급</p>
+            <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>내 등급</p>
             <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 12 }}>
               <div style={{ width: 46, height: 46, borderRadius: 14, background: "#eef4ff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0 }}>
                 {game.title.current.emoji}
@@ -233,7 +211,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
             </div>
           )}
           <Card>
-            <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>🔥 나의 연속 인증 기록</p>
+            <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>나의 연속 인증 기록</p>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
               <div style={{ fontSize: 26 }}>🔥</div>
               <div>
@@ -269,7 +247,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
             )}
           </Card>
           <Card>
-            <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>💰 출석 인증 포인트</p>
+            <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>출석 인증 포인트</p>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
               <div style={{ width: 42, height: 42, borderRadius: 12, background: "#fff7e0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>💰</div>
               <div>
@@ -304,7 +282,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
                 loadingLabel=""
                 style={{ flex: 1, padding: 9, border: "none", borderRadius: 10, fontWeight: 800, background: "#191f28", color: "#fff", cursor: "pointer", fontFamily: "inherit" }}
               >
-                📺 광고 보고 받기
+                광고 보고 받기
               </AdButton>
             </div>
           </Card>
@@ -319,7 +297,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
 
       {/* 6) 회원님께 한마디 */}
       <Card>
-        <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>💬 회원님께 한마디</p>
+        <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>회원님께 한마디</p>
         <ul style={{ margin: 0, paddingLeft: 18, color: "#4e5968", fontSize: 13.5, lineHeight: 1.7 }}>
           {today.captions.map((c, i) => (
             <li key={i}>{c}</li>

@@ -10,7 +10,7 @@ import { generateHapticFeedback } from "@apps-in-toss/web-bridge";
 
 function Card({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ background: "#fff", borderRadius: 18, padding: "20px 18px", marginBottom: 20, boxShadow: "0 1px 2px rgba(0,0,0,.04)" }}>
+    <div style={{ background: "#fff", borderRadius: 18, padding: "20px 18px", marginBottom: 20, boxShadow: "0 1px 4px rgba(0,0,0,.06)" }}>
       {children}
     </div>
   );
@@ -29,7 +29,7 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
       {/* 요약 */}
       <Card>
         <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>
-          📈 {monthly.year}년 {monthly.monthLabel} 요약
+          {monthly.year}년 {monthly.monthLabel} 요약
         </p>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
           <Stat k="낸 돈" v={won(s.fee)} />
@@ -67,7 +67,7 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
       {/* 달력 */}
       <Card>
         <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>
-          🗓️ 출석 달력 {monthly.isCurrent && <small>(날짜를 눌러 직접 기록하세요)</small>}
+          출석 달력 {monthly.isCurrent && <small>(날짜를 눌러 직접 기록하세요)</small>}
         </p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 5, marginBottom: 6 }}>
           {DOW.map((d, i) => (
@@ -136,7 +136,7 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
       ) : !monthly.reportUnlocked ? (
         <Card>
           <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>📊 월간 결산 리포트</p>
-          <AdButton onRun={() => actions.watchReportAd()} onDone={(r) => { if (r.ok) openToast("결산 리포트가 도착했어요"); }} style={fullBtn}>📺 광고 보고 결산 미리 보기</AdButton>
+          <AdButton onRun={() => actions.watchReportAd()} onDone={(r) => { if (r.ok) openToast("결산 리포트가 도착했어요"); }} style={fullBtn}>광고 보고 결산 미리 보기</AdButton>
         </Card>
       ) : (
         <Card>
@@ -194,7 +194,7 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
       ) : !monthly.certUnlocked ? (
         <Card>
           <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>🏅 표창장</p>
-          <AdButton onRun={() => actions.watchCertAd()} onDone={(r) => { if (r.ok) openToast("표창장이 열렸어요"); }} style={fullBtn}>📺 광고 보고 표창장 미리 받기</AdButton>
+          <AdButton onRun={() => actions.watchCertAd()} onDone={(r) => { if (r.ok) openToast("표창장이 열렸어요"); }} style={fullBtn}>광고 보고 표창장 미리 받기</AdButton>
         </Card>
       ) : (
         <Card>
