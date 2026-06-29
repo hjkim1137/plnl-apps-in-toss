@@ -24,8 +24,8 @@ export const BRACKET_VISUALS: Record<BracketKey, BracketVisual> = {
   2: { label: "각성 직전", emoji: "🔥", barColor: "#ff8a00", bgGradient: "linear-gradient(135deg,#ff8a00,#ffab40)" },
   3: { label: "기부 → 운동 전환", emoji: "🏃", barColor: "#00c2c7", bgGradient: "linear-gradient(135deg,#00c2c7,#3dd6da)" },
   4: { label: "본전 임박", emoji: "😭", barColor: "#15b877", bgGradient: "linear-gradient(135deg,#15b877,#34d399)" },
-  5: { label: "호구 졸업 🎓", emoji: "🎓", barColor: "#3182f6", bgGradient: "linear-gradient(135deg,#3182f6,#5a9cff)" },
-  6: { label: "이젠 내가 갑 🤑", emoji: "🤑", barColor: "#ffb800", bgGradient: "linear-gradient(135deg,#a06800,#ffb800)" },
+  5: { label: "호구 졸업", emoji: "🎓", barColor: "#3182f6", bgGradient: "linear-gradient(135deg,#3182f6,#5a9cff)" },
+  6: { label: "이젠 내가 갑", emoji: "🤑", barColor: "#ffb800", bgGradient: "linear-gradient(135deg,#a06800,#ffb800)" },
 };
 
 /** rate/done → 구간 키 + 비주얼을 한 번에. (logic resolveBracketKey + content 비주얼 결합) */
