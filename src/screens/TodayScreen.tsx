@@ -292,7 +292,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
             </div>
             <div style={{ display: "flex", gap: 8 }}>
               <button
-                onClick={() => actions.buyFreeze()}
+                onClick={() => { if (actions.buyFreeze().ok) openToast("스트릭 보호권이 생겼어요"); }}
                 disabled={!game.canBuyFreeze}
                 style={{ flex: 1, padding: 9, border: "none", borderRadius: 10, fontWeight: 800, background: game.canBuyFreeze ? "#5DC528" : "#e5e8eb", color: game.canBuyFreeze ? "#fff" : "#b0b8c1", cursor: game.canBuyFreeze ? "pointer" : "not-allowed", fontFamily: "inherit" }}
               >

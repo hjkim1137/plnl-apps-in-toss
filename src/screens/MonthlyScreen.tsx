@@ -67,7 +67,7 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
       {/* 달력 */}
       <Card>
         <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>
-          🗓️ 출석 달력 <small>(날짜를 눌러 직접 기록)</small>
+          🗓️ 출석 달력 <small>(날짜를 눌러 직접 기록하세요)</small>
         </p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 5, marginBottom: 6 }}>
           {DOW.map((d, i) => (
@@ -196,7 +196,7 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
       ) : (
         <Card>
           <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>
-            🏅 {monthly.year}년 {monthly.monthLabel} 표창장 <small style={{ color: "#b0b8c1", fontWeight: 500 }}>(스샷 공유용)</small>
+            🏅 {monthly.year}년 {monthly.monthLabel} 표창장
           </p>
           {/* 표창장 카드 */}
           <div style={{ position: "relative", marginBottom: 14, marginTop: 24 }}>
