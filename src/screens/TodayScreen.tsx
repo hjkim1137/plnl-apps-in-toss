@@ -63,7 +63,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
           )}
         </div>
         <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
-          <div style={{ flex: 1, background: "#edfadf", borderRadius: 14, padding: 12, textAlign: "center" }}>
+          <div style={{ flex: 1, background: "#f2f4f6", borderRadius: 14, padding: 12, textAlign: "center" }}>
             <div style={{ fontSize: 12, color: "#3a8a12", fontWeight: 700 }}>오늘 가면</div>
             <div style={{ fontSize: 18, fontWeight: 800, color: "#3a8a12" }}>
               +{won(today.choice.goReward)}
@@ -72,7 +72,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
               회수율 {today.choice.projectedRateIfGo}% 로
             </div>
           </div>
-          <div style={{ flex: 1, background: "#fff0f1", borderRadius: 14, padding: 12, textAlign: "center" }}>
+          <div style={{ flex: 1, background: "#f2f4f6", borderRadius: 14, padding: 12, textAlign: "center" }}>
             <div style={{ fontSize: 12, color: "#f04452", fontWeight: 700 }}>안 가면</div>
             <div style={{ fontSize: 18, fontWeight: 800, color: "#f04452" }}>
               {won(today.choice.skipLoss)}
