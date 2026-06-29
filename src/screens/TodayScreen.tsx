@@ -96,8 +96,8 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
               오늘 갔어요 💪
             </button>
             <button
-              onClick={() => actions.checkIn("missed")}
-              style={{ flex: 1, padding: 15, border: "none", borderRadius: 14, fontWeight: 800, background: today.todayValue === "missed" ? "#f04452" : "#fff0f1", color: today.todayValue === "done" ? "#b0b8c1" : today.todayValue === "missed" ? "#fff" : "#4e5968", cursor: "pointer", fontFamily: "inherit", fontSize: 15 }}
+              onClick={() => { if (today.todayValue !== "missed") actions.checkIn("missed"); }}
+              style={{ flex: 1, padding: 15, border: "none", borderRadius: 14, fontWeight: 800, background: today.todayValue === "missed" ? "#f04452" : "#fff0f1", color: today.todayValue === "done" ? "#b0b8c1" : today.todayValue === "missed" ? "#fff" : "#4e5968", cursor: today.todayValue === "missed" ? "default" : "pointer", fontFamily: "inherit", fontSize: 15 }}
             >
               오늘 안 갔어요 💸
             </button>
