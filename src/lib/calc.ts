@@ -33,6 +33,25 @@ export function unitCost(fee: number, target: number): number {
   return Math.max(0, fee) / Math.max(1, target);
 }
 
+/**
+ * 입력/활동이 없는 달의 빈 통계 — 낸 돈 0원·목표 0회·회수율 0%.
+ * 설정값(fee/target)은 '현재 달'에만 귀속하므로, 로그도 없는 과거 달은 이 값으로 표기한다.
+ * computeMonth 는 target 을 최소 1로 가드하지만 빈 달은 '0회'로 보여야 해 별도 상수로 분리.
+ */
+export const EMPTY_MONTH_STATS: MonthStats = {
+  fee: 0,
+  target: 0,
+  done: 0,
+  missed: 0,
+  unit: 0,
+  recovered: 0,
+  rateRaw: 0,
+  rate: 0,
+  remain: 0,
+  donate: 0,
+  over: 0,
+};
+
 /** 한 달치 로그로 모든 진실 숫자를 산출. monthLogs 는 해당 달만 필터된 로그. */
 export function computeMonth(
   fee: number,

@@ -31,6 +31,22 @@ export function isAdConfigured(kind: AdKind): boolean {
 export type AdResult = { earned: boolean };
 
 /**
+ * 광고 보상 판정(에러·dev 흡수). 호출부는 boolean 만 받는다 — dev-mock 정책의 단일 출처.
+ * - dev: 토스 앱 밖(로컬 브라우저)에선 광고가 안 떠 reject 되므로 시청 완료로 가정(흐름 검증). prod 금지.
+ * - prod 미설정: false(보상 미지급) — 호출부가 안내.
+ */
+export async function playAdSafe(kind: AdKind): Promise<boolean> {
+  if (import.meta.env.DEV) return true;
+  if (!isAdConfigured(kind)) return false;
+  try {
+    const { earned } = await playAd(kind);
+    return earned;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * 광고 load → show → (보상/노출) → dismissed 흐름을 Promise 로 래핑.
  * SDK 가 콜백 기반이라 cleanup(언리스너)도 함께 수행한다.
  *

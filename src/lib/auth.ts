@@ -132,3 +132,15 @@ export function makeMockSession(): Session {
     profile: { name: null },
   };
 }
+
+/**
+ * 로그인 진입점 — dev-mock 정책의 단일 출처.
+ * - dev: 토스 앱 밖(로컬 브라우저)에선 appLogin 이 reject 되므로 mock 세션으로 바로 로그인(흐름 검증).
+ * - 백엔드 미구성: mock 세션. - 그 외(prod): 실제 토스 로그인.
+ */
+export function loginOrMock(): Promise<Session> {
+  if (import.meta.env.DEV || !isAuthConfigured()) {
+    return Promise.resolve(makeMockSession());
+  }
+  return loginWithToss();
+}

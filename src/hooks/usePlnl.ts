@@ -11,7 +11,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { isAdConfigured, playAd, type AdKind } from "../lib/ads";
+import { playAdSafe } from "../lib/ads";
 import {
   applyCheckIn,
   clearMonth as clearMonthLogs,
@@ -23,13 +23,11 @@ import {
 } from "../lib/attendance";
 import {
   getStoredSession,
-  isAuthConfigured,
-  loginWithToss,
-  makeMockSession,
+  loginOrMock,
   saveStoredSession,
   type Session,
 } from "../lib/auth";
-import { computeMonth, todayChoice, type MonthStats } from "../lib/calc";
+import { computeMonth, EMPTY_MONTH_STATS, todayChoice, type MonthStats } from "../lib/calc";
 import {
   captionsFor,
   MONTH_LABELS,
@@ -62,12 +60,7 @@ import {
   isNotifyAvailable,
   requestNotifyAgreement,
 } from "../lib/notify";
-import {
-  buildCertificate,
-  buildReport,
-  daysUntilMonthEnd,
-  isMonthEnded,
-} from "../lib/settlement";
+import { buildCertificate, buildReport } from "../lib/settlement";
 import {
   applyFreezeRepair,
   bestStreakAll,
@@ -98,25 +91,21 @@ export interface CalendarCell {
 }
 
 /**
- * dev 환경에서 광고 그룹 미설정 시 mock 보상으로 흐름을 막지 않는다.
- * prod 에서 미설정이면 false(보상 미지급) — 호출부가 안내.
+ * 특정 달(y, m: 0-based)의 진실 숫자. 오늘/월간 탭이 공유.
+ * 설정값(fee/target)은 '현재 달'에만 귀속 — 활동(로그)도 없는 과거 달은 0원·0회로 처리해
+ * 달력을 넘길 때 쓰지도 않은 달에 낸 돈/기부액이 뜨는 문제를 막는다.
  */
-async function playAdSafe(kind: AdKind): Promise<boolean> {
-  if (!isAdConfigured(kind)) {
-    if (import.meta.env.DEV) return true; // dev mock
-    return false;
-  }
-  try {
-    const { earned } = await playAd(kind);
-    return earned;
-  } catch {
-    return false;
-  }
-}
-
-/** 특정 달(y, m: 0-based)의 진실 숫자. 오늘/월간 탭이 공유. */
-function statsForMonth(state: PlnlState, y: number, m: number): MonthStats {
-  return computeMonth(state.fee, state.target, monthLogs(state.logs, y, m));
+function statsForMonth(
+  state: PlnlState,
+  y: number,
+  m: number,
+  curY: number,
+  curM: number,
+): MonthStats {
+  const ml = monthLogs(state.logs, y, m);
+  const isCurrent = y === curY && m === curM;
+  if (!isCurrent && Object.keys(ml).length === 0) return EMPTY_MONTH_STATS;
+  return computeMonth(state.fee, state.target, ml);
 }
 
 export function usePlnl() {
@@ -128,7 +117,6 @@ export function usePlnl() {
   const [state, setState] = useState<PlnlState>(() => loadLocalState(now));
   const [viewY, setViewY] = useState(curY);
   const [viewM, setViewM] = useState(curM);
-  const [previewEnd, setPreviewEnd] = useState(false);
   // 결산/표창장 광고 열람은 이제 state.reportSeen/certSeen(본 '달' 목록)로 영속 —
   // 재로그인·달이동해도 유지. (기존 ephemeral adSeen 제거)
   // 이번 세션에 '도착'한 직전 달(월 경계를 넘어 처음 연 경우). null = 도착 없음.
@@ -193,7 +181,7 @@ export function usePlnl() {
 
   // ── 파생값: 오늘 탭 ────────────────────────────────────────────────────
   const todayData = useMemo(() => {
-    const stats = statsForMonth(state, curY, curM);
+    const stats = statsForMonth(state, curY, curM, curY, curM);
     const bracket = resolveBracketView(stats.rate, stats.done);
     const caps = captionsFor(bracket.key, stats);
     return {
@@ -222,9 +210,9 @@ export function usePlnl() {
 
   // ── 파생값: 월간 탭 ────────────────────────────────────────────────────
   const monthlyData = useMemo(() => {
-    const stats = statsForMonth(state, viewY, viewM);
+    const stats = statsForMonth(state, viewY, viewM, curY, curM);
     const bracket = resolveBracketView(stats.rate, stats.done);
-    const ended = isMonthEnded(viewY, viewM, now, previewEnd);
+    // 결산·표창장 모두 달 무관 광고로 미리 열람(reportUnlocked/certUnlocked) — 월말 게이트 없음.
     const isCurrent = viewY === curY && viewM === curM;
 
     // 달력 셀
@@ -257,17 +245,13 @@ export function usePlnl() {
       month: viewM,
       monthLabel: MONTH_LABELS[viewM],
       isCurrent,
-      monthEnded: ended,
-      daysLeft: daysUntilMonthEnd(viewY, viewM, now),
       calendar: cells,
       report,
       certificate,
-      // 도착 배너는 '현재 달'(미리보기 포함)에서만 — 과거 달로 이동할 때마다 뜨던 문제 차단.
-      showNotif: state.loggedIn && ended && isCurrent,
     };
     // adSeen 은 의도적으로 의존성에서 제외 — 두 boolean(열람 여부)만 좌우하므로 무거운
     // 달력/결산/표창장 재계산을 일으키지 않도록 메모 밖(return)에서 합성한다.
-  }, [state.fee, state.target, state.logs, state.checkins, state.loggedIn, state.frozen, viewY, viewM, previewEnd, now, curY, curM, today]);
+  }, [state.fee, state.target, state.logs, state.checkins, state.loggedIn, state.frozen, viewY, viewM, now, curY, curM, today]);
 
   // ── 파생값: 게이미피케이션(로그인) ─────────────────────────────────────
   const gamification = useMemo(() => {
@@ -415,7 +399,6 @@ export function usePlnl() {
       const nm = idx % 12;
       setViewY(ny);
       setViewM(nm);
-      if (!(ny === curY && nm === curM)) setPreviewEnd(false);
       // 광고 열람은 달별 영속(reportSeen/certSeen)이라 달 이동 시 리셋 불필요.
     },
     [curY, curM],
@@ -428,11 +411,6 @@ export function usePlnl() {
     },
     [viewY, viewM, goToMonth],
   );
-
-  /** 월말 미리보기(표창장/결산 해제) 토글 — 출시 전 데모/검증용. */
-  const togglePreview = useCallback(() => {
-    setPreviewEnd((p) => !p);
-  }, []);
 
   // ── 알림 (F17) ─────────────────────────────────────────────────────────
 
@@ -484,7 +462,7 @@ export function usePlnl() {
   const login = useCallback(async () => {
     let session: Session;
     try {
-      session = isAuthConfigured() ? await loginWithToss() : makeMockSession();
+      session = await loginOrMock();
     } catch (e) {
       console.warn("[usePlnl] 로그인 실패", e);
       return { ok: false as const };
@@ -522,7 +500,7 @@ export function usePlnl() {
     },
     game: gamification,
     selectableMonths,
-    view: { year: viewY, month: viewM, previewEnd },
+    view: { year: viewY, month: viewM },
     notif,
     // 보호권 복구 제안(확인 후 복구). null = 제안 없음. count = 메울 빈 날 수 = 소비될 보호권 수.
     repair: freezeRepair ? { count: freezeRepair.days.length } : null,
@@ -541,7 +519,6 @@ export function usePlnl() {
       watchCertAd,
       goToMonth,
       shiftMonth,
-      togglePreview,
       enableNotifications,
       openArrival,
       dismissArrival,

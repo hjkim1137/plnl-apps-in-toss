@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { AdButton } from "../components/AdButton";
 import type { PlnlController } from "../hooks/usePlnl";
-import { NOTIFY_COPY } from "../lib/content";
 import { won } from "../lib/format";
 import { useToast } from "@toss/tds-mobile";
 
@@ -19,31 +18,13 @@ function Card({ children }: { children: React.ReactNode }) {
 const DOW = ["일", "월", "화", "수", "목", "금", "토"];
 
 export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpenLogin: () => void }) {
-  const { monthly, selectableMonths, actions, state, notif, view } = plnl;
+  const { monthly, selectableMonths, actions, state } = plnl;
   const { openToast } = useToast();
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const s = monthly.stats;
 
   return (
     <div>
-      {/* 표창장 도착 알림 (로그인 + 월말) */}
-      {monthly.showNotif && (
-        <div style={{ background: "linear-gradient(135deg,#fff3d6,#ffe7a8)", border: "1px solid #ffdb87", borderRadius: 14, padding: 13, marginBottom: 14 }}>
-          <div style={{ fontSize: 13, fontWeight: 800, color: "#8a5b00" }}>
-            {NOTIFY_COPY.arrivalTitle(`${monthly.year}년 ${monthly.monthLabel}`)}
-          </div>
-          {/* 다음 달부터 도착 알림 받기 (F17 알림 동의) */}
-          {notif.canPrompt && (
-            <button
-              onClick={() => actions.enableNotifications()}
-              style={{ marginTop: 10, padding: "8px 12px", border: "1px solid #ffdb87", borderRadius: 10, background: "#fff", color: "#b07a00", fontWeight: 800, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}
-            >
-              {NOTIFY_COPY.enableCta}
-            </button>
-          )}
-        </div>
-      )}
-
       {/* 요약 */}
       <Card>
         <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>
@@ -148,18 +129,10 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
       {/* 월간 결산 (로그인 + 월말 + 광고) */}
       {!state.loggedIn ? (
         <LockCard emoji="📊" title="월간 결산 리포트" desc="한 달이 끝나면 이번 달 운동 성적표가 나와요" onLogin={onOpenLogin} />
-      ) : !monthly.monthEnded ? (
-        <Card>
-          <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>📊 월간 결산 리포트</p>
-          <p style={{ fontSize: 13, color: "#8b95a1", marginBottom: 14 }}>
-            이번 달이 끝나면 결산이 만들어져요 · D-{monthly.daysLeft}
-          </p>
-          <button onClick={() => actions.togglePreview()} style={ghostBtn}>🔔 월말 도착 미리보기</button>
-        </Card>
       ) : !monthly.reportUnlocked ? (
         <Card>
           <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>📊 월간 결산 리포트</p>
-          <AdButton onRun={() => actions.watchReportAd()} onDone={(r) => { if (r.ok) openToast("결산 리포트가 도착했어요"); }} style={fullBtn}>📺 광고 보고 결산 보기</AdButton>
+          <AdButton onRun={() => actions.watchReportAd()} onDone={(r) => { if (r.ok) openToast("결산 리포트가 도착했어요"); }} style={fullBtn}>📺 광고 보고 결산 미리 보기</AdButton>
         </Card>
       ) : (
         <Card>
@@ -214,17 +187,10 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
             </button>
           </div>
         </div>
-      ) : !monthly.monthEnded ? (
-        <Card>
-          <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>🏅 표창장</p>
-          <p style={{ fontSize: 13, color: "#8b95a1" }}>
-            {monthly.monthLabel} 말에 표창장이 도착해요 · D-{monthly.daysLeft}
-          </p>
-        </Card>
       ) : !monthly.certUnlocked ? (
         <Card>
           <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>🏅 표창장</p>
-          <AdButton onRun={() => actions.watchCertAd()} onDone={(r) => { if (r.ok) openToast("표창장이 열렸어요"); }} style={fullBtn}>📺 광고 보고 표창장 보기</AdButton>
+          <AdButton onRun={() => actions.watchCertAd()} onDone={(r) => { if (r.ok) openToast("표창장이 열렸어요"); }} style={fullBtn}>📺 광고 보고 표창장 미리 받기</AdButton>
         </Card>
       ) : (
         <Card>
@@ -256,11 +222,6 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
               </div>
             </div>
           </div>
-          {view.previewEnd && monthly.isCurrent && (
-            <button onClick={() => actions.togglePreview()} style={{ ...ghostBtn, marginTop: 8 }}>
-              미리보기 끄기
-            </button>
-          )}
         </Card>
       )}
 
@@ -307,7 +268,6 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
 
 const navBtn: React.CSSProperties = { border: "none", background: "#fff", width: 34, height: 34, borderRadius: 10, fontSize: 16, boxShadow: "0 1px 2px rgba(0,0,0,.06)", color: "#4e5968", cursor: "pointer", fontFamily: "inherit" };
 const fullBtn: React.CSSProperties = { width: "100%", padding: 14, border: "none", borderRadius: 14, fontWeight: 800, background: "#5DC528", color: "#fff", cursor: "pointer", fontFamily: "inherit", fontSize: 15 };
-const ghostBtn: React.CSSProperties = { width: "100%", padding: 12, border: "1px solid #e5e8eb", borderRadius: 13, background: "#fff", color: "#6b7684", fontWeight: 700, cursor: "pointer", fontFamily: "inherit", fontSize: 14 };
 
 function Stat({ k, v, color }: { k: string; v: string; color?: string }) {
   return (
