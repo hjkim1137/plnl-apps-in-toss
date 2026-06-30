@@ -190,7 +190,7 @@ export function todayCheckInStatusText(
   }
   if (todayValue === "missed") {
     return {
-      text: `오늘 ${won(unit)} 증발… 내일 가면 다시 회수 가능해요 😅`,
+      text: `오늘 ${won(unit)} 증발… 내일은 갈 거죠? 😅`,
       kind: "missed",
     };
   }
