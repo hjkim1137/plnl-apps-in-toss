@@ -1,11 +1,7 @@
 import { useState } from "react";
 import { AdButton } from "../components/AdButton";
 import type { PlnlController } from "../hooks/usePlnl";
-import {
-  AD_UNLOCKED_TAG,
-  freeCheckinTagText,
-  todayCheckInStatusText,
-} from "../lib/content";
+import { todayCheckInStatusText } from "../lib/content";
 import { wonN } from "../lib/format";
 import { useToast } from "@toss/tds-mobile";
 import { generateHapticFeedback } from "@apps-in-toss/web-bridge";
@@ -31,37 +27,24 @@ function Card({ children }: { children: React.ReactNode }) {
 }
 
 export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpenLogin: () => void }) {
-  const { today, checkin, game, actions, state, repair } = plnl;
+  const { today, game, actions, state, repair } = plnl;
   const { openToast } = useToast();
   const s = today.stats;
   const [localChoice, setLocalChoice] = useState<"done" | "missed" | null>(today.todayValue);
 
-  // 비로그인 버튼 위 안내 태그
-  const freeTag = (() => {
-    if (state.loggedIn || today.todayValue != null || localChoice != null) return null;
-    if (state.adUnlocked) return AD_UNLOCKED_TAG;
-    if (checkin.freeLeft > 0) return freeCheckinTagText(checkin.freeLeft);
-    return null;
-  })();
-
   return (
     <div>
       {/* 0) 온보딩 안내 */}
-      <div style={{ background: "#edfadf", borderRadius: 14, padding: "14px 16px", marginBottom: 14, textAlign: "center" }}>
-        <p style={{ margin: "0 0 4px", fontWeight: 800, fontSize: 15, color: "#2e6b0e" }}>헬스장 비용 얼마나 본전 뽑았어요?</p>
-        <p style={{ margin: 0, fontSize: 13, color: "#4e7a20" }}>운동 가면 비용 회수 😎 · 안 가면 기부 😥</p>
+      <div style={{ background: "#f2f4f6", borderRadius: 14, padding: "14px 16px", marginBottom: 14, textAlign: "center" }}>
+        <p style={{ margin: "0 0 4px", fontWeight: 800, fontSize: 15, color: "#4e5968" }}>헬스장 비용 얼마나 본전 뽑았어요?</p>
+        <p style={{ margin: 0, fontSize: 13, color: "#8b95a1" }}>운동 가면 비용 회수 😎 · 안 가면 기부 😥</p>
       </div>
 
       {/* 1) 오늘의 선택 */}
       <Card>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
           <p style={{ fontWeight: 700, color: "#6b7684", margin: 0 }}>
-            오늘의 선택{" "}
-            {!state.loggedIn && (
-              <small style={{ color: "#8b95a1" }}>
-                · 무료 {checkin.freeLeft}/3
-              </small>
-            )}
+            오늘의 선택 <small style={{ color: "#b0b8c1", fontWeight: 600 }}>(눌러보세요)</small>
           </p>
           {state.loggedIn && (
             <div style={{ display: "flex", alignItems: "center", gap: 5, background: "#fff7e0", border: "1px solid #ffe4a0", borderRadius: 999, padding: "5px 12px" }}>
@@ -71,48 +54,20 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
           )}
         </div>
 
-
-        {freeTag && (
-          <div style={{ fontSize: 12, fontWeight: 700, color: state.adUnlocked ? "#15b877" : "#5DC528", textAlign: "center", marginBottom: 10 }}>
-            {freeTag}
-          </div>
-        )}
-
-        {checkin.mode === "buttons" ? (
-          <div style={{ display: "flex", gap: 10 }}>
-            <button
-              onClick={() => { if (localChoice !== "done") { generateHapticFeedback({ type: "tap" }); actions.checkIn("done"); setLocalChoice("done"); openToast(todayCheckInStatusText("done", s.unit, state.loggedIn).text); } }}
-              style={{ flex: 1, padding: 15, border: "none", borderRadius: 14, fontWeight: 800, background: localChoice === "done" ? "#5DC528" : "#edfadf", color: localChoice === "missed" ? "#b0b8c1" : localChoice === "done" ? "#fff" : "#4e5968", cursor: localChoice === "done" ? "default" : "pointer", fontFamily: "inherit", fontSize: 15 }}
-            >
-              오늘 갔어요
-            </button>
-            <button
-              onClick={() => { if (localChoice !== "missed") { generateHapticFeedback({ type: "tap" }); actions.checkIn("missed"); setLocalChoice("missed"); openToast(todayCheckInStatusText("missed", s.unit, state.loggedIn).text.replace("… ", "…\n")); } }}
-              style={{ flex: 1, padding: 15, border: "none", borderRadius: 14, fontWeight: 800, background: localChoice === "missed" ? "#f04452" : "#fff0f1", color: localChoice === "done" ? "#b0b8c1" : localChoice === "missed" ? "#fff" : "#4e5968", cursor: localChoice === "missed" ? "default" : "pointer", fontFamily: "inherit", fontSize: 15 }}
-            >
-              오늘 안 갔어요
-            </button>
-          </div>
-        ) : (
-          // 무료 소진 → 전면형 광고 게이트. 시청 완료 시 1회 언락되고 위 버튼이 나타남.
-          <>
-            <AdButton
-              onRun={() => actions.watchCheckinAd()}
-              style={{ width: "100%", padding: 15, border: "none", borderRadius: 14, fontWeight: 800, background: "#191f28", color: "#fff", cursor: "pointer", fontFamily: "inherit", fontSize: 15 }}
-            >
-              📺 짧은 광고 보고 출석 체크하기
-            </AdButton>
-            <div style={{ textAlign: "center", fontSize: 12, color: "#8b95a1", marginTop: 10 }}>
-              또는{" "}
-              <span
-                onClick={onOpenLogin}
-                style={{ color: "#5DC528", fontWeight: 800, cursor: "pointer" }}
-              >
-                토스 로그인하고 광고 없이 무제한 + 포인트 받기
-              </span>
-            </div>
-          </>
-        )}
+        <div style={{ display: "flex", gap: 10 }}>
+          <button
+            onClick={() => { if (localChoice !== "done") { generateHapticFeedback({ type: "tap" }); actions.checkIn("done"); setLocalChoice("done"); openToast(todayCheckInStatusText("done", s.unit, state.loggedIn).text); } }}
+            style={{ flex: 1, padding: 14, border: "none", borderRadius: 14, fontWeight: 800, background: localChoice === "done" ? "#5DC528" : "#edfadf", color: localChoice === "missed" ? "#b0b8c1" : localChoice === "done" ? "#fff" : "#4e5968", cursor: localChoice === "done" ? "default" : "pointer", fontFamily: "inherit", fontSize: 15 }}
+          >
+            오늘 갔어요
+          </button>
+          <button
+            onClick={() => { if (localChoice !== "missed") { generateHapticFeedback({ type: "tap" }); actions.checkIn("missed"); setLocalChoice("missed"); openToast(todayCheckInStatusText("missed", s.unit, state.loggedIn).text.replace("… ", "…\n")); } }}
+            style={{ flex: 1, padding: 14, border: "none", borderRadius: 14, fontWeight: 800, background: localChoice === "missed" ? "#f04452" : "#fff0f1", color: localChoice === "done" ? "#b0b8c1" : localChoice === "missed" ? "#fff" : "#4e5968", cursor: localChoice === "missed" ? "default" : "pointer", fontFamily: "inherit", fontSize: 15 }}
+          >
+            오늘 안 갔어요
+          </button>
+        </div>
 
       </Card>
 
@@ -188,7 +143,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
             {game.claimableMilestone ? (
               <AdButton
                 onRun={() => actions.claimMilestone()}
-                style={{ width: "100%", marginTop: 12, padding: 13, border: "none", borderRadius: 13, fontWeight: 800, background: "#191f28", color: "#fff", cursor: "pointer", fontFamily: "inherit" }}
+                style={{ width: "100%", marginTop: 12, padding: 14, border: "none", borderRadius: 13, fontWeight: 800, background: "#191f28", color: "#fff", cursor: "pointer", fontFamily: "inherit" }}
               >
                 🎁 광고보고 포인트 받기 (+{game.claimableMilestone.p}P · {game.claimableMilestone.d}일)
               </AdButton>
@@ -210,13 +165,13 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
               <div style={{ display: "flex", gap: 8 }}>
                 <button
                   onClick={() => actions.confirmFreezeRepair()}
-                  style={{ flex: 1, padding: 12, border: "none", borderRadius: 12, fontWeight: 800, background: "#5DC528", color: "#fff" }}
+                  style={{ flex: 1, padding: 14, border: "none", borderRadius: 12, fontWeight: 800, background: "#5DC528", color: "#fff" }}
                 >
                   🛡️ 지키기 (보호권 {repair.count}개)
                 </button>
                 <button
                   onClick={() => actions.dismissFreezeRepair()}
-                  style={{ flex: "0 0 auto", padding: "12px 16px", border: "1px solid #cfe0ff", borderRadius: 12, fontWeight: 700, background: "#fff", color: "#6b7684" }}
+                  style={{ flex: "0 0 auto", padding: "14px 16px", border: "1px solid #cfe0ff", borderRadius: 12, fontWeight: 700, background: "#fff", color: "#6b7684" }}
                 >
                   괜찮아요
                 </button>
@@ -249,7 +204,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
               <button
                 onClick={() => { if (actions.buyFreeze().ok) openToast("스트릭 보호권이 생겼어요"); }}
                 disabled={!game.canBuyFreeze}
-                style={{ flex: 1, padding: 9, border: "none", borderRadius: 10, fontWeight: 800, background: game.canBuyFreeze ? "#5DC528" : "#e5e8eb", color: game.canBuyFreeze ? "#fff" : "#b0b8c1", cursor: game.canBuyFreeze ? "pointer" : "not-allowed", fontFamily: "inherit" }}
+                style={{ flex: 1, padding: 14, border: "none", borderRadius: 10, fontWeight: 800, background: game.canBuyFreeze ? "#5DC528" : "#e5e8eb", color: game.canBuyFreeze ? "#fff" : "#b0b8c1", cursor: game.canBuyFreeze ? "pointer" : "not-allowed", fontFamily: "inherit" }}
               >
                 5P로 받기
               </button>
@@ -257,7 +212,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
                 onRun={() => actions.watchFreezeAd()}
                 onDone={(r) => { if (r.ok) openToast("스트릭 보호권이 생겼어요"); }}
                 loadingLabel=""
-                style={{ flex: 1, padding: 9, border: "none", borderRadius: 10, fontWeight: 800, background: "#191f28", color: "#fff", cursor: "pointer", fontFamily: "inherit" }}
+                style={{ flex: 1, padding: 14, border: "none", borderRadius: 10, fontWeight: 800, background: "#191f28", color: "#fff", cursor: "pointer", fontFamily: "inherit" }}
               >
                 광고 보고 받기
               </AdButton>

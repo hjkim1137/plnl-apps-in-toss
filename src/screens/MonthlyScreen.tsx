@@ -123,7 +123,7 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
         {monthly.isCurrent && (
           <button
             onClick={() => setShowResetConfirm(true)}
-            style={{ width: "100%", marginTop: 8, padding: 13, border: "1px solid #e5e8eb", borderRadius: 13, background: "#fff", color: "#6b7684", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
+            style={{ width: "100%", marginTop: 8, padding: 14, border: "1px solid #e5e8eb", borderRadius: 13, background: "#fff", color: "#6b7684", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
           >
             이번 달 기록 초기화
           </button>
@@ -252,13 +252,13 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
             <div style={{ display: "flex", gap: 8 }}>
               <button
                 onClick={() => setShowResetConfirm(false)}
-                style={{ flex: 1, padding: 12, border: "1px solid #e5e8eb", borderRadius: 12, background: "#fff", color: "#4e5968", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
+                style={{ flex: 1, padding: 14, border: "1px solid #e5e8eb", borderRadius: 12, background: "#fff", color: "#4e5968", fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
               >
                 취소
               </button>
               <button
                 onClick={() => { actions.clearMonth(monthly.year, monthly.month); setShowResetConfirm(false); }}
-                style={{ flex: 1, padding: 12, border: "none", borderRadius: 12, background: "#5DC528", color: "#fff", fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}
+                style={{ flex: 1, padding: 14, border: "none", borderRadius: 12, background: "#5DC528", color: "#fff", fontWeight: 800, cursor: "pointer", fontFamily: "inherit" }}
               >
                 초기화
               </button>

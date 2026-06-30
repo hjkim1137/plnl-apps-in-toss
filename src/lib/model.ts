@@ -1,6 +1,6 @@
 // 앱 상태 모델 + 방어적 정규화.
 // PlnlState 는 클라이언트의 단일 진실 소스. 로그인 시 일부 필드(fee/target/logs/points/
-// freezes/frozen/claimed)는 서버에 영속되고, freeUsed/adUnlocked/lastSeenMonth/notifyAgreed
+// freezes/frozen/claimed)는 서버에 영속되고, lastSeenMonth/notifyAgreed
 // 는 기기 로컬 전용이다. (서버 매핑은 userData.ts 참고)
 
 import {
@@ -51,10 +51,6 @@ export interface PlnlState {
   reportSeen: string[];
   /** 표창장 광고를 끝까지 본 달('YYYY-MM') 목록 — 재로그인·달이동해도 열람 유지(서버 영속). */
   certSeen: string[];
-  /** 비로그인 무료 출석 사용 횟수. */
-  freeUsed: number;
-  /** 광고 시청으로 1회 출석이 언락된 상태(비로그인). */
-  adUnlocked: boolean;
   /** 마지막으로 앱을 연 달(monthIndex = y*12+m). 월 경계 도착 트리거 판정용. 0=미설정. */
   lastSeenMonth: number;
   /** 알림(스마트 발송) 수신 동의 완료 — 중복 동의 요청 방지. */
@@ -80,8 +76,6 @@ export function createInitialState(): PlnlState {
     checkins: [],
     reportSeen: [],
     certSeen: [],
-    freeUsed: 0,
-    adUnlocked: false,
     lastSeenMonth: 0,
     notifyAgreed: false,
     monthSettings: {},
@@ -186,8 +180,6 @@ export function normalizeState(
     checkins: sanitizeDateList(o.checkins, now),
     reportSeen: sanitizeMonthList(o.reportSeen),
     certSeen: sanitizeMonthList(o.certSeen),
-    freeUsed: nonNegInt(o.freeUsed),
-    adUnlocked: o.adUnlocked === true,
     lastSeenMonth: nonNegInt(o.lastSeenMonth),
     notifyAgreed: o.notifyAgreed === true,
     monthSettings: sanitizeMonthSettings(o.monthSettings),

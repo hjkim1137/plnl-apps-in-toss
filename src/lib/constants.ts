@@ -1,9 +1,6 @@
 // 정책 상수 (기획 §5·§6 확정값). 밸런싱 변경은 여기 한 곳에서.
 // 보상값(마일스톤 P, 등급 컷 등)은 콘텐츠 성격이라 content.ts 에 둔다.
 
-/** 비로그인 유저의 무료 출석 체크 횟수. 소진 후 전면형 광고 게이트. */
-export const FREE_CHECKIN_LIMIT = 3;
-
 /** 로그인 유저 출석 1회당 적립 포인트. */
 export const POINT_PER_CHECKIN = 1;
 

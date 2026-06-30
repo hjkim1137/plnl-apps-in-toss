@@ -1,7 +1,7 @@
 // 출석 체크 로직 (기획 §4·§5.1). 방문 횟수는 수동 입력이 아니라 출석 체크로 자동 집계.
-// 순수 reducer — 화면(A)은 결과만 받아 렌더하고, 광고가 필요하면 needAd 로 분기한다.
+// 순수 reducer — 화면(A)은 결과(다음 PlnlState)만 받아 렌더한다.
 
-import { FREE_CHECKIN_LIMIT, POINT_PER_CHECKIN } from "./constants";
+import { POINT_PER_CHECKIN } from "./constants";
 import { monthPrefix } from "./date";
 import type { Logs, LogValue, PlnlState } from "./model";
 
@@ -39,55 +39,29 @@ export function monthsGraduated(logs: Logs, target: number): number {
   return Object.values(monthAgg(logs)).filter((c) => c >= t).length;
 }
 
-/** 비로그인 유저의 남은 무료 출석 횟수. */
-export function freeCheckinsLeft(state: PlnlState): number {
-  return Math.max(0, FREE_CHECKIN_LIMIT - state.freeUsed);
-}
-
-export type CheckInResult =
-  | { ok: true; next: PlnlState; pointAwarded: boolean }
-  | { ok: false; reason: "need_ad" };
-
 /**
- * 출석 체크 1회 시도.
+ * 출석 체크 1회 시도(무제한·무게이트). 다음 PlnlState 를 반환.
  * - 이미 같은 값이면 취소(토글 off), 다른 값이면 교체.
- * - 포인트/게이팅은 **'done(출석)' 상태의 진입·이탈에만** 반응한다 → 하루 한 번 1P.
- *   같은 날을 껐다 켜거나 done↔missed 를 왕복해도 누적되지 않고(진입 +1P / 이탈 -1P 로 상쇄),
- *   '안 갔어요'(missed) 기록은 적립하지 않는다.
- *   로그인=±1P / 비로그인=무료차감·복구 → 무료 소진 시 광고언락소진 → 둘 다 없으면 needAd.
+ * - 포인트는 **로그인 유저의 'done(출석)' 진입·이탈에만** ±1P → 하루 한 번.
+ *   같은 날을 껐다 켜거나 done↔missed 를 왕복해도 누적되지 않는다(진입 +1P / 이탈 -1P 상쇄).
+ *   '안 갔어요'(missed) 는 적립하지 않는다. 비로그인은 적립/게이팅 없이 기록만 토글한다.
  */
 export function applyCheckIn(
   state: PlnlState,
   dateStr: string,
   value: LogValue,
-): CheckInResult {
+): PlnlState {
   const already = state.logs[dateStr];
   const next: PlnlState = { ...state, logs: { ...state.logs } };
-  let pointAwarded = false;
 
   const toggleOff = already === value; // 같은 값 재탭 = 취소
   const willDone = !toggleOff && value === "done";
   const wasDone = already === "done";
 
-  if (willDone && !wasDone) {
-    // 새로 출석(done) 기록 → 적립/소진
-    if (state.loggedIn) {
-      next.points = state.points + POINT_PER_CHECKIN;
-      pointAwarded = true;
-    } else if (state.freeUsed < FREE_CHECKIN_LIMIT) {
-      next.freeUsed = state.freeUsed + 1;
-    } else if (state.adUnlocked) {
-      next.adUnlocked = false; // 광고로 언락해둔 1회 소진
-    } else {
-      return { ok: false, reason: "need_ad" };
-    }
-  } else if (wasDone && !willDone) {
-    // 출석 취소(done → off/missed) → 적립 회수(로그인) / 무료 카운트 복구(비로그인)
-    if (state.loggedIn) {
-      next.points = Math.max(0, state.points - POINT_PER_CHECKIN);
-    } else if (state.freeUsed > 0) {
-      next.freeUsed = state.freeUsed - 1;
-    }
+  // 포인트는 로그인 유저만. (비로그인은 무제한 기록, 적립/게이팅 없음)
+  if (state.loggedIn) {
+    if (willDone && !wasDone) next.points = state.points + POINT_PER_CHECKIN;
+    else if (wasDone && !willDone) next.points = Math.max(0, state.points - POINT_PER_CHECKIN);
   }
 
   if (toggleOff) {
@@ -103,22 +77,12 @@ export function applyCheckIn(
   else checkinSet.delete(dateStr);
   next.checkins = Array.from(checkinSet).sort();
 
-  return { ok: true, next, pointAwarded };
-}
-
-/** 비로그인 유저가 출석용 전면형 광고를 끝까지 본 직후 — 1회 출석 언락. */
-export function unlockAfterCheckinAd(state: PlnlState): PlnlState {
-  return { ...state, adUnlocked: true };
+  return next;
 }
 
 /**
- * 달력 날짜 직접 탭 — done ↔ missed 토글(빈 칸은 done 으로). 목업 cycleDay 와 동일하게
- * **게이팅/포인트 없이** 기록만 보정한다(과거 출석 백필 용도).
- *
- * ⚠️ 결정 필요(TODO): 비로그인 유저가 달력으로 '오늘'을 done 처리하면 무료 3회/광고
- * 게이트를 우회할 수 있다. 또 로그인 유저는 달력 기록 시 +1P 가 안 붙는다(버튼만 +1P).
- * 목업의 동작을 그대로 옮긴 것 — 출시 전 정책 확정:
- *   (a) 달력은 과거 보정 전용(오늘은 버튼으로만) / (b) 달력 today 도 게이팅 / (c) 현행 유지.
+ * 달력 날짜 직접 탭 — done ↔ missed 토글(빈 칸은 done 으로). **포인트 없이** 기록만 보정한다
+ * (과거 출석 백필 용도). 로그인 유저도 달력 기록엔 +1P 가 안 붙는다(버튼 출석만 +1P).
  */
 export function cycleCalendarDay(state: PlnlState, dateStr: string): PlnlState {
   const cur = state.logs[dateStr];

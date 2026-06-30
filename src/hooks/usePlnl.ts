@@ -16,10 +16,8 @@ import {
   applyCheckIn,
   clearMonth as clearMonthLogs,
   cycleCalendarDay,
-  freeCheckinsLeft,
   monthLogs,
   monthsGraduated,
-  unlockAfterCheckinAd,
 } from "../lib/attendance";
 import {
   getStoredSession,
@@ -212,17 +210,6 @@ export function usePlnl() {
     };
   }, [state.fee, state.target, state.monthSettings, state.logs, state.loggedIn, curY, curM, today]);
 
-  // ── 파생값: 출석 체크 UI 분기 ──────────────────────────────────────────
-  const checkin = useMemo(() => {
-    const left = freeCheckinsLeft(state);
-    const alreadyToday = state.logs[today] != null;
-    const mode: "buttons" | "ad-gate" =
-      state.loggedIn || alreadyToday || left > 0 || state.adUnlocked
-        ? "buttons"
-        : "ad-gate";
-    return { mode, freeLeft: left, freeLimitReached: !state.loggedIn && left === 0 };
-  }, [state, today]);
-
   // ── 파생값: 월간 탭 ────────────────────────────────────────────────────
   const monthlyData = useMemo(() => {
     const stats = statsForMonth(state, viewY, viewM, curY, curM);
@@ -290,32 +277,14 @@ export function usePlnl() {
 
   // ── 액션 ───────────────────────────────────────────────────────────────
 
-  /** 오늘의 선택(출석 체크). 무료/광고 소진 시 자동으로 전면형 광고 → 언락 → 재시도. */
+  /** 오늘의 선택(출석 체크) — 무제한·무게이트 토글. 로그인 유저는 done 진입/이탈에 ±1P. */
   const checkIn = useCallback(
-    async (value: LogValue) => {
-      const r = applyCheckIn(stateRef.current, today, value);
-      if (r.ok) {
-        setState(r.next);
-        return { ok: true as const };
-      }
-      // need_ad
-      const earned = await playAdSafe("interstitial");
-      if (!earned) return { ok: false as const, reason: "ad_incomplete" as const };
-      const unlocked = unlockAfterCheckinAd(stateRef.current);
-      const r2 = applyCheckIn(unlocked, today, value);
-      if (r2.ok) setState(r2.next);
-      return { ok: r2.ok };
+    (value: LogValue) => {
+      setState(applyCheckIn(stateRef.current, today, value));
+      return { ok: true as const };
     },
     [today],
   );
-
-  /** 무료 소진 후 출석용 전면형 광고만 시청 → 1회 언락(이후 go/skip 선택 가능). */
-  const watchCheckinAd = useCallback(async () => {
-    const earned = await playAdSafe("interstitial");
-    if (!earned) return { ok: false as const, reason: "ad_incomplete" as const };
-    setState(unlockAfterCheckinAd(stateRef.current));
-    return { ok: true as const };
-  }, []);
 
   /** 달력 날짜 직접 토글. 입력은 현재 달만 — 과거 달은 조회 전용(UI 비활성 + 방어 가드). */
   const cycleDay = useCallback(
@@ -516,7 +485,6 @@ export function usePlnl() {
   return {
     state,
     today: todayData,
-    checkin,
     // 광고 열람 여부는 영속 reportSeen/certSeen(본 '달' 목록)에서 현재 보는 달로 합성 —
     // 재로그인·달이동해도 유지. monthlyData 메모는 재계산시키지 않음(가벼운 합성).
     monthly: {
@@ -532,7 +500,6 @@ export function usePlnl() {
     repair: freezeRepair ? { count: freezeRepair.days.length } : null,
     actions: {
       checkIn,
-      watchCheckinAd,
       cycleDay,
       clearMonth,
       setSettings,

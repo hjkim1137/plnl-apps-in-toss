@@ -80,8 +80,6 @@ function rowToState(row: PlnlRow, now: Date): PlnlState {
       checkins: row.checkins ?? [],
       reportSeen: row.report_seen ?? [],
       certSeen: row.cert_seen ?? [],
-      freeUsed: 0,
-      adUnlocked: false,
     },
     now,
   );

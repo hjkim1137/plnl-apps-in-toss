@@ -157,7 +157,7 @@ export default function App() {
 
             <button
               onClick={() => setShowSettings(false)}
-              style={{ width: "100%", border: "none", background: "#5DC528", color: "#fff", fontSize: 16, fontWeight: 800, padding: 15, borderRadius: 14, cursor: "pointer", fontFamily: "inherit" }}
+              style={{ width: "100%", border: "none", background: "#5DC528", color: "#fff", fontSize: 16, fontWeight: 800, padding: 14, borderRadius: 14, cursor: "pointer", fontFamily: "inherit" }}
             >
               완료
             </button>
@@ -165,8 +165,8 @@ export default function App() {
         </div>
       )}
 
-      {/* 온보딩 — 처음 쓰는 유저 (출석 기록 없음 + 무료 미사용) */}
-      {!plnl.state.loggedIn && Object.keys(plnl.state.logs).length === 0 && plnl.state.freeUsed === 0 && !showSettings && (
+      {/* 온보딩 — 처음 쓰는 유저 (출석 기록 없음) */}
+      {!plnl.state.loggedIn && Object.keys(plnl.state.logs).length === 0 && !showSettings && (
         <div style={{ padding: "12px 18px 0" }}>
           <div style={{
             background: "linear-gradient(135deg, #edfadf, #d4f5b8)",
@@ -186,7 +186,7 @@ export default function App() {
             </div>
             <button
               onClick={() => setShowSettings(true)}
-              style={{ width: "100%", border: "none", background: "#5DC528", color: "#fff", fontSize: 14, fontWeight: 800, padding: "13px", borderRadius: 12, cursor: "pointer", fontFamily: "inherit" }}
+              style={{ width: "100%", border: "none", background: "#5DC528", color: "#fff", fontSize: 14, fontWeight: 800, padding: "14px", borderRadius: 12, cursor: "pointer", fontFamily: "inherit" }}
             >
               ⚙️ 운동 설정 시작하기
             </button>
