@@ -32,7 +32,7 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
           {monthly.year}년 {monthly.monthLabel} 요약
         </p>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-          <Stat k="낸 돈" v={won(s.fee)} />
+          <Stat k="운동 비용" v={won(s.fee)} />
           <Stat k="출석 / 목표" v={`${s.done} / ${s.target}회`} />
           <Stat k="회수한 금액" v={won(s.recovered)} color="#15b877" />
           {s.rate >= 100 ? (
