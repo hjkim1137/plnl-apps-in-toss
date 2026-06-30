@@ -267,16 +267,6 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
           <LockCard emoji="💰" title="출석 인증 포인트" desc="출석마다 1P 적립 → 스트릭 보호권으로 연속 기록을 지켜요" onLogin={onOpenLogin} />
         </>
       )}
-
-      {/* 6) 회원님께 한마디 */}
-      <Card>
-        <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>회원님께 한마디</p>
-        <ul style={{ margin: 0, paddingLeft: 18, color: "#4e5968", fontSize: 13.5, lineHeight: 1.7 }}>
-          {today.captions.map((c, i) => (
-            <li key={i}>{c}</li>
-          ))}
-        </ul>
-      </Card>
     </div>
   );
 }

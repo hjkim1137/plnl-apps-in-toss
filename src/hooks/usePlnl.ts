@@ -29,7 +29,7 @@ import {
 } from "../lib/auth";
 import { computeMonth, EMPTY_MONTH_STATS, todayChoice, type MonthStats } from "../lib/calc";
 import {
-  captionsFor,
+  headlineFor,
   MONTH_LABELS,
   monthStatusText,
   resolveBracketView,
@@ -197,19 +197,20 @@ export function usePlnl() {
   const todayData = useMemo(() => {
     const stats = statsForMonth(state, curY, curM, curY, curM);
     const bracket = resolveBracketView(stats.rate, stats.done);
-    const caps = captionsFor(bracket.key, stats);
+    // 헤드라인 앞 인사: 로그인 + 이름이 있으면 "OOO 회원님,", 그 외(비로그인/이름 없음)는 "회원님,".
+    const name = state.loggedIn ? sessionRef.current?.profile?.name ?? null : null;
+    const greeting = name ? `${name} 회원님, ` : "회원님, ";
     return {
       stats,
       bracket,
-      headline: caps[0],
-      captions: caps.slice(1),
+      headline: greeting + headlineFor(bracket.key, stats),
       monthStatus: monthStatusText(stats),
       choice: todayChoice(stats),
       monthLabel: MONTH_LABELS[curM],
       /** 오늘 이미 체크한 값(없으면 null). */
       todayValue: state.logs[today] ?? null,
     };
-  }, [state.fee, state.target, state.monthSettings, state.logs, curY, curM, today]);
+  }, [state.fee, state.target, state.monthSettings, state.logs, state.loggedIn, curY, curM, today]);
 
   // ── 파생값: 출석 체크 UI 분기 ──────────────────────────────────────────
   const checkin = useMemo(() => {
