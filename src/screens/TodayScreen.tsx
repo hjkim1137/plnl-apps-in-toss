@@ -46,6 +46,12 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
 
   return (
     <div>
+      {/* 0) 온보딩 안내 */}
+      <div style={{ background: "#edfadf", borderRadius: 14, padding: "14px 16px", marginBottom: 14, textAlign: "center" }}>
+        <p style={{ margin: "0 0 4px", fontWeight: 800, fontSize: 15, color: "#2e6b0e" }}>헬스장 비용 얼마나 본전 뽑았어요?</p>
+        <p style={{ margin: 0, fontSize: 13, color: "#4e7a20" }}>운동 가면 비용 회수 😎 · 안 가면 기부 😥</p>
+      </div>
+
       {/* 1) 오늘의 선택 */}
       <Card>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
