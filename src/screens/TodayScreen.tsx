@@ -36,7 +36,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
     <div>
       {/* 0) 온보딩 안내 */}
       <div style={{ background: "#f2f4f6", borderRadius: 14, padding: "14px 16px", marginBottom: 14, textAlign: "center" }}>
-        <p style={{ margin: "0 0 4px", fontWeight: 800, fontSize: 15, color: "#4e5968" }}>헬스장 비용 얼마나 본전 뽑았어요?</p>
+        <p style={{ margin: "0 0 4px", fontWeight: 800, fontSize: 15, color: "#4e5968" }}>운동 비용 얼마나 본전 뽑았어요?</p>
         <p style={{ margin: 0, fontSize: 13, color: "#8b95a1" }}>운동 가면 비용 회수 😎 · 안 가면 기부 😥</p>
       </div>
 
@@ -44,7 +44,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
       <Card>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
           <p style={{ fontWeight: 700, color: "#6b7684", margin: 0 }}>
-            오늘의 선택 <small style={{ color: "#b0b8c1", fontWeight: 600 }}>(눌러보세요)</small>
+            오늘의 선택 <small style={{ color: "#b0b8c1", fontWeight: 600 }}>(운동 인증하기)</small>
           </p>
           {state.loggedIn && (
             <div style={{ display: "flex", alignItems: "center", gap: 5, background: "#fff7e0", border: "1px solid #ffe4a0", borderRadius: 999, padding: "5px 12px" }}>
@@ -221,7 +221,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
         </>
       ) : (
         <>
-          <LockCard emoji="🔥" title="내 인증기록" desc="로그인하면 연속 출석 스트릭과 누적 등급(새싹 → 명예 헬창)이 쌓이고, 광고 보고 마일스톤 포인트도 받아요" onLogin={onOpenLogin} />
+          <LockCard emoji="🔥" title="내 인증기록" desc="로그인하면 연속 출석 스트릭과 누적 등급(새싹 → 명예 관장님)이 쌓이고, 광고 보고 마일스톤 포인트도 받아요" onLogin={onOpenLogin} />
           <LockCard emoji="💰" title="운동 출석 포인트" desc="출석마다 1P 적립 → 스트릭 보호권으로 연속 기록을 지켜요" onLogin={onOpenLogin} />
         </>
       )}

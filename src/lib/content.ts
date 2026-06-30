@@ -83,7 +83,7 @@ export const LEVELS: Level[] = [
   { min: 25, name: "회수 전문가", emoji: "🎯" },
   { min: 45, name: "본전 사냥꾼", emoji: "💪" },
   { min: 80, name: "뽕 뽑기 달인", emoji: "🏆" },
-  { min: 120, name: "명예 헬창", emoji: "👑" },
+  { min: 120, name: "명예 관장님", emoji: "👑" },
 ];
 
 // ── 스트릭 마일스톤 보상 — 기획 §6.1 (전면형 광고 보고 포인트 수령) ────────
