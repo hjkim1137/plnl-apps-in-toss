@@ -48,7 +48,7 @@ export function headlineFor(key: BracketKey, s: MonthStats): string {
     case 1:
       return "이번 달 헬스장 후원 1위, 회원님이세요";
     case 2:
-      return "절반의 성공? 아직 절반은 기부 중이에요";
+      return "이제 막 시동 걸렸어요!";
     case 3:
       return "드디어 운동러로 갈아타는 중이에요";
     case 4:
