@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { AdButton } from "../components/AdButton";
 import type { PlnlController } from "../hooks/usePlnl";
 import {
@@ -33,10 +34,11 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
   const { today, checkin, game, actions, state, repair } = plnl;
   const { openToast } = useToast();
   const s = today.stats;
+  const [localChoice, setLocalChoice] = useState<"done" | "missed" | null>(null);
 
   // 비로그인 버튼 위 안내 태그
   const freeTag = (() => {
-    if (state.loggedIn || today.todayValue != null) return null;
+    if (state.loggedIn || today.todayValue != null || localChoice != null) return null;
     if (state.adUnlocked) return AD_UNLOCKED_TAG;
     if (checkin.freeLeft > 0) return freeCheckinTagText(checkin.freeLeft);
     return null;
@@ -73,14 +75,14 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
         {checkin.mode === "buttons" ? (
           <div style={{ display: "flex", gap: 10 }}>
             <button
-              onClick={() => { if (today.todayValue !== "done") { generateHapticFeedback({ type: "tap" }); actions.checkIn("done"); openToast(todayCheckInStatusText("done", s.unit, state.loggedIn).text); } }}
-              style={{ flex: 1, padding: 15, border: "none", borderRadius: 14, fontWeight: 800, background: today.todayValue === "done" ? "#5DC528" : "#edfadf", color: today.todayValue === "missed" ? "#b0b8c1" : today.todayValue === "done" ? "#fff" : "#4e5968", cursor: today.todayValue === "done" ? "default" : "pointer", fontFamily: "inherit", fontSize: 15 }}
+              onClick={() => { if (localChoice !== "done") { generateHapticFeedback({ type: "tap" }); actions.checkIn("done"); setLocalChoice("done"); openToast(todayCheckInStatusText("done", s.unit, state.loggedIn).text); } }}
+              style={{ flex: 1, padding: 15, border: "none", borderRadius: 14, fontWeight: 800, background: localChoice === "done" ? "#5DC528" : "#edfadf", color: localChoice === "missed" ? "#b0b8c1" : localChoice === "done" ? "#fff" : "#4e5968", cursor: localChoice === "done" ? "default" : "pointer", fontFamily: "inherit", fontSize: 15 }}
             >
               오늘 갔어요
             </button>
             <button
-              onClick={() => { if (today.todayValue !== "missed") { generateHapticFeedback({ type: "tap" }); actions.checkIn("missed"); openToast(todayCheckInStatusText("missed", s.unit, state.loggedIn).text); } }}
-              style={{ flex: 1, padding: 15, border: "none", borderRadius: 14, fontWeight: 800, background: today.todayValue === "missed" ? "#f04452" : "#fff0f1", color: today.todayValue === "done" ? "#b0b8c1" : today.todayValue === "missed" ? "#fff" : "#4e5968", cursor: today.todayValue === "missed" ? "default" : "pointer", fontFamily: "inherit", fontSize: 15 }}
+              onClick={() => { if (localChoice !== "missed") { generateHapticFeedback({ type: "tap" }); actions.checkIn("missed"); setLocalChoice("missed"); openToast(todayCheckInStatusText("missed", s.unit, state.loggedIn).text.replace("… ", "…\n")); } }}
+              style={{ flex: 1, padding: 15, border: "none", borderRadius: 14, fontWeight: 800, background: localChoice === "missed" ? "#f04452" : "#fff0f1", color: localChoice === "done" ? "#b0b8c1" : localChoice === "missed" ? "#fff" : "#4e5968", cursor: localChoice === "missed" ? "default" : "pointer", fontFamily: "inherit", fontSize: 15 }}
             >
               오늘 안 갔어요
             </button>
