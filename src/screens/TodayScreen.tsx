@@ -34,7 +34,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
   const { today, checkin, game, actions, state, repair } = plnl;
   const { openToast } = useToast();
   const s = today.stats;
-  const [localChoice, setLocalChoice] = useState<"done" | "missed" | null>(null);
+  const [localChoice, setLocalChoice] = useState<"done" | "missed" | null>(today.todayValue);
 
   // 비로그인 버튼 위 안내 태그
   const freeTag = (() => {
