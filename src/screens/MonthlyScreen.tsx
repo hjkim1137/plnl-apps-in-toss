@@ -116,7 +116,7 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
           </span>
           <span style={{ display: "flex", alignItems: "center", gap: 5 }}>
             <span style={{ width: 11, height: 11, borderRadius: 4, background: "#fdeced", display: "inline-block" }} />
-            못 감 💸
+            운동 안함 💸
           </span>
         </div>
         {/* 초기화는 현재 달만 — 과거 달은 조회 전용이라 버튼 숨김 */}
