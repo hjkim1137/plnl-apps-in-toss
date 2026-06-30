@@ -113,7 +113,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
       {/* 2+3) 회수율 헤드라인 + 이번 달 회수율 게이지 */}
       <div style={{ borderRadius: 18, padding: 22, marginBottom: 14, color: "#fff", background: today.bracket.bgGradient }}>
         <p style={{ fontWeight: 700, color: "rgba(255,255,255,.85)", margin: "0 0 14px" }}>
-          {today.monthLabel} 회수율<span style={{ fontWeight: 500, fontSize: 12, opacity: 0.8, marginLeft: 4 }}>(1회 운동 단가: {wonN(s.unit)}원)</span>
+          {today.monthLabel} 운동비 회수율<span style={{ fontWeight: 500, fontSize: 12, opacity: 0.8, marginLeft: 4 }}>(1회 운동 단가: {wonN(s.unit)}원)</span>
         </p>
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 10 }}>
           <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
@@ -135,7 +135,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
       {state.loggedIn ? (
         <>
           <Card>
-            <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>내 등급</p>
+            <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>내 운동 등급</p>
             <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 12 }}>
               <div style={{ width: 46, height: 46, borderRadius: 14, background: "#eef4ff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0 }}>
                 {game.title.current.emoji}
@@ -184,7 +184,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
             </div>
           )}
           <Card>
-            <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>나의 연속 인증 기록</p>
+            <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>운동 연속 인증 기록</p>
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
               <div style={{ fontSize: 26 }}>🔥</div>
               <div>
@@ -220,7 +220,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
             )}
           </Card>
           <Card>
-            <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>출석 인증 포인트</p>
+            <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>운동 출석 포인트</p>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
               <div style={{ width: 42, height: 42, borderRadius: 12, background: "#fff7e0", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>💰</div>
               <div>
@@ -262,9 +262,9 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
         </>
       ) : (
         <>
-          <LockCard emoji="🏅" title="내 등급" desc="출석할수록 등급 상승 — 작심삼일러 → 회수 전문가 → 뽕 뽑기 달인 → 명예 헬창" onLogin={onOpenLogin} />
+          <LockCard emoji="🏅" title="내 운동 등급" desc="출석할수록 등급 상승 — 작심삼일러 → 회수 전문가 → 뽕 뽑기 달인 → 명예 헬창" onLogin={onOpenLogin} />
           <LockCard emoji="🔥" title="연속 출석 스트릭" desc="로그인하면 연속 출석 + 광고 보고 마일스톤 포인트를 받아요" onLogin={onOpenLogin} />
-          <LockCard emoji="💰" title="출석 인증 포인트" desc="출석마다 1P 적립 → 스트릭 보호권으로 연속 기록을 지켜요" onLogin={onOpenLogin} />
+          <LockCard emoji="💰" title="운동 출석 포인트" desc="출석마다 1P 적립 → 스트릭 보호권으로 연속 기록을 지켜요" onLogin={onOpenLogin} />
         </>
       )}
     </div>

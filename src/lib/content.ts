@@ -44,17 +44,17 @@ export function resolveBracketView(
 export function headlineFor(key: BracketKey, s: MonthStats): string {
   switch (key) {
     case 0:
-      return "결제만 하고 지갑만 운동시키셨네요 💳";
+      return "결제만 하고 지갑만 운동시키셨네요";
     case 1:
-      return "이번 달 후원 1위예요 🥇";
+      return "이번 달 헬스장 후원 1위, 회원님이세요";
     case 2:
       return "절반의 성공? 아직 절반은 기부 중이에요";
     case 3:
-      return "드디어 운동러로 갈아타는 중이에요 🏃";
+      return "드디어 운동러로 갈아타는 중이에요";
     case 4:
-      return `본전까지 딱 ${s.remain}회! 여기서 멈추면 너무 아까워요 😭`;
+      return `본전까지 딱 ${s.remain}회! 여기서 멈추면 너무 아까워요`;
     case 5:
-      return "본전 달성! 이제부터 가는 건 전부 이득이에요 🎉";
+      return "본전 달성! 이제부터 가는 건 전부 이득이에요";
     default:
       return "이제 시설이 회원님께 기부하는 셈이에요";
   }
