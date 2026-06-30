@@ -33,7 +33,6 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
   const { today, checkin, game, actions, state, repair } = plnl;
   const { openToast } = useToast();
   const s = today.stats;
-  const statusMsg = todayCheckInStatusText(today.todayValue, s.unit, state.loggedIn);
 
   // 비로그인 버튼 위 안내 태그
   const freeTag = (() => {
@@ -74,13 +73,13 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
         {checkin.mode === "buttons" ? (
           <div style={{ display: "flex", gap: 10 }}>
             <button
-              onClick={() => { if (today.todayValue !== "done") { generateHapticFeedback({ type: "tap" }); actions.checkIn("done"); } }}
+              onClick={() => { if (today.todayValue !== "done") { generateHapticFeedback({ type: "tap" }); actions.checkIn("done"); openToast(todayCheckInStatusText("done", s.unit, state.loggedIn).text); } }}
               style={{ flex: 1, padding: 15, border: "none", borderRadius: 14, fontWeight: 800, background: today.todayValue === "done" ? "#5DC528" : "#edfadf", color: today.todayValue === "missed" ? "#b0b8c1" : today.todayValue === "done" ? "#fff" : "#4e5968", cursor: today.todayValue === "done" ? "default" : "pointer", fontFamily: "inherit", fontSize: 15 }}
             >
               오늘 갔어요
             </button>
             <button
-              onClick={() => { if (today.todayValue !== "missed") { generateHapticFeedback({ type: "tap" }); actions.checkIn("missed"); } }}
+              onClick={() => { if (today.todayValue !== "missed") { generateHapticFeedback({ type: "tap" }); actions.checkIn("missed"); openToast(todayCheckInStatusText("missed", s.unit, state.loggedIn).text); } }}
               style={{ flex: 1, padding: 15, border: "none", borderRadius: 14, fontWeight: 800, background: today.todayValue === "missed" ? "#f04452" : "#fff0f1", color: today.todayValue === "done" ? "#b0b8c1" : today.todayValue === "missed" ? "#fff" : "#4e5968", cursor: today.todayValue === "missed" ? "default" : "pointer", fontFamily: "inherit", fontSize: 15 }}
             >
               오늘 안 갔어요
@@ -107,21 +106,6 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
           </>
         )}
 
-        {/* 출석 체크 후 상태 메시지 */}
-        <div style={{
-          marginTop: 12,
-          padding: "12px 14px",
-          borderRadius: 12,
-          fontSize: 13.5,
-          fontWeight: 600,
-          textAlign: "center",
-          background: statusMsg.kind === "done" ? "#e7f9f1" : statusMsg.kind === "missed" ? "#fdeced" : "#f2f4f6",
-          color: statusMsg.kind === "done" ? "#15b877" : statusMsg.kind === "missed" ? "#f04452" : "#6b7684",
-        }}>
-          {statusMsg.text.split("…").map((part, i, arr) =>
-            i < arr.length - 1 ? <span key={i}>{part}…<br /></span> : <span key={i}>{part}</span>
-          )}
-        </div>
       </Card>
 
       {/* 2+3) 회수율 헤드라인 + 이번 달 회수율 게이지 */}
