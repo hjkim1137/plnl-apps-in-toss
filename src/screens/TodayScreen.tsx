@@ -5,7 +5,7 @@ import {
   freeCheckinTagText,
   todayCheckInStatusText,
 } from "../lib/content";
-import { won, wonN } from "../lib/format";
+import { wonN } from "../lib/format";
 import { useToast } from "@toss/tds-mobile";
 import { generateHapticFeedback } from "@apps-in-toss/web-bridge";
 
@@ -127,7 +127,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
       {/* 2+3) 회수율 헤드라인 + 이번 달 회수율 게이지 */}
       <div style={{ borderRadius: 18, padding: 22, marginBottom: 14, color: "#fff", background: today.bracket.bgGradient }}>
         <p style={{ fontWeight: 700, color: "rgba(255,255,255,.85)", margin: "0 0 14px" }}>
-          {today.monthLabel} 회수율
+          {today.monthLabel} 회수율<span style={{ fontWeight: 500, fontSize: 12, opacity: 0.8, marginLeft: 4 }}>(1회 운동 단가: {wonN(s.unit)}원)</span>
         </p>
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 10 }}>
           <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
@@ -145,20 +145,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
         <div style={{ fontSize: 13, opacity: 0.9 }}>{today.headline}</div>
       </div>
 
-      {/* 4) 숫자로 보기 */}
-      <Card>
-        <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>숫자로 보기</p>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-          <Stat k="1회 운동 단가" v={`${wonN(s.unit)}원/회`} />
-          {s.rate >= 100 ? (
-            <Stat k="초과 회수액" v={`+${won(s.over)}`} color={today.bracket.barColor} />
-          ) : (
-            <Stat k="누적 기부액" v={won(s.donate)} color="#f04452" />
-          )}
-        </div>
-      </Card>
-
-      {/* 5) 로그인 전용: 등급 / 스트릭 / 포인트 (게스트는 잠금 — A가 lock UI) */}
+      {/* 4) 로그인 전용: 등급 / 스트릭 / 포인트 (게스트는 잠금 — A가 lock UI) */}
       {state.loggedIn ? (
         <>
           <Card>
@@ -304,15 +291,6 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
           ))}
         </ul>
       </Card>
-    </div>
-  );
-}
-
-function Stat({ k, v, color }: { k: string; v: string; color?: string }) {
-  return (
-    <div style={{ background: "#f9fafb", border: "1px solid #f2f4f6", borderRadius: 14, padding: 13 }}>
-      <div style={{ fontSize: 12, color: "#8b95a1", fontWeight: 600 }}>{k}</div>
-      <div style={{ fontSize: 18, fontWeight: 800, color: color ?? "#191f28" }}>{v}</div>
     </div>
   );
 }
