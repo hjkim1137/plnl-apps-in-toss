@@ -142,7 +142,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
         <>
           {/* 등급 + 연속 인증 통합 — 운동 새싹 등급 진행바가 기존 연속 인증 진행바를 대체 */}
           <Card>
-            <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>내 운동 기록</p>
+            <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>내 인증기록</p>
             {/* 연속 인증(스트릭) — 헤드라인, 진행도는 아래 마일스톤 칩으로 표현 */}
             <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
               <div style={{ fontSize: 26 }}>🔥</div>
@@ -266,7 +266,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
         </>
       ) : (
         <>
-          <LockCard emoji="🔥" title="내 운동 기록" desc="로그인하면 연속 출석 스트릭과 누적 등급(새싹 → 명예 헬창)이 쌓이고, 광고 보고 마일스톤 포인트도 받아요" onLogin={onOpenLogin} />
+          <LockCard emoji="🔥" title="내 인증기록" desc="로그인하면 연속 출석 스트릭과 누적 등급(새싹 → 명예 헬창)이 쌓이고, 광고 보고 마일스톤 포인트도 받아요" onLogin={onOpenLogin} />
           <LockCard emoji="💰" title="운동 출석 포인트" desc="출석마다 1P 적립 → 스트릭 보호권으로 연속 기록을 지켜요" onLogin={onOpenLogin} />
         </>
       )}
