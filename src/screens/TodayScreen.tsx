@@ -140,8 +140,22 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
       {/* 4) 로그인 전용: 등급 / 스트릭 / 포인트 (게스트는 잠금 — A가 lock UI) */}
       {state.loggedIn ? (
         <>
+          {/* 등급 + 연속 인증 통합 — 운동 새싹 등급 진행바가 기존 연속 인증 진행바를 대체 */}
           <Card>
-            <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>내 운동 등급</p>
+            <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>내 운동 기록</p>
+            {/* 연속 인증(스트릭) — 헤드라인, 진행도는 아래 마일스톤 칩으로 표현 */}
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+              <div style={{ fontSize: 26 }}>🔥</div>
+              <div>
+                <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: -1 }}>
+                  <b style={{ color: "#ff8a00" }}>{game.streak}</b>일 연속 인증 중
+                </div>
+                <div style={{ fontSize: 12, color: "#8b95a1", fontWeight: 600 }}>
+                  {game.streak === 0 ? "오늘 출석하면 스트릭 시작!" : "이 불 끄지 마세요"}
+                </div>
+              </div>
+            </div>
+            {/* 등급(누적) — 운동 새싹 아이콘 + 등급 진행바 */}
             <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 12 }}>
               <div style={{ width: 46, height: 46, borderRadius: 14, background: "#eef4ff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0 }}>
                 {game.title.current.emoji}
@@ -163,6 +177,26 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
                 ? `다음 등급 「${game.title.next.name}」까지 인증 ${game.title.remainingToNext}회`
                 : "최고 등급 달성! 👑"}
             </div>
+            {/* 스트릭 마일스톤 칩 — 연속 진행도 + 광고 보고 포인트 수령 */}
+            <div style={{ display: "flex", gap: 6, marginTop: 14 }}>
+              {game.milestoneChips.map((c) => (
+                <span key={c.d} style={{ flex: 1, textAlign: "center", borderRadius: 10, padding: "7px 2px", fontSize: 11, fontWeight: 800, background: c.status === "got" ? "#fff3d6" : c.status === "ready" ? "#ffe7a8" : "#f2f4f6", color: c.status === "locked" ? "#b0b8c1" : "#b07a00" }}>
+                  {c.d}일<br />{c.status === "got" ? "받음" : `+${c.p}P`}
+                </span>
+              ))}
+            </div>
+            {game.claimableMilestone ? (
+              <AdButton
+                onRun={() => actions.claimMilestone()}
+                style={{ width: "100%", marginTop: 12, padding: 13, border: "none", borderRadius: 13, fontWeight: 800, background: "#191f28", color: "#fff", cursor: "pointer", fontFamily: "inherit" }}
+              >
+                🎁 광고보고 포인트 받기 (+{game.claimableMilestone.p}P · {game.claimableMilestone.d}일)
+              </AdButton>
+            ) : (
+              <div style={{ fontSize: 11.5, color: "#ff8a00", fontWeight: 700, marginTop: 10, textAlign: "center" }}>
+                🎁 3·7·14·30일 달성마다 광고 보고 포인트 받기
+              </div>
+            )}
           </Card>
           {/* 보호권 복구 제안 (확인 후 복구) — 동의해야만 보호권 차감 */}
           {repair && (
@@ -189,42 +223,6 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
               </div>
             </div>
           )}
-          <Card>
-            <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>운동 연속 인증 기록</p>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-              <div style={{ fontSize: 26 }}>🔥</div>
-              <div>
-                <div style={{ fontSize: 24, fontWeight: 800, letterSpacing: -1 }}>
-                  <b style={{ color: "#ff8a00" }}>{game.streak}</b>일 연속 인증 중
-                </div>
-                <div style={{ fontSize: 12, color: "#8b95a1", fontWeight: 600 }}>
-                  {game.streak === 0 ? "오늘 출석하면 스트릭 시작!" : "이 불 끄지 마세요"}
-                </div>
-              </div>
-            </div>
-            <div style={{ height: 12, background: "#f2f4f6", borderRadius: 999, overflow: "hidden", marginBottom: 6 }}>
-              <div style={{ height: "100%", borderRadius: 999, background: "linear-gradient(90deg,#ff8a00,#ffb800)", width: `${Math.min(100, game.streak > 0 ? (game.streak / (game.milestoneChips[game.milestoneChips.length - 1]?.d ?? 30)) * 100 : 0)}%`, transition: "width .5s" }} />
-            </div>
-            <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
-              {game.milestoneChips.map((c) => (
-                <span key={c.d} style={{ flex: 1, textAlign: "center", borderRadius: 10, padding: "7px 2px", fontSize: 11, fontWeight: 800, background: c.status === "got" ? "#fff3d6" : c.status === "ready" ? "#ffe7a8" : "#f2f4f6", color: c.status === "locked" ? "#b0b8c1" : "#b07a00" }}>
-                  {c.d}일<br />{c.status === "got" ? "받음" : `+${c.p}P`}
-                </span>
-              ))}
-            </div>
-            {game.claimableMilestone ? (
-              <AdButton
-                onRun={() => actions.claimMilestone()}
-                style={{ width: "100%", marginTop: 12, padding: 13, border: "none", borderRadius: 13, fontWeight: 800, background: "#191f28", color: "#fff", cursor: "pointer", fontFamily: "inherit" }}
-              >
-                🎁 광고보고 포인트 받기 (+{game.claimableMilestone.p}P · {game.claimableMilestone.d}일)
-              </AdButton>
-            ) : (
-              <div style={{ fontSize: 11.5, color: "#ff8a00", fontWeight: 700, marginTop: 10, textAlign: "center" }}>
-                🎁 3·7·14·30일 달성마다 광고 보고 포인트 받기
-              </div>
-            )}
-          </Card>
           <Card>
             <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>운동 출석 포인트</p>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
@@ -268,8 +266,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
         </>
       ) : (
         <>
-          <LockCard emoji="🏅" title="내 운동 등급" desc="출석할수록 등급 상승 — 작심삼일러 → 회수 전문가 → 뽕 뽑기 달인 → 명예 헬창" onLogin={onOpenLogin} />
-          <LockCard emoji="🔥" title="연속 출석 스트릭" desc="로그인하면 연속 출석 + 광고 보고 마일스톤 포인트를 받아요" onLogin={onOpenLogin} />
+          <LockCard emoji="🔥" title="내 운동 기록" desc="로그인하면 연속 출석 스트릭과 누적 등급(새싹 → 명예 헬창)이 쌓이고, 광고 보고 마일스톤 포인트도 받아요" onLogin={onOpenLogin} />
           <LockCard emoji="💰" title="운동 출석 포인트" desc="출석마다 1P 적립 → 스트릭 보호권으로 연속 기록을 지켜요" onLogin={onOpenLogin} />
         </>
       )}
