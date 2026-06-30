@@ -56,7 +56,7 @@ export function headlineFor(key: BracketKey, s: MonthStats): string {
     case 5:
       return "본전 달성! 이제부터 가는 건 전부 이득이에요";
     default:
-      return "이제 시설이 회원님께 기부하는 셈이에요";
+      return "이젠 헬스장이 손해 보는 중이에요";
   }
 }
 
