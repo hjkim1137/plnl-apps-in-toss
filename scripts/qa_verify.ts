@@ -6,17 +6,14 @@ import { resolveBracketKey, isGraduated } from "../src/lib/brackets";
 import {
   BRACKET_VISUALS,
   LEVELS,
-  captionsFor,
+  headlineFor,
   certificateText,
   reportGrade,
-  freeCheckinTagText,
   todayCheckInStatusText,
-  AD_UNLOCKED_TAG,
 } from "../src/lib/content";
 import { resolveTitle } from "../src/lib/titles";
 import {
   applyCheckIn,
-  freeCheckinsLeft,
   totalDone,
   monthsGraduated,
   cycleCalendarDay,
@@ -126,27 +123,23 @@ const bvKeys = [0, 1, 2, 3, 4, 5, 6] as const;
 check("B-15 BRACKET_VISUALS 7구간 완비", bvKeys.every(k => !!BRACKET_VISUALS[k]?.label), true);
 
 // ────────────────────────────────────────────────────────
-section("C. 콘텐츠 — 구간 카피 (content.ts)");
+section("C. 콘텐츠 — 구간 헤드라인 (content.ts)");
 
 const stats0 = computeMonth(100000, 10, {});
-const caps0 = captionsFor(0, stats0);
-check("C-1 구간0 헤드라인 포함(지갑)", caps0[0].includes("지갑"), true);
+check("C-1 구간0 헤드라인(지갑)", headlineFor(0, stats0).includes("지갑"), true);
 
 const stats1 = computeMonth(100000, 10, { "2026-06-01": "done" });
-const caps1 = captionsFor(1, stats1);
-check("C-2 구간1 헤드라인 포함(후원)", caps1[0].includes("후원"), true);
+check("C-2 구간1 헤드라인(기부왕)", headlineFor(1, stats1).includes("기부왕"), true);
 
 const stats5 = computeMonth(100000, 10, Object.fromEntries(
   Array.from({ length: 10 }, (_, i) => [`2026-06-${String(i + 1).padStart(2, "0")}`, "done"])
 ));
-const caps5 = captionsFor(5, stats5);
-check("C-3 구간5 호구졸업 포함", caps5[0].includes("호구 졸업") || caps5[1].includes("호구 졸업"), true);
+check("C-3 구간5 헤드라인(본전)", headlineFor(5, stats5).includes("본전"), true);
 
 const stats6 = computeMonth(100000, 10, Object.fromEntries(
   Array.from({ length: 12 }, (_, i) => [`2026-06-${String(i + 1).padStart(2, "0")}`, "done"])
 ));
-const caps6 = captionsFor(6, stats6);
-check("C-4 구간6 초과 포함", caps6[0].includes("기부") || caps6[0].includes("시설"), true);
+check("C-4 구간6 헤드라인(손해)", headlineFor(6, stats6).includes("손해"), true);
 
 // ────────────────────────────────────────────────────────
 section("D. 표창장 문구 (content.ts)");
@@ -197,7 +190,7 @@ const t80 = resolveTitle(80);
 check("E-7 80회 → 뽕 뽑기 달인", t80.current.name, "뽕 뽑기 달인");
 
 const t120 = resolveTitle(120);
-check("E-8 120회 → 명예 헬창", t120.current.name, "명예 헬창");
+check("E-8 120회 → 명예 관장님", t120.current.name, "명예 관장님");
 check("E-8 next=null", t120.next, null);
 check("E-8 progressPct=100", t120.progressPct, 100);
 check("E-8 remaining=0", t120.remainingToNext, 0);
@@ -213,68 +206,45 @@ section("F. 출석 체크 (attendance.ts)");
 
 const init = createInitialState();
 
-// 비로그인 무료 3회
+// 비로그인 출석 — 무제한·무게이트, 기록만 토글(적립/광고 없음)
 const r1 = applyCheckIn(init, "2026-06-23", "done");
-check("F-1 비로그인 1회 ok", r1.ok, true);
-if (r1.ok) {
-  check("F-1 freeUsed=1", r1.next.freeUsed, 1);
-  check("F-1 points=0(no login)", r1.next.points, 0);
-  check("F-1 log=done", r1.next.logs["2026-06-23"], "done");
-}
-
-// 무료 3회 소진
-const init3 = { ...init, freeUsed: 3 };
-const rAd = applyCheckIn(init3, "2026-06-23", "done");
-check("F-2 무료 소진 → need_ad", rAd.ok, false);
-if (!rAd.ok) check("F-2 reason=need_ad", rAd.reason, "need_ad");
-
-// adUnlocked 후 출석
-const initAd = { ...init3, adUnlocked: true };
-const rUnlocked = applyCheckIn(initAd, "2026-06-23", "done");
-check("F-3 광고 언락 후 체크인 ok", rUnlocked.ok, true);
-if (rUnlocked.ok) {
-  check("F-3 adUnlocked 소진", rUnlocked.next.adUnlocked, false);
-  check("F-3 log=done", rUnlocked.next.logs["2026-06-23"], "done");
-}
+check("F-1 비로그인 log=done", r1.logs["2026-06-23"], "done");
+check("F-1 비로그인 points=0(no login)", r1.points, 0);
 
 // 로그인 → +1P
 const initLogin = { ...init, loggedIn: true };
 const rLogin = applyCheckIn(initLogin, "2026-06-23", "done");
-check("F-4 로그인 체크인 +1P", rLogin.ok ? rLogin.next.points : -1, 1);
+check("F-4 로그인 체크인 +1P", rLogin.points, 1);
 
 // 동일 값 재클릭 → 취소
 const initDone = { ...initLogin, logs: { "2026-06-23": "done" as const } };
 const rToggle = applyCheckIn(initDone, "2026-06-23", "done");
-check("F-5 같은 값 재클릭 취소", rToggle.ok ? rToggle.next.logs["2026-06-23"] : "X", undefined);
+check("F-5 같은 값 재클릭 취소", rToggle.logs["2026-06-23"], undefined);
 
 // done → missed 교체
 const rSwitch = applyCheckIn(initDone, "2026-06-23", "missed");
-check("F-6 done→missed 교체 ok", rSwitch.ok, true);
-if (rSwitch.ok) check("F-6 log=missed", rSwitch.next.logs["2026-06-23"], "missed");
+check("F-6 done→missed 교체", rSwitch.logs["2026-06-23"], "missed");
 
 // 하루 한 번만 적립 — 토글 off→on 해도 누적 안 함(진입 +1 / 이탈 -1 상쇄)
 const sDoneA = applyCheckIn(initLogin, "2026-06-23", "done"); // empty→done +1P
-const sOff = sDoneA.ok ? applyCheckIn(sDoneA.next, "2026-06-23", "done") : sDoneA; // done→off -1P
-check("F-5b off 시 적립 회수", sOff.ok ? sOff.next.points : -1, 0);
-const sOnAgain = sOff.ok ? applyCheckIn(sOff.next, "2026-06-23", "done") : sOff; // empty→done +1P
-check("F-5c 토글 off→on 누적 안 함(net 1P)", sOnAgain.ok ? sOnAgain.next.points : -1, 1);
+const sOff = applyCheckIn(sDoneA, "2026-06-23", "done"); // done→off -1P
+check("F-5b off 시 적립 회수", sOff.points, 0);
+const sOnAgain = applyCheckIn(sOff, "2026-06-23", "done"); // empty→done +1P
+check("F-5c 토글 off→on 누적 안 함(net 1P)", sOnAgain.points, 1);
 
 // done → missed 는 적립 회수(출석 취소)
-const sDoneToMissed = sDoneA.ok ? applyCheckIn(sDoneA.next, "2026-06-23", "missed") : sDoneA;
-check("F-6b done→missed 적립 회수", sDoneToMissed.ok ? sDoneToMissed.next.points : -1, 0);
+const sDoneToMissed = applyCheckIn(sDoneA, "2026-06-23", "missed");
+check("F-6b done→missed 적립 회수", sDoneToMissed.points, 0);
 
-// '안 갔어요'(missed)는 적립/무료차감 없음
+// '안 갔어요'(missed)는 적립 없음
 const rMissedLogin = applyCheckIn(initLogin, "2026-06-23", "missed");
-check("F-6c 로그인 missed 적립 없음", rMissedLogin.ok ? rMissedLogin.next.points : -1, 0);
+check("F-6c 로그인 missed 적립 없음", rMissedLogin.points, 0);
 const rMissedFree = applyCheckIn(init, "2026-06-23", "missed");
-check("F-6d 비로그인 missed 무료 미차감", rMissedFree.ok ? rMissedFree.next.freeUsed : -1, 0);
+check("F-6d 비로그인 missed 기록만", rMissedFree.logs["2026-06-23"], "missed");
 
 // totalDone
 const logs = { "2026-06-01": "done" as const, "2026-06-02": "missed" as const, "2026-06-03": "done" as const };
 check("F-7 totalDone=2", totalDone(logs), 2);
-check("F-8 freeCheckinsLeft init=3", freeCheckinsLeft(init), 3);
-check("F-9 freeCheckinsLeft freeUsed=2 → 1", freeCheckinsLeft({ ...init, freeUsed: 2 }), 1);
-check("F-10 freeCheckinsLeft freeUsed=3 → 0", freeCheckinsLeft({ ...init, freeUsed: 3 }), 0);
 
 // cycleCalendarDay: 빈→done
 const cycled1 = cycleCalendarDay(init, "2026-06-01");
@@ -327,11 +297,10 @@ check("H-3 MIN 이전 폐기", "2025-12-31" in sanitized, false);
 check("H-4 잘못된 값 폐기", "2026-06-02" in sanitized, false);
 
 // normalizeState — 손상된 값 복구
-const normalized = normalizeState({ fee: -100, target: 0, points: -5, freeUsed: "abc" });
+const normalized = normalizeState({ fee: -100, target: 0, points: -5 });
 check("H-5 fee 음수 → 기본값", normalized.fee, 100000);
 check("H-6 target 0 → 기본값", normalized.target, 12);
 check("H-7 points 음수 → 0", normalized.points, 0);
-check("H-8 freeUsed 문자 → 0", normalized.freeUsed, 0);
 
 // 월별 설정 스냅샷 정규화 (model.ts)
 const ms = sanitizeMonthSettings({
@@ -368,10 +337,6 @@ check("I-3 missed 증발 포함", statusMissed.text.includes("증발"), true);
 
 const statusNeutral = todayCheckInStatusText(null, 10000, false);
 check("I-4 null neutral", statusNeutral.kind, "neutral");
-
-check("I-5 freeCheckinTagText(3)", freeCheckinTagText(3).includes("3"), true);
-check("I-6 freeCheckinTagText(1)", freeCheckinTagText(1).includes("1"), true);
-check("I-7 AD_UNLOCKED_TAG 존재", AD_UNLOCKED_TAG.length > 0, true);
 
 // ────────────────────────────────────────────────────────
 section("J. 스트릭 + 보호권 확인 후 복구 (streak.ts)");
