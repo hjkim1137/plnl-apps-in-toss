@@ -103,7 +103,12 @@ function statsForMonth(
   const ml = monthLogs(state.logs, y, m);
   const isCurrent = y === curY && m === curM;
   const snap = state.monthSettings[monthKey(y, m)];
-  if (!isCurrent && !snap && Object.keys(ml).length === 0) return EMPTY_MONTH_STATS;
+  // 과거 달은 '그 달에 저장된 스냅샷'으로만 계산한다. 스냅샷이 없으면(설정 이력이 없는 달)
+  // 현재 fee/target 이 과거 달로 유입되지 않도록 빈 통계로 표기한다 — 현재 설정 폴백 금지.
+  // (현재 달은 진입 시 ensure 이펙트가 스냅샷을 보장하므로, 앞으로 과거 달엔 항상 자기 스냅샷이 있다.)
+  if (!isCurrent) {
+    return snap ? computeMonth(snap.fee, snap.target, ml) : EMPTY_MONTH_STATS;
+  }
   const { fee, target } = snap ?? { fee: state.fee, target: state.target };
   return computeMonth(fee, target, ml);
 }
