@@ -27,7 +27,7 @@ function Card({ children }: { children: React.ReactNode }) {
 }
 
 export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpenLogin: () => void }) {
-  const { today, game, actions, state, repair } = plnl;
+  const { today, game, actions, state } = plnl;
   const { openToast } = useToast();
   const s = today.stats;
   const [localChoice, setLocalChoice] = useState<"done" | "missed" | null>(today.todayValue);
@@ -142,7 +142,8 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
             </div>
             {game.claimableMilestone ? (
               <AdButton
-                onRun={() => actions.claimMilestone()}
+                onRun={() => { generateHapticFeedback({ type: "tap" }); return actions.claimMilestone(); }}
+                onDone={(r) => { if (r.ok) generateHapticFeedback({ type: "success" }); }}
                 style={{ width: "100%", marginTop: 12, padding: 14, border: "none", borderRadius: 13, fontWeight: 800, background: "#191f28", color: "#fff", cursor: "pointer", fontFamily: "inherit" }}
               >
                 🎁 광고보고 포인트 받기 (+{game.claimableMilestone.p}P · {game.claimableMilestone.d}일)
@@ -153,31 +154,7 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
               </div>
             )}
           </Card>
-          {/* 보호권 복구 제안 (확인 후 복구) — 동의해야만 보호권 차감 */}
-          {repair && (
-            <div style={{ background: "#edfadf", border: "1px solid #c5f0a0", borderRadius: 18, padding: 18, marginBottom: 14 }}>
-              <p style={{ fontWeight: 800, color: "#3a8a12", margin: "0 0 4px" }}>
-                🛡️ 빠진 날이 있어요
-              </p>
-              <p style={{ fontSize: 13, color: "#4e7a20", margin: "0 0 12px", lineHeight: 1.5 }}>
-                {repair.count}일 빠졌어요. 보호권 {repair.count}개로 연속을 지킬까요?
-              </p>
-              <div style={{ display: "flex", gap: 8 }}>
-                <button
-                  onClick={() => actions.confirmFreezeRepair()}
-                  style={{ flex: 1, padding: 14, border: "none", borderRadius: 12, fontWeight: 800, background: "#5DC528", color: "#fff" }}
-                >
-                  🛡️ 지키기 (보호권 {repair.count}개)
-                </button>
-                <button
-                  onClick={() => actions.dismissFreezeRepair()}
-                  style={{ flex: "0 0 auto", padding: "14px 16px", border: "1px solid #cfe0ff", borderRadius: 12, fontWeight: 700, background: "#fff", color: "#6b7684" }}
-                >
-                  괜찮아요
-                </button>
-              </div>
-            </div>
-          )}
+          {/* 보호권 복구 제안은 분리 팝업(FreezeRepairPopup)으로 이동 — App 레벨 렌더 */}
           <Card>
             <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>운동 출석 포인트</p>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>

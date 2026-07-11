@@ -26,3 +26,9 @@ export const NEXT_TARGET_STEP = 2;
 
 /** 상태 저장 디바운스(ms) — 잦은 변경을 묶어 저장/동기화. */
 export const SAVE_DEBOUNCE_MS = 800;
+
+/**
+ * 끊김 위로 팝업(streak.ts detectStreakStatusPopup) 최소 기준 — 잃은 연속이 이 값 이상일 때만
+ * 노출(1일 끊김은 소음). 마일스톤 팝업은 3·7·14·30일 도달로 트리거되므로 별도 임계값 없음.
+ */
+export const BROKEN_MIN_STREAK = 2;

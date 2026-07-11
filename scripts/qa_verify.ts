@@ -21,7 +21,10 @@ import {
 import { applyBuyFreeze, applyFreezeFromAd, canBuyFreeze } from "../src/lib/freeze";
 import {
   currentStreak,
+  livingStreak,
+  bestStreakAll,
   detectFreezeRepair,
+  detectStreakStatusPopup,
   applyFreezeRepair,
   declineFreezeRepair,
 } from "../src/lib/streak";
@@ -360,9 +363,9 @@ check(
   0,
 );
 check(
-  "J-3 중간 빠진 날 frozen 이면 이어짐(카운트는 done만=3)",
+  "J-3 중간 빠진 날 frozen 이면 이어짐(frozen 도 카운트 → 4)",
   currentStreak(ci("2026-06-07", "2026-06-08", "2026-06-10"), ["2026-06-09"], J_NOW),
-  3,
+  4,
 );
 check(
   "J-4 빠진 날 frozen 아니면 끊김 → 1",
@@ -403,9 +406,9 @@ const applied = applyFreezeRepair(base6, det6!.days);
 check("J-10 동의 → 보호권 1 차감", applied.freezes, 1);
 check("J-10 frozen=[06-09]", applied.frozen, ["2026-06-09"]);
 check(
-  "J-11 복구 뒤 오늘 체크 시 연속 유지(2)",
+  "J-11 복구 뒤 오늘 체크 시 연속 유지(done2+frozen1=3)",
   currentStreak([...applied.checkins, "2026-06-10"], applied.frozen, J_NOW),
-  2,
+  3,
 );
 check(
   "J-12 복구 뒤 재감지 → 제안 없음(멱등)",
@@ -429,6 +432,126 @@ check(
   sanitizeDateList(["2026-06-09", "2026-06-09", "bad", "2999-01-01"], J_NOW),
   ["2026-06-09"],
 );
+
+// ────────────────────────────────────────────────────────
+section("K. 스트릭 카운트 스펙 변경 + 상태 팝업 감지 (streak.ts)");
+
+// K-1 frozen 도 카운트(브릿지 포함): done 3 + frozen 2 = 5
+check(
+  "K-1 frozen 2일 브릿지 포함 카운트=5",
+  currentStreak(
+    ci("2026-06-06", "2026-06-07", "2026-06-10"),
+    ["2026-06-08", "2026-06-09"],
+    J_NOW,
+  ),
+  5,
+);
+
+// K-2 bestStreakAll 도 frozen 합집합 → 현재 스트릭과 모순 없음
+check(
+  "K-2 bestStreakAll frozen 합집합=5",
+  bestStreakAll(ci("2026-06-06", "2026-06-07", "2026-06-10"), ["2026-06-08", "2026-06-09"]),
+  5,
+);
+check(
+  "K-2b bestStreakAll checkins만(frozen 기본 [])",
+  bestStreakAll(ci("2026-06-08", "2026-06-09", "2026-06-10")),
+  3,
+);
+
+// livingStreak — 오늘 인증 전에도 어제까지의 연속을 표시(리빙 스트릭)
+check(
+  "K-L1 오늘 체크 → 오늘 포함(3)",
+  livingStreak(ci("2026-06-08", "2026-06-09", "2026-06-10"), [], J_NOW),
+  3,
+);
+check(
+  "K-L2 오늘 미체크 + 어제까지 3일 → 3 (currentStreak 은 0)",
+  livingStreak(ci("2026-06-07", "2026-06-08", "2026-06-09"), [], J_NOW),
+  3,
+);
+check(
+  "K-L2b 같은 상태에서 currentStreak 는 0(푸시 로직 보존)",
+  currentStreak(ci("2026-06-07", "2026-06-08", "2026-06-09"), [], J_NOW),
+  0,
+);
+check(
+  "K-L3 보호권으로 어제 메움 + 오늘 미체크 → 4 (done3 + frozen1)",
+  livingStreak(ci("2026-06-06", "2026-06-07", "2026-06-08"), ["2026-06-09"], J_NOW),
+  4,
+);
+check(
+  "K-L4 완전히 끊김(어제도 0) → 0",
+  livingStreak(ci("2026-06-05", "2026-06-06", "2026-06-07"), [], J_NOW),
+  0,
+);
+
+// detectStreakStatusPopup — milestone (3·7·14·30일 달성 → 보상 팝업)
+const kMilestone = mkState({ checkins: ci("2026-06-08", "2026-06-09", "2026-06-10") }); // streak 3
+check(
+  "K-3 오늘체크+3일(마일스톤 도달·미수령) → milestone",
+  detectStreakStatusPopup(kMilestone, J_NOW),
+  { kind: "milestone", streak: 3, milestone: 3 },
+);
+check(
+  "K-3b 보호권 복구 후 오늘 미체크지만 리빙 3일 → milestone (핵심)",
+  detectStreakStatusPopup(
+    mkState({ checkins: ci("2026-06-06", "2026-06-07", "2026-06-08"), frozen: ["2026-06-09"] }),
+    J_NOW,
+  ),
+  { kind: "milestone", streak: 4, milestone: 3 },
+);
+check(
+  "K-4 이 마일스톤 팝업 이미 봄(streakMilestoneSeen=[3]) → null",
+  detectStreakStatusPopup({ ...kMilestone, streakMilestoneSeen: [3] }, J_NOW),
+  null,
+);
+check(
+  "K-4b 이미 수령(claimed=[3]) → null",
+  detectStreakStatusPopup({ ...kMilestone, claimed: [3] }, J_NOW),
+  null,
+);
+check(
+  "K-5 streak 2(마일스톤 미도달) → null (유지 중 팝업 제거)",
+  detectStreakStatusPopup(mkState({ checkins: ci("2026-06-09", "2026-06-10") }), J_NOW),
+  null,
+);
+check(
+  "K-6 오늘 미체크(어제까지 2일) → null (오늘 인증 유도 팝업 제거)",
+  detectStreakStatusPopup(mkState({ checkins: ci("2026-06-08", "2026-06-09") }), J_NOW),
+  null,
+);
+
+// detectStreakStatusPopup — broken
+const kBroken = mkState({ checkins: ci("2026-06-05", "2026-06-06", "2026-06-07") });
+check(
+  "K-7 3일 끊김 + 보호권0 → broken(lost=3, anchor=마지막 checkin)",
+  detectStreakStatusPopup(kBroken, J_NOW),
+  { kind: "broken", lostStreak: 3, anchor: "2026-06-07" },
+);
+check(
+  "K-8 3일 끊김 + 보호권 충분 → null(복구 제안 우선)",
+  detectStreakStatusPopup({ ...kBroken, freezes: 3 }, J_NOW),
+  null,
+);
+check(
+  "K-9 이 끊김 이미 봄(마커=anchor) → null",
+  detectStreakStatusPopup({ ...kBroken, streakBrokenSeenOn: "2026-06-07" }, J_NOW),
+  null,
+);
+check(
+  "K-10 잃은 기록 1일(최소 2일 미만) → null",
+  detectStreakStatusPopup(mkState({ checkins: ci("2026-06-07") }), J_NOW),
+  null,
+);
+
+// 공통 가드
+check(
+  "K-11 비로그인 → null",
+  detectStreakStatusPopup({ ...kMilestone, loggedIn: false }, J_NOW),
+  null,
+);
+// (K-12 mergeForLogin 마커 local 유지는 supabase import 때문에 여기서 못 돌림 → docs QA H-3 수동 검증)
 
 // ────────────────────────────────────────────────────────
 console.log(`\n${"═".repeat(55)}`);

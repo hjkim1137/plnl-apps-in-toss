@@ -62,11 +62,13 @@ import { buildCertificate, buildReport } from "../lib/settlement";
 import {
   applyFreezeRepair,
   bestStreakAll,
-  currentStreak,
   declineFreezeRepair,
   detectFreezeRepair,
+  detectStreakStatusPopup,
+  livingStreak,
   maxStreakInMonth,
   type FreezeRepair,
+  type StreakStatusPopup,
 } from "../lib/streak";
 import { resolveTitle } from "../lib/titles";
 import {
@@ -128,6 +130,8 @@ export function usePlnl() {
   const [arrival, setArrival] = useState<{ y: number; m: number } | null>(null);
   // 보호권으로 메울 수 있는 빠진 날 제안(확인 후 복구). null = 제안 없음. 영속 아님(세션 UI).
   const [freezeRepair, setFreezeRepair] = useState<FreezeRepair | null>(null);
+  // 스트릭 상태 팝업(유지 축하/끊김 위로). null = 없음. 영속 아님(세션 UI, 노출 마커만 영속).
+  const [streakPopup, setStreakPopup] = useState<StreakStatusPopup | null>(null);
 
   // 비동기 액션이 항상 최신 state 를 보도록 ref 동기화.
   const stateRef = useRef(state);
@@ -194,6 +198,13 @@ export function usePlnl() {
   // login() 이 머지 결과로 다시 감지한다(서버 기록의 빈 날 포함).
   useEffect(() => {
     setFreezeRepair(detectFreezeRepair(stateRef.current, now));
+  }, [now]);
+
+  // ── 스트릭 상태 팝업 감지 (진입 시 1회) ────────────────────────────────────
+  // 유지 축하 / 끊김 위로 팝업. 순수 read — 노출 마커는 dismiss 시 기록. 복구/로그인 액션이
+  // state 를 바꾼 뒤엔 각 핸들러에서 재감지한다(freezeRepair 와 동일한 lockstep 패턴).
+  useEffect(() => {
+    setStreakPopup(detectStreakStatusPopup(stateRef.current, now));
   }, [now]);
 
   // ── 파생값: 오늘 탭 ────────────────────────────────────────────────────
@@ -265,13 +276,13 @@ export function usePlnl() {
     // 누적 인증(등급)·스트릭 모두 오늘탭 출석(checkins)만으로 센다 — 월간현황 달력 수동보정
     // (logs)은 회수율·본전졸업 통계에만 반영되고 등급/스트릭엔 포함하지 않는다.
     const td = state.checkins.length;
-    const streak = currentStreak(state.checkins, state.frozen, now);
+    const streak = livingStreak(state.checkins, state.frozen, now);
     return {
       title: resolveTitle(td),
       totalDone: td,
       monthsGraduated: monthsGraduated(state.logs, state.target),
       streak,
-      bestStreak: bestStreakAll(state.checkins),
+      bestStreak: bestStreakAll(state.checkins, state.frozen),
       milestoneChips: milestoneChips(streak, state.claimed),
       claimableMilestone: nextClaimableMilestone(streak, state.claimed),
       points: state.points,
@@ -285,10 +296,13 @@ export function usePlnl() {
   /** 오늘의 선택(출석 체크) — 무제한·무게이트 토글. 로그인 유저는 done 진입/이탈에 ±1P. */
   const checkIn = useCallback(
     (value: LogValue) => {
-      setState(applyCheckIn(stateRef.current, today, value));
+      const next = applyCheckIn(stateRef.current, today, value);
+      setState(next);
+      // 오늘 체크로 마일스톤(3·7·14·30일)을 달성하는 순간 보상 팝업을 즉시 띄운다(진입 대기 없이).
+      setStreakPopup(detectStreakStatusPopup(next, now));
       return { ok: true as const };
     },
-    [today],
+    [today, now],
   );
 
   /** 달력 날짜 직접 토글. 입력은 현재 달만 — 과거 달은 조회 전용(UI 비활성 + 방어 가드). */
@@ -325,7 +339,7 @@ export function usePlnl() {
   /** 스트릭 마일스톤 수령 — 전면형 광고 보고 포인트. */
   const claimMilestone = useCallback(async () => {
     const m = nextClaimableMilestone(
-      currentStreak(stateRef.current.checkins, stateRef.current.frozen, now),
+      livingStreak(stateRef.current.checkins, stateRef.current.frozen, now),
       stateRef.current.claimed,
     );
     if (!m) return { ok: false as const, reason: "none" as const };
@@ -351,20 +365,40 @@ export function usePlnl() {
     return { ok: true as const };
   }, []);
 
-  /** 복구 제안 동의 — 빈 날을 보호권으로 메우고(차감) 연속을 살린다. */
+  /** 복구 제안 동의 — 빈 날을 보호권으로 메우고(차감) 연속을 살린다. 부활한 스트릭으로 축하 팝업 재감지. */
   const confirmFreezeRepair = useCallback(() => {
     if (!freezeRepair) return { ok: false as const };
-    setState((s) => applyFreezeRepair(s, freezeRepair.days));
+    const next = applyFreezeRepair(stateRef.current, freezeRepair.days);
+    setState(next);
     setFreezeRepair(null);
+    setStreakPopup(detectStreakStatusPopup(next, now)); // 동의 → 살아난 연속으로 축하 팝업
     return { ok: true as const, days: freezeRepair.days.length };
-  }, [freezeRepair]);
+  }, [freezeRepair, now]);
 
-  /** 복구 제안 거절 — 빈 날을 'missed'(안 감)로 기록(보호권 안 씀). 다시 묻지 않는다. */
+  /** 복구 제안 거절 — 빈 날을 'missed'(안 감)로 기록(보호권 안 씀). 다시 묻지 않는다. 끊김 위로 팝업으로 연결. */
   const dismissFreezeRepair = useCallback(() => {
     if (!freezeRepair) return;
-    setState((s) => declineFreezeRepair(s, freezeRepair.days));
+    const next = declineFreezeRepair(stateRef.current, freezeRepair.days);
+    setState(next);
     setFreezeRepair(null);
-  }, [freezeRepair]);
+    setStreakPopup(detectStreakStatusPopup(next, now)); // 거절(끊김 수용) → 위로/재시작 팝업
+  }, [freezeRepair, now]);
+
+  /** 스트릭 팝업 닫기 — 노출 마커 기록(마일스톤당 1회/끊김당 1회 재노출 방지). */
+  const dismissStreakPopup = useCallback(() => {
+    const p = streakPopup;
+    if (!p) return;
+    setStreakPopup(null);
+    if (p.kind === "milestone") {
+      setState((s) =>
+        s.streakMilestoneSeen.includes(p.milestone)
+          ? s
+          : { ...s, streakMilestoneSeen: [...s.streakMilestoneSeen, p.milestone] },
+      );
+    } else {
+      setState((s) => ({ ...s, streakBrokenSeenOn: p.anchor }));
+    }
+  }, [streakPopup]);
 
   /** 월간 결산 열람용 전면형 광고. */
   // 현재 보는 달을 광고-열람 목록(reportSeen/certSeen)에 추가 — 중복 방지·정렬. 영속(자동 저장).
@@ -473,8 +507,9 @@ export function usePlnl() {
       const remote = await loadRemoteState(session.userKey, now);
       const merged = mergeForLogin(stateRef.current, remote);
       setState(merged);
-      // 서버 기록의 빈 날까지 포함해 복구 제안 재감지(로그인 직후 지연 없이).
+      // 서버 기록의 빈 날까지 포함해 복구 제안·스트릭 팝업 재감지(로그인 직후 지연 없이).
       setFreezeRepair(detectFreezeRepair(merged, now));
+      setStreakPopup(detectStreakStatusPopup(merged, now));
       // 병합 결과 즉시 서버 반영(기기 간 보존).
       saveRemoteState(session.userKey, merged).catch(() => {});
     } catch (e) {
@@ -503,6 +538,8 @@ export function usePlnl() {
     notif,
     // 보호권 복구 제안(확인 후 복구). null = 제안 없음. count = 메울 빈 날 수 = 소비될 보호권 수.
     repair: freezeRepair ? { count: freezeRepair.days.length } : null,
+    // 스트릭 상태 팝업(유지 축하/끊김 위로). null = 없음. StreakPopup 이 소비.
+    streakPopup,
     actions: {
       checkIn,
       cycleDay,
@@ -513,6 +550,7 @@ export function usePlnl() {
       watchFreezeAd,
       confirmFreezeRepair,
       dismissFreezeRepair,
+      dismissStreakPopup,
       watchReportAd,
       watchCertAd,
       goToMonth,

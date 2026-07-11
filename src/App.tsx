@@ -5,6 +5,8 @@ import { NOTIFY_COPY } from "./lib/content";
 import { isInsideTossApp } from "./lib/environment";
 import { TodayScreen } from "./screens/TodayScreen";
 import { MonthlyScreen } from "./screens/MonthlyScreen";
+import { StreakPopup } from "./components/StreakPopup";
+import { FreezeRepairPopup } from "./components/FreezeRepairPopup";
 
 // App 셸 — 환경 가드 + 탭 전환 + 로그인 배선.
 // 화면 상세(TDS 컴포넌트, 버텀시트, 광고 오버레이 등)는 인정(A) 담당.
@@ -63,10 +65,12 @@ export default function App() {
           뺄래 <span style={{ color: "#5DC528" }}>낼래</span>
         </div>
         <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
-          {/* 로그인 완료 시에는 숨김 — 비로그인일 때만 로그인 버튼 노출 */}
+          {/* 로그인 완료 시에는 숨김 — 비로그인일 때만 로그인 버튼 노출.
+              doLogin 공유 → 로딩 스피너 + 중복 탭 차단(원격 백업 로드 중 재탭으로 팝업이 사라지던 문제). */}
           {!plnl.state.loggedIn && (
             <button
-              onClick={() => plnl.actions.login()}
+              onClick={doLogin}
+              disabled={loggingIn}
               style={{
                 fontSize: 12,
                 fontWeight: 800,
@@ -75,14 +79,33 @@ export default function App() {
                 border: "none",
                 background: "#5DC528",
                 color: "#fff",
-                cursor: "pointer",
+                cursor: loggingIn ? "default" : "pointer",
+                opacity: loggingIn ? 0.9 : 1,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                gap: 5,
                 lineHeight: 1,
               }}
             >
-              로그인
+              {loggingIn ? (
+                <>
+                  <span
+                    style={{
+                      width: 12,
+                      height: 12,
+                      borderRadius: "50%",
+                      border: "2px solid rgba(255,255,255,0.45)",
+                      borderTopColor: "#fff",
+                      display: "inline-block",
+                      animation: "plnl-spin 0.7s linear infinite",
+                    }}
+                  />
+                  로그인 중
+                </>
+              ) : (
+                "로그인"
+              )}
             </button>
           )}
           <button
@@ -347,6 +370,11 @@ export default function App() {
           </div>
         </>
       )}
+
+      {/* 보호권 복구 제안 팝업 — 빠진 날을 보호권으로 메울 수 있을 때(진입 시) */}
+      <FreezeRepairPopup plnl={plnl} />
+      {/* 스트릭 상태 팝업(마일스톤 달성 / 끊김 위로) — 진입·체크인·복구 동의/거절 순간 노출 */}
+      <StreakPopup plnl={plnl} />
     </div>
   );
 }

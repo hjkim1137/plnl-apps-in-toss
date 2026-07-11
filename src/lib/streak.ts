@@ -7,16 +7,18 @@
 //   - 동의 → applyFreezeRepair: 그 날들을 frozen 에 넣고 보호권을 차감.
 //     거절 → declineFreezeRepair: 그 날들을 'missed' 로 기록(본인이 끊김 수용 → 다시 안 물음).
 //     ⇒ 방패는 사용자가 동의하기 전엔 절대 차감되지 않는다.
-//   - currentStreak 는 'done'(+1) 과 'frozen'(끊김만 방지, 카운트 X) 을 이어서 연속을 센다.
+//   - currentStreak 는 'done'(+1) 과 'frozen'(끊김 방지 + 카운트 +1) 을 이어서 연속을 센다.
+//     보호권으로 메운 날도 "n일 연속 인증 중"에 포함된다(사용자 체감상 유지된 연속).
 //   - 진실 숫자(회수율·기부액, calc.ts)는 'done' 만 보므로 frozen 의 영향을 받지 않는다.
 
-import { FREEZE_RECONCILE_LOOKBACK_DAYS } from "./constants";
+import { BROKEN_MIN_STREAK, FREEZE_RECONCILE_LOOKBACK_DAYS } from "./constants";
 import { dayKey, daysInMonth, parseYmd, ymd } from "./date";
+import { nextClaimableMilestone } from "./milestones";
 import { MIN_DATE, type Logs, type PlnlState } from "./model";
 
 /**
- * 오늘 기준 연속 출석 일수. 오늘부터 거꾸로, 'done'(카운트 +1) 과 'frozen'(보호 — 끊김만 방지,
- * 카운트 안 함) 이 이어지는 한 계속한다.
+ * 오늘 기준 연속 출석 일수. 오늘부터 거꾸로, 'done'(카운트 +1) 과 'frozen'(보호 — 끊김 방지 +
+ * 카운트 +1) 이 이어지는 한 계속한다. 보호권으로 메운 날도 연속 일수에 포함된다.
  * ⚠️ 오늘을 아직 'done' 으로 체크 안 했으면 0 으로 보인다(어제까지 N일이어도).
  * = "오늘 출석해야 스트릭이 살아있다"는 푸시 의도. 보호권은 과거의 빠진 날만 메우고, 오늘은
  * 아직 빠진 게 아니므로 복구 대상이 아니다(detectFreezeRepair 도 오늘은 보지 않음).
@@ -32,11 +34,29 @@ export function currentStreak(
   const d = new Date(now);
   for (;;) {
     const k = ymd(d);
-    if (checkinSet.has(k)) s++;
-    else if (!frozenSet.has(k)) break; // 오늘탭 출석(checkin)도 frozen 도 아니면 끊김
+    if (checkinSet.has(k) || frozenSet.has(k)) s++; // 출석·보호권 둘 다 카운트
+    else break; // 오늘탭 출석(checkin)도 frozen 도 아니면 끊김
     d.setDate(d.getDate() - 1);
   }
   return s;
+}
+
+/**
+ * 화면·마일스톤 표시용 연속. 오늘 체크했으면 오늘 포함, 아직이면 **어제까지 이어온 연속**(오늘은 유예)을
+ * 보여준다 — "오늘 인증 전에도 그동안 쌓은 연속을 그대로 표시". 완전히 끊겨야(어제 기준도 0) 0.
+ * 보호권으로 어제 빈 날을 메운 경우, 오늘 인증 전에도 그 연속(예: 4일)이 표시된다.
+ * (푸시 의도의 currentStreak 는 그대로 유지 — 이건 표시 전용 파생값.)
+ */
+export function livingStreak(
+  checkins: readonly string[],
+  frozen: readonly string[] = [],
+  now: Date = new Date(),
+): number {
+  const today = currentStreak(checkins, frozen, now);
+  if (today > 0) return today;
+  const yesterday = new Date(now);
+  yesterday.setDate(yesterday.getDate() - 1);
+  return currentStreak(checkins, frozen, yesterday);
 }
 
 export interface FreezeRepair {
@@ -121,9 +141,15 @@ export function maxStreakInMonth(checkins: readonly string[], y: number, m: numb
   return mx;
 }
 
-/** 전체 기록 통틀어 최장 연속 출석(오늘탭 checkin 기준, 달 경계 무관). */
-export function bestStreakAll(checkins: readonly string[]): number {
-  const keys = [...checkins].sort();
+/**
+ * 전체 기록 통틀어 최장 연속(달 경계 무관). checkins 와 frozen(보호권으로 메운 날)의 합집합으로
+ * 센다 — currentStreak 와 규칙을 맞춰 "현재 스트릭 > 최고 기록" 모순을 막는다.
+ */
+export function bestStreakAll(
+  checkins: readonly string[],
+  frozen: readonly string[] = [],
+): number {
+  const keys = Array.from(new Set([...checkins, ...frozen])).sort();
   let mx = 0;
   let cur = 0;
   let prev: Date | null = null;
@@ -139,4 +165,50 @@ export function bestStreakAll(checkins: readonly string[]): number {
     prev = d;
   }
   return mx;
+}
+
+/**
+ * 앱 진입/체크인 순간에 띄울 스트릭 상태 팝업(기획 §2·§3). 순수 감지만 — 노출 마커 기록은 화면이 담당.
+ * 팝업은 딱 2종:
+ * - milestone: 리빙 연속(livingStreak)이 3·7·14·30일에 도달·미수령. 보상 수령.
+ *   마일스톤당 **최초 1회**(streakMilestoneSeen) — 오늘 체크를 토글하거나 다음 날 와도 재노출 안 함.
+ * - broken: 완전히 끊김(리빙 연속 0). 끊김당 1회(streakBrokenSeenOn = 잃은 스트릭 앵커).
+ *   복구 제안이 있으면(detectFreezeRepair≠null) 복구 카드가 우선이라 null.
+ */
+export type StreakStatusPopup =
+  | { kind: "milestone"; streak: number; milestone: number }
+  | { kind: "broken"; lostStreak: number; anchor: string };
+
+export function detectStreakStatusPopup(
+  state: PlnlState,
+  now: Date = new Date(),
+): StreakStatusPopup | null {
+  if (!state.loggedIn) return null; // 스트릭은 로그인 전용 표시
+
+  // 복구 제안이 있으면(빈 날을 보호권으로 메울 수 있으면) 복구 팝업이 **최우선** — 마일스톤·끊김 모두 양보.
+  // "보호권 먼저 쓸래?"를 물은 뒤에 그 결과(리빙 연속/마일스톤)를 보여준다.
+  if (detectFreezeRepair(state, now) != null) return null;
+
+  const living = livingStreak(state.checkins, state.frozen, now);
+
+  // milestone: 리빙 연속이 3·7·14·30일에 도달·미수령이고 그 마일스톤 팝업을 아직 안 봤으면 보상 팝업.
+  // (보호권으로 어제 메워 오늘 인증 전이어도 도달했으면 노출. streakMilestoneSeen 으로 마일스톤당 1회.)
+  const claimable = nextClaimableMilestone(living, state.claimed);
+  if (claimable != null && !state.streakMilestoneSeen.includes(claimable.d)) {
+    return { kind: "milestone", streak: living, milestone: claimable.d };
+  }
+
+  // broken: 리빙 연속이 0(오늘·어제 모두 0) 이어야 진짜 끊김. 살아있으면 위에서 처리됨.
+  if (living !== 0) return null;
+  if (state.checkins.length === 0) return null; // 끊길 기록 자체가 없음
+
+  // 잃은 스트릭 = 마지막 출석일(앵커) 시점의 연속. checkins 는 sanitizeDateList 로 정렬 보장.
+  const anchor = state.checkins[state.checkins.length - 1];
+  const anchorDate = parseYmd(anchor);
+  if (anchorDate == null) return null;
+  const lostStreak = currentStreak(state.checkins, state.frozen, anchorDate);
+  if (lostStreak < BROKEN_MIN_STREAK) return null; // 1일 끊김은 소음
+  if (state.streakBrokenSeenOn === anchor) return null; // 이 끊김은 이미 봄
+
+  return { kind: "broken", lostStreak, anchor };
 }

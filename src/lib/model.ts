@@ -56,6 +56,16 @@ export interface PlnlState {
   /** 알림(스마트 발송) 수신 동의 완료 — 중복 동의 요청 방지. */
   notifyAgreed: boolean;
   /**
+   * 보상 팝업을 이미 보여준 마일스톤 일수 목록(3·7·14·30). 마일스톤당 **최초 1회**만 노출
+   * (오늘 체크를 토글해도, 다음 날에도 재노출 안 함). 기기 로컬 전용(서버 row 미저장).
+   */
+  streakMilestoneSeen: number[];
+  /**
+   * 스트릭 끊김 위로 팝업을 마지막으로 보여준 끊김 앵커('YYYY-MM-DD' = 잃은 스트릭의 마지막 출석일).
+   * 끊김당 1회 노출 마커. 기기 로컬 전용. ""=아직 안 봄.
+   */
+  streakBrokenSeenOn: string;
+  /**
    * 월별 운동 설정 스냅샷 'YYYY-MM' → {fee, target}. 과거 달은 그 달에 설정한 값으로 동결되고,
    * 편집은 현재 달만 가능하다(usePlnl.setSettings). 통계(낸돈/회수/기부)는 이 값으로 계산.
    * 스냅샷이 없는 달은 현재 fee/target 으로 폴백.
@@ -78,8 +88,15 @@ export function createInitialState(): PlnlState {
     certSeen: [],
     lastSeenMonth: 0,
     notifyAgreed: false,
+    streakMilestoneSeen: [],
+    streakBrokenSeenOn: "",
     monthSettings: {},
   };
+}
+
+/** 날짜 마커('YYYY-MM-DD') 정규화 — 형식만 검사(범위 무관, 시계 오차에도 마커 보존). 아니면 "". */
+function sanitizeDayMarker(v: unknown): string {
+  return typeof v === "string" && parseYmd(v) != null ? v : "";
 }
 
 // ── 정규화 헬퍼 (변조/손상 payload 방어) ──────────────────────────────────
@@ -182,6 +199,8 @@ export function normalizeState(
     certSeen: sanitizeMonthList(o.certSeen),
     lastSeenMonth: nonNegInt(o.lastSeenMonth),
     notifyAgreed: o.notifyAgreed === true,
+    streakMilestoneSeen: sanitizeClaimed(o.streakMilestoneSeen),
+    streakBrokenSeenOn: sanitizeDayMarker(o.streakBrokenSeenOn),
     monthSettings: sanitizeMonthSettings(o.monthSettings),
   };
 }
