@@ -319,16 +319,18 @@ export function usePlnl() {
   }, []);
 
   const setSettings = useCallback(
-    (next: { fee?: number; target?: number }) => {
+    (next: { fee?: number; target?: number; weeklyTarget?: number }) => {
       // 편집은 현재 달만 — fee/target(현재 기본값)과 현재 달 스냅샷을 함께 갱신한다. 과거 달은
       // 자기 스냅샷으로 동결돼 영향받지 않는다.
       setState((s) => {
         const fee = next.fee != null ? Math.max(0, next.fee) : s.fee;
         const target = next.target != null ? Math.max(1, next.target) : s.target;
+        const weeklyTarget = next.weeklyTarget != null ? Math.max(1, next.weeklyTarget) : s.weeklyTarget;
         return {
           ...s,
           fee,
           target,
+          weeklyTarget,
           monthSettings: { ...s.monthSettings, [monthKey(curY, curM)]: { fee, target } },
         };
       });

@@ -155,6 +155,33 @@ export default function App() {
 
             <label style={{ display: "block", marginBottom: 14 }}>
               <span style={{ fontSize: 13, fontWeight: 600, color: "#4e5968", display: "block", marginBottom: 7 }}>
+                이번 주 목표 운동 횟수
+              </span>
+              <div style={{ position: "relative" }}>
+                <input
+                  type="number"
+                  defaultValue={plnl.state.weeklyTarget}
+                  inputMode="numeric"
+                  min={1}
+                  max={7}
+                  onChange={(e) => plnl.actions.setSettings({ weeklyTarget: Number(e.target.value) })}
+                  style={{
+                    width: "100%", border: "none", background: "#f2f4f6", borderRadius: 12,
+                    padding: "13px 40px 13px 14px", fontSize: 16, fontWeight: 700,
+                    color: "#333d4b", outline: "none", boxSizing: "border-box", fontFamily: "inherit",
+                  }}
+                  onFocus={(e) => { e.target.style.background = "#edfadf"; e.target.style.outline = "2px solid #5DC528"; }}
+                  onBlur={(e) => { e.target.style.background = "#f2f4f6"; e.target.style.outline = "none"; }}
+                />
+                <span style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", color: "#8b95a1", fontSize: 14, fontWeight: 600 }}>회</span>
+              </div>
+              <p style={{ fontSize: 11.5, color: "#b0b8c1", margin: "6px 0 0", lineHeight: 1.4 }}>
+                주간 목표는 동기부여용이에요. 회수율 계산에는 영향이 없어요.
+              </p>
+            </label>
+
+            <label style={{ display: "block", marginBottom: 14 }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: "#4e5968", display: "block", marginBottom: 7 }}>
                 이번 달 목표 운동 횟수 <span style={{ color: "#b0b8c1", fontWeight: 500 }}>(주3회 ≈ 월12회)</span>
               </span>
               <div style={{ position: "relative" }}>

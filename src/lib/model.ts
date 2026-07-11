@@ -25,6 +25,8 @@ export interface PlnlState {
   fee: number;
   /** 이번 달 목표 운동 횟수. */
   target: number;
+  /** 이번 주 목표 운동 횟수(≥1). 회수율 계산과 무관한 개인 목표값. */
+  weeklyTarget: number;
   /** 출석 기록. 'YYYY-MM-DD' → 'done' | 'missed'. */
   logs: Logs;
   /** 토스 로그인 여부. */
@@ -77,6 +79,7 @@ export function createInitialState(): PlnlState {
   return {
     fee: DEFAULT_FEE,
     target: DEFAULT_TARGET,
+    weeklyTarget: 3,
     logs: {},
     loggedIn: false,
     points: 0,
@@ -188,6 +191,7 @@ export function normalizeState(
   return {
     fee: nonNegInt(o.fee, base.fee),
     target: posInt(o.target, base.target),
+    weeklyTarget: posInt(o.weeklyTarget, 3),
     logs: sanitizeLogs(o.logs, now),
     loggedIn: o.loggedIn === true,
     points: nonNegInt(o.points),
