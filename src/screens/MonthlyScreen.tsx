@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { AdButton } from "../components/AdButton";
-import type { PlnlController } from "../hooks/usePlnl";
+import type { CalendarCell, PlnlController } from "../hooks/usePlnl";
 import { won } from "../lib/format";
+import { weeklyStampData } from "../lib/weeklyStamp";
 import { useToast } from "@toss/tds-mobile";
 import { generateHapticFeedback } from "@apps-in-toss/web-bridge";
 
@@ -119,6 +120,8 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
             운동 안함 💸
           </span>
         </div>
+        {/* 주간 목표 도장판 */}
+        <WeeklyStampBoard cells={monthly.calendar} monthlyTarget={s.target} />
         {/* 초기화는 현재 달만 — 과거 달은 조회 전용이라 버튼 숨김 */}
         {monthly.isCurrent && (
           <button
@@ -287,6 +290,54 @@ function Line({ k, v, color }: { k: string; v: string; color?: string }) {
     <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5, padding: "9px 0", borderBottom: "1px solid #f2f4f6" }}>
       <span style={{ color: "#6b7684" }}>{k}</span>
       <span style={{ fontWeight: 800, color: color ?? "#191f28" }}>{v}</span>
+    </div>
+  );
+}
+
+
+function WeeklyStampBoard({ cells, monthlyTarget }: { cells: CalendarCell[]; monthlyTarget: number }) {
+  const { weeklyGoal, weeks } = weeklyStampData(cells, monthlyTarget);
+  return (
+    <div style={{ margin: "14px 0 6px", borderTop: "1px solid #f2f4f6", paddingTop: 14 }}>
+      <style>{`
+        @keyframes stampPop {
+          0%   { transform: scale(0.2) rotate(-20deg); opacity: 0; }
+          55%  { transform: scale(1.25) rotate(5deg); opacity: 1; }
+          75%  { transform: scale(0.9) rotate(-2deg); }
+          100% { transform: scale(1) rotate(0deg); }
+        }
+      `}</style>
+      <p style={{ fontSize: 12.5, fontWeight: 700, color: "#6b7684", margin: "0 0 10px" }}>
+        주간 목표 달성
+        <small style={{ color: "#b0b8c1", fontWeight: 600, marginLeft: 5 }}>({weeklyGoal}회/주)</small>
+      </p>
+      <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+        {weeks.map((w, i) => (
+          // key에 earned 포함 → 달성 시 re-mount되어 애니메이션 재생
+          <div key={`${i}-${w.earned}`} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
+            <div
+              style={{
+                width: 50, height: 50, borderRadius: "50%",
+                border: w.earned ? "none" : "2.5px dashed #d1d6db",
+                background: w.earned
+                  ? "linear-gradient(135deg, #5DC528 0%, #3aab15 100%)"
+                  : "#f2f4f6",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 22,
+                boxShadow: w.earned ? "0 3px 10px rgba(93,197,40,0.28)" : "none",
+                animation: w.earned ? "stampPop 0.45s cubic-bezier(0.34,1.56,0.64,1) both" : "none",
+              }}
+            >
+              {w.earned ? "👍" : (
+                <span style={{ fontSize: 13, color: "#c4cdd6", fontWeight: 700 }}>
+                  {w.done}/{weeklyGoal}
+                </span>
+              )}
+            </div>
+            <span style={{ fontSize: 11, color: "#8b95a1", fontWeight: 600 }}>{i + 1}주</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

@@ -552,6 +552,93 @@ check(
   null,
 );
 // (K-12 mergeForLogin 마커 local 유지는 supabase import 때문에 여기서 못 돌림 → docs QA H-3 수동 검증)
+section("L. 주간 목표 도장판 (weeklyStamp.ts)");
+
+import { weeklyStampData } from "../src/lib/weeklyStamp";
+
+// 달력 셀 빌더: lead 빈칸 + days 개수만큼 실제 날짜 채움
+function makeStampCells(
+  lead: number,
+  dayCount: number,
+  doneSet: Set<number> = new Set(),
+  missedSet: Set<number> = new Set(),
+) {
+  const cells: { day: number; value: string | null }[] = [];
+  for (let i = 0; i < lead; i++) cells.push({ day: 0, value: null });
+  for (let d = 1; d <= dayCount; d++) {
+    cells.push({
+      day: d,
+      value: doneSet.has(d) ? "done" : missedSet.has(d) ? "missed" : null,
+    });
+  }
+  return cells;
+}
+
+// ── K-1~2: 주차 수 (stamps 개수) ──────────────────────────
+// 2월(lead=0, 28일) → 4주
+const feb = makeStampCells(0, 28);
+const febResult = weeklyStampData(feb, 8);
+check("L-1 2월(lead=0,28일) → 4주", febResult.weeks.length, 4);
+check("L-1 weeklyGoal=ceil(8/4)=2", febResult.weeklyGoal, 2);
+
+// 6월(lead=1, 30일) → 5주
+const jun = makeStampCells(1, 30);
+const junResult = weeklyStampData(jun, 12);
+check("L-2 6월(lead=1,30일) → 5주", junResult.weeks.length, 5);
+check("L-2 weeklyGoal=ceil(12/5)=3", junResult.weeklyGoal, 3);
+
+// lead=6(토요일 시작) → 첫 행 1일 + 마지막 행 1일(day30) = 6주
+const satStart = makeStampCells(6, 30);
+check("L-3 lead=6(30일) → 6주", weeklyStampData(satStart, 10).weeks.length, 6);
+
+// ── K-4~7: 도장 달성 판정 ─────────────────────────────────
+// 1주차: done=3, goal=3 → earned
+const exactGoal = makeStampCells(0, 28, new Set([1, 2, 3]));
+check("L-4 done=goal → earned", weeklyStampData(exactGoal, 8).weeks[0].earned, true);
+
+// 1주차: done=2, target=9 → weeklyGoal=ceil(9/4)=3 → not earned
+const oneShort = makeStampCells(0, 28, new Set([1, 2]));
+const oneShortResult = weeklyStampData(oneShort, 9);
+check("L-5 done<goal → not earned", oneShortResult.weeks[0].earned, false);
+check("L-5 done=2 표시", oneShortResult.weeks[0].done, 2);
+
+// 1주차: done=7(만석), goal=3 → earned
+const fullWeek = makeStampCells(0, 28, new Set([1, 2, 3, 4, 5, 6, 7]));
+check("L-6 done=7>goal → earned", weeklyStampData(fullWeek, 8).weeks[0].earned, true);
+
+// missed 는 카운트 안 함 — 7일 모두 missed, done=0 → not earned
+const allMissed = makeStampCells(0, 28, new Set(), new Set([1, 2, 3, 4, 5, 6, 7]));
+check("L-7 missed only → done=0, not earned", weeklyStampData(allMissed, 8).weeks[0].done, 0);
+
+// ── K-8: target 극단값 ────────────────────────────────────
+// target=1, 4주 → weeklyGoal=1, 1회만 해도 달성
+const minTarget = makeStampCells(0, 28, new Set([1]));
+const minResult = weeklyStampData(minTarget, 1);
+check("L-8 target=1 → weeklyGoal=1", minResult.weeklyGoal, 1);
+check("L-8 done=1 → earned", minResult.weeks[0].earned, true);
+
+// ── K-9: 부분 주차 (첫 주 1일 — lead=6) ─────────────────────
+// lead=6이면 첫 행에 day=1 만 존재. weeklyGoal=3이면 절대 달성 불가.
+const satDone = makeStampCells(6, 30, new Set([1]));
+const satResult = weeklyStampData(satDone, 10); // weeklyGoal=ceil(10/5)=2
+check("L-9 첫주 1일+done=1, goal=2 → not earned", satResult.weeks[0].earned, false);
+check("L-9 첫주 done=1 집계", satResult.weeks[0].done, 1);
+
+// ── K-10b: target=0(빈 달) — weeklyGoal 최소 1, 모든 주 미달성 ─────────
+const emptyMonth = makeStampCells(0, 28); // done 없음
+const emptyResult = weeklyStampData(emptyMonth, 0);
+check("L-10b target=0 → weeklyGoal=1(방어값)", emptyResult.weeklyGoal, 1);
+check("L-10b done=0 < 1 → not earned", emptyResult.weeks[0].earned, false);
+
+// ── K-10: 여러 주 혼합 달성 ─────────────────────────────────
+// 4주 달, target=8 → weeklyGoal=2
+// 1주: done=3(earned) / 2주: done=1(not) / 3주: done=2(earned) / 4주: done=0(not)
+const mixed = makeStampCells(0, 28, new Set([1, 2, 3,   8,   15, 16]));
+const mixedResult = weeklyStampData(mixed, 8);
+check("L-10 1주 earned", mixedResult.weeks[0].earned, true);
+check("L-10 2주 not earned(done=1)", mixedResult.weeks[1].earned, false);
+check("L-10 3주 earned(done=2=goal)", mixedResult.weeks[2].earned, true);
+check("L-10 4주 not earned(done=0)", mixedResult.weeks[3].earned, false);
 
 // ────────────────────────────────────────────────────────
 console.log(`\n${"═".repeat(55)}`);
