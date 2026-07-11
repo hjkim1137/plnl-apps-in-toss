@@ -146,7 +146,10 @@ export function TodayScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onOpe
                 onDone={(r) => { if (r.ok) generateHapticFeedback({ type: "success" }); }}
                 style={{ width: "100%", marginTop: 12, padding: 14, border: "none", borderRadius: 13, fontWeight: 800, background: "#191f28", color: "#fff", cursor: "pointer", fontFamily: "inherit" }}
               >
-                🎁 광고보고 포인트 받기 (+{game.claimableMilestone.p}P · {game.claimableMilestone.d}일)
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 17 }}>🎁</span>
+                  <span>광고보고 포인트 받기 (+{game.claimableMilestone.p}P · {game.claimableMilestone.d}일)</span>
+                </span>
               </AdButton>
             ) : (
               <div style={{ fontSize: 11.5, color: "#ff8a00", fontWeight: 700, marginTop: 10, textAlign: "center" }}>

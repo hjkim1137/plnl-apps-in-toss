@@ -50,8 +50,8 @@ export function StreakPopup({ plnl }: { plnl: PlnlController }) {
           }}
           style={ctaStyle}
         >
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 7 }}>
-            <span>🎁</span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
+            <span style={{ fontSize: 17 }}>🎁</span>
             <span>{STREAK_POPUP_COPY.milestone.cta}</span>
           </span>
         </AdButton>
