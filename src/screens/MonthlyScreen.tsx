@@ -67,6 +67,8 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
 
       {/* 달력 */}
       <Card>
+        {/* 주간 목표 도장판 (달력 위) */}
+        <WeeklyStampBoard cells={monthly.calendar} monthlyTarget={s.target} />
         <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 12px" }}>
           출석 달력 {monthly.isCurrent && <small>(날짜를 눌러 직접 기록하세요)</small>}
         </p>
@@ -120,8 +122,6 @@ export function MonthlyScreen({ plnl, onOpenLogin }: { plnl: PlnlController; onO
             운동 안함 💸
           </span>
         </div>
-        {/* 주간 목표 도장판 */}
-        <WeeklyStampBoard cells={monthly.calendar} monthlyTarget={s.target} />
         {/* 초기화는 현재 달만 — 과거 달은 조회 전용이라 버튼 숨김 */}
         {monthly.isCurrent && (
           <button
@@ -298,7 +298,7 @@ function Line({ k, v, color }: { k: string; v: string; color?: string }) {
 function WeeklyStampBoard({ cells, monthlyTarget }: { cells: CalendarCell[]; monthlyTarget: number }) {
   const { weeklyGoal, weeks } = weeklyStampData(cells, monthlyTarget);
   return (
-    <div style={{ margin: "14px 0 6px", borderTop: "1px solid #f2f4f6", paddingTop: 14 }}>
+    <div style={{ margin: "0 0 14px", borderBottom: "1px solid #f2f4f6", paddingBottom: 14 }}>
       <style>{`
         @keyframes stampPop {
           0%   { transform: scale(0.2) rotate(-20deg); opacity: 0; }
@@ -307,7 +307,7 @@ function WeeklyStampBoard({ cells, monthlyTarget }: { cells: CalendarCell[]; mon
           100% { transform: scale(1) rotate(0deg); }
         }
       `}</style>
-      <p style={{ fontSize: 12.5, fontWeight: 700, color: "#6b7684", margin: "0 0 10px" }}>
+      <p style={{ fontWeight: 700, color: "#6b7684", margin: "0 0 14px" }}>
         주간 목표 달성
         <small style={{ color: "#b0b8c1", fontWeight: 600, marginLeft: 5 }}>({weeklyGoal}회/주)</small>
       </p>
