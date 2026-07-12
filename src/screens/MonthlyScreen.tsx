@@ -298,7 +298,7 @@ function Line({ k, v, color }: { k: string; v: string; color?: string }) {
 function WeeklyStampBoard({ cells, monthlyTarget }: { cells: CalendarCell[]; monthlyTarget: number }) {
   const { weeklyGoal, weeks } = weeklyStampData(cells, monthlyTarget);
   return (
-    <div style={{ margin: "0 0 14px", borderBottom: "1px solid #f2f4f6", paddingBottom: 14 }}>
+    <div style={{ margin: "-8px 0 14px", borderBottom: "1px solid #f2f4f6", paddingBottom: 14 }}>
       <style>{`
         @keyframes stampPop {
           0%   { transform: scale(0.2) rotate(-20deg); opacity: 0; }
