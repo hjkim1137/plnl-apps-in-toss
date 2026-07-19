@@ -471,6 +471,11 @@ export function usePlnl() {
   /** 도착 배너 닫기. */
   const dismissArrival = useCallback(() => setArrival(null), []);
 
+  // 주간 목표 신규 기능 안내 팝업 닫기 — 노출 마커 기록(기기당 최초 1회).
+  const dismissWeeklyGoalAnnounce = useCallback(() => {
+    setState((s) => (s.weeklyGoalAnnounceSeen ? s : { ...s, weeklyGoalAnnounceSeen: true }));
+  }, []);
+
   // 알림/월말 도착(F17). arrival = 이번 세션에 도착한 직전 달(없으면 null).
   // canPrompt = 동의 CTA 노출 여부(미동의 + 사용 가능 환경). 파생값이라 메모(파일 컨벤션).
   const notif = useMemo(
@@ -544,6 +549,11 @@ export function usePlnl() {
     repair: freezeRepair ? { count: freezeRepair.days.length } : null,
     // 스트릭 상태 팝업(유지 축하/끊김 위로). null = 없음. StreakPopup 이 소비.
     streakPopup,
+    // 주간 목표 신규 기능 안내 — 기존 사용자(기록 있음)에게 미확인 시 1회 노출.
+    // 신규 유저(기록 없음)는 온보딩에서 라디오 버튼을 바로 보므로 제외.
+    weeklyGoalAnnounce:
+      !state.weeklyGoalAnnounceSeen &&
+      (Object.keys(state.logs).length > 0 || state.checkins.length > 0 || state.points > 0),
     actions: {
       checkIn,
       cycleDay,
@@ -562,6 +572,7 @@ export function usePlnl() {
       enableNotifications,
       openArrival,
       dismissArrival,
+      dismissWeeklyGoalAnnounce,
       login,
     },
   };

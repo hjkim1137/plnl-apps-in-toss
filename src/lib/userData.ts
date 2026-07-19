@@ -128,6 +128,7 @@ export function mergeForLogin(local: PlnlState, remote: PlnlState): PlnlState {
     // 스트릭 팝업 노출 마커도 기기 로컬 전용 — remote 는 비어 있으므로 local 값 유지(마일스톤/끊김 재노출 방지).
     streakMilestoneSeen: local.streakMilestoneSeen,
     streakBrokenSeenOn: local.streakBrokenSeenOn,
+    weeklyGoalAnnounceSeen: local.weeklyGoalAnnounceSeen,
     // 월별 설정 스냅샷도 기기 로컬 전용(서버 미저장) — 로컬 우선으로 병합해 재로그인해도 보존.
     monthSettings: { ...remote.monthSettings, ...local.monthSettings },
   };

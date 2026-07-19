@@ -8,6 +8,7 @@ import { TodayScreen } from "./screens/TodayScreen";
 import { MonthlyScreen } from "./screens/MonthlyScreen";
 import { StreakPopup } from "./components/StreakPopup";
 import { FreezeRepairPopup } from "./components/FreezeRepairPopup";
+import { WeeklyGoalAnnouncePopup } from "./components/WeeklyGoalAnnouncePopup";
 
 // App 셸 — 환경 가드 + 탭 전환 + 로그인 배선.
 // 화면 상세(TDS 컴포넌트, 버텀시트, 광고 오버레이 등)는 인정(A) 담당.
@@ -164,36 +165,43 @@ export default function App() {
               <span style={{ fontSize: 13, fontWeight: 600, color: "#4e5968", display: "block", marginBottom: 7 }}>
                 이번 주 목표 운동 횟수
               </span>
-              <div style={{ position: "relative" }}>
-                <input
-                  type="number"
-                  defaultValue={plnl.state.weeklyTarget}
-                  inputMode="numeric"
-                  min={1}
-                  max={7}
-                  onChange={(e) => {
-                    const val = Number(e.target.value);
-                    if (val < 1 || val > 7) return;
-                    plnl.actions.setSettings({ weeklyTarget: val });
-                  }}
-                  onBlur={(e) => {
-                    const val = Number(e.target.value);
-                    if (val >= 1 && val <= 7) {
-                      const monthly = calcMonthlyTargetFromWeekly(val, now.getFullYear(), now.getMonth());
-                      window.alert(`이번 달 목표가 ${monthly}회로 자동 설정돼요.\n목표를 바꾸면 이번 달 회수율 계산에 바로 반영되니 신중하게 입력해주세요.`);
-                    }
-                    e.target.style.background = "#f2f4f6";
-                    e.target.style.outline = "none";
-                  }}
-                  onFocus={(e) => { e.target.style.background = "#edfadf"; e.target.style.outline = "2px solid #5DC528"; }}
-                  style={{
-                    width: "100%", border: "none", background: "#f2f4f6", borderRadius: 12,
-                    padding: "13px 40px 13px 14px", fontSize: 16, fontWeight: 700,
-                    color: "#333d4b", outline: "none", boxSizing: "border-box", fontFamily: "inherit",
-                  }}
-                />
-                <span style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", color: "#8b95a1", fontSize: 14, fontWeight: 600 }}>회</span>
+              <div role="radiogroup" aria-label="이번 주 목표 운동 횟수" style={{ display: "flex", gap: 8 }}>
+                {[2, 3, 4, 5].map((n) => {
+                  const active = plnl.state.weeklyTarget === n;
+                  return (
+                    <button
+                      key={n}
+                      type="button"
+                      role="radio"
+                      aria-checked={active}
+                      onClick={() => {
+                        if (!active) {
+                          const monthly = calcMonthlyTargetFromWeekly(n, now.getFullYear(), now.getMonth());
+                          window.alert(`이번 달 목표가 ${monthly}회로 자동 설정돼요.\n목표를 바꾸면 이번 달 회수율 계산에 바로 반영되니 신중하게 선택해주세요.`);
+                        }
+                        plnl.actions.setSettings({ weeklyTarget: n });
+                      }}
+                      style={{
+                        flex: 1,
+                        border: active ? "2px solid #5DC528" : "2px solid transparent",
+                        background: active ? "#edfadf" : "#f2f4f6",
+                        borderRadius: 12,
+                        padding: "12px 0",
+                        fontSize: 15,
+                        fontWeight: 700,
+                        color: active ? "#3d9c1a" : "#333d4b",
+                        fontFamily: "inherit",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {n}회
+                    </button>
+                  );
+                })}
               </div>
+              <p style={{ fontSize: 11.5, color: "#b0b8c1", margin: "6px 0 0", lineHeight: 1.4 }}>
+                목표 운동 횟수는 한 달 동안 고정돼요.
+              </p>
             </label>
             {/* 자동 산정된 이번 달 목표 — 읽기 전용 안내 */}
             <div style={{ background: "#f2f4f6", borderRadius: 12, padding: "11px 14px", marginBottom: 14 }}>
@@ -401,6 +409,8 @@ export default function App() {
       <FreezeRepairPopup plnl={plnl} />
       {/* 스트릭 상태 팝업(마일스톤 달성 / 끊김 위로) — 진입·체크인·복구 동의/거절 순간 노출 */}
       <StreakPopup plnl={plnl} />
+      {/* 주간 목표 신규 기능 안내 — 기존 사용자에게 최초 1회 노출 */}
+      <WeeklyGoalAnnouncePopup plnl={plnl} />
     </div>
   );
 }

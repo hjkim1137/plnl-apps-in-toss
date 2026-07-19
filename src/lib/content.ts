@@ -233,6 +233,16 @@ export const STREAK_POPUP_COPY = {
   },
 };
 
+// ── 주간 목표 신규 기능 안내 팝업 카피 (WeeklyGoalAnnouncePopup) ───────────
+// 기존 사용자(이미 기록이 있는 유저)에게 최초 1회만 노출. 신규 유저는 온보딩에서
+// 라디오 버튼을 바로 보므로 별도 안내 불필요.
+export const WEEKLY_GOAL_ANNOUNCE_COPY = {
+  title: "주간 목표 기능이\n생겼어요 🙌",
+  body:
+    "이번 주 목표 운동 횟수를 정해보세요.\n8월부터 적용되고, 지금까지 설정된 목표는 그대로 유지돼요.",
+  cta: "확인",
+};
+
 /** 서버 스마트 발송 본문 미러(세그먼트별). 실제 발송 트리거/세그먼트 정의는 백엔드. */
 export const PUSH_TEMPLATES = {
   /** 매일 — 오늘 출석 유도. */

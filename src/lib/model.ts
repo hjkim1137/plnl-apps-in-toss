@@ -68,6 +68,11 @@ export interface PlnlState {
    */
   streakBrokenSeenOn: string;
   /**
+   * 주간 목표(라디오 2~5회) 신규 기능 안내 팝업을 이미 봤는지 여부. 기존 사용자에게 최초
+   * 1회만 노출하기 위한 마커. 기기 로컬 전용(서버 row 미저장).
+   */
+  weeklyGoalAnnounceSeen: boolean;
+  /**
    * 월별 운동 설정 스냅샷 'YYYY-MM' → {fee, target}. 과거 달은 그 달에 설정한 값으로 동결되고,
    * 편집은 현재 달만 가능하다(usePlnl.setSettings). 통계(낸돈/회수/기부)는 이 값으로 계산.
    * 스냅샷이 없는 달은 현재 fee/target 으로 폴백.
@@ -93,6 +98,7 @@ export function createInitialState(): PlnlState {
     notifyAgreed: false,
     streakMilestoneSeen: [],
     streakBrokenSeenOn: "",
+    weeklyGoalAnnounceSeen: false,
     monthSettings: {},
   };
 }
@@ -205,6 +211,7 @@ export function normalizeState(
     notifyAgreed: o.notifyAgreed === true,
     streakMilestoneSeen: sanitizeClaimed(o.streakMilestoneSeen),
     streakBrokenSeenOn: sanitizeDayMarker(o.streakBrokenSeenOn),
+    weeklyGoalAnnounceSeen: o.weeklyGoalAnnounceSeen === true,
     monthSettings: sanitizeMonthSettings(o.monthSettings),
   };
 }
