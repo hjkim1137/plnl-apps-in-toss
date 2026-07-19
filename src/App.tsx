@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { usePlnl } from "./hooks/usePlnl";
+import { calcMonthlyTargetFromWeekly } from "./lib/calc";
 import { NOTIFY_COPY } from "./lib/content";
 import { isInsideTossApp } from "./lib/environment";
 import { TodayScreen } from "./screens/TodayScreen";
@@ -18,6 +19,12 @@ export default function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [showLoginSheet, setShowLoginSheet] = useState(false);
   const [loggingIn, setLoggingIn] = useState(false);
+  const now = new Date();
+  const autoMonthlyTarget = calcMonthlyTargetFromWeekly(
+    plnl.state.weeklyTarget,
+    now.getFullYear(),
+    now.getMonth(),
+  );
 
   const openLogin = () => setShowLoginSheet(true);
   const closeLogin = () => setShowLoginSheet(false);
@@ -153,7 +160,7 @@ export default function App() {
               </div>
             </label>
 
-            <label style={{ display: "block", marginBottom: 14 }}>
+            <label style={{ display: "block", marginBottom: 6 }}>
               <span style={{ fontSize: 13, fontWeight: 600, color: "#4e5968", display: "block", marginBottom: 7 }}>
                 이번 주 목표 운동 횟수
               </span>
@@ -164,46 +171,38 @@ export default function App() {
                   inputMode="numeric"
                   min={1}
                   max={7}
-                  onChange={(e) => plnl.actions.setSettings({ weeklyTarget: Number(e.target.value) })}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    if (val < 1 || val > 7) return;
+                    plnl.actions.setSettings({ weeklyTarget: val });
+                  }}
+                  onBlur={(e) => {
+                    const val = Number(e.target.value);
+                    if (val >= 1 && val <= 7) {
+                      const monthly = calcMonthlyTargetFromWeekly(val, now.getFullYear(), now.getMonth());
+                      window.alert(`이번 달 목표가 ${monthly}회로 자동 설정돼요.\n목표를 바꾸면 이번 달 회수율 계산에 바로 반영되니 신중하게 입력해주세요.`);
+                    }
+                    e.target.style.background = "#f2f4f6";
+                    e.target.style.outline = "none";
+                  }}
+                  onFocus={(e) => { e.target.style.background = "#edfadf"; e.target.style.outline = "2px solid #5DC528"; }}
                   style={{
                     width: "100%", border: "none", background: "#f2f4f6", borderRadius: 12,
                     padding: "13px 40px 13px 14px", fontSize: 16, fontWeight: 700,
                     color: "#333d4b", outline: "none", boxSizing: "border-box", fontFamily: "inherit",
                   }}
-                  onFocus={(e) => { e.target.style.background = "#edfadf"; e.target.style.outline = "2px solid #5DC528"; }}
-                  onBlur={(e) => { e.target.style.background = "#f2f4f6"; e.target.style.outline = "none"; }}
                 />
                 <span style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", color: "#8b95a1", fontSize: 14, fontWeight: 600 }}>회</span>
               </div>
-              <p style={{ fontSize: 11.5, color: "#b0b8c1", margin: "6px 0 0", lineHeight: 1.4 }}>
-                주간 목표는 동기부여용이에요. 회수율 계산에는 영향이 없어요.
-              </p>
             </label>
-
-            <label style={{ display: "block", marginBottom: 14 }}>
-              <span style={{ fontSize: 13, fontWeight: 600, color: "#4e5968", display: "block", marginBottom: 7 }}>
-                이번 달 목표 운동 횟수 <span style={{ color: "#b0b8c1", fontWeight: 500 }}>(주3회 ≈ 월12회)</span>
+            {/* 자동 산정된 이번 달 목표 — 읽기 전용 안내 */}
+            <div style={{ background: "#f2f4f6", borderRadius: 12, padding: "11px 14px", marginBottom: 14 }}>
+              <span style={{ fontSize: 12, color: "#8b95a1" }}>이번 달 목표 (자동 계산) </span>
+              <span style={{ fontSize: 14, fontWeight: 800, color: "#4e5968" }}>{autoMonthlyTarget}회</span>
+              <span style={{ fontSize: 11.5, color: "#b0b8c1", display: "block", marginTop: 3 }}>
+                달력 주 수 기준으로 자동 산정돼요. 직접 수정은 불가해요.
               </span>
-              <div style={{ position: "relative" }}>
-                <input
-                  type="number"
-                  defaultValue={plnl.state.target}
-                  inputMode="numeric"
-                  onChange={(e) => plnl.actions.setSettings({ target: Number(e.target.value) })}
-                  style={{
-                    width: "100%", border: "none", background: "#f2f4f6", borderRadius: 12,
-                    padding: "13px 40px 13px 14px", fontSize: 16, fontWeight: 700,
-                    color: "#333d4b", outline: "none", boxSizing: "border-box", fontFamily: "inherit",
-                  }}
-                  onFocus={(e) => { e.target.style.background = "#edfadf"; e.target.style.outline = "2px solid #5DC528"; }}
-                  onBlur={(e) => { e.target.style.background = "#f2f4f6"; e.target.style.outline = "none"; }}
-                />
-                <span style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", color: "#8b95a1", fontSize: 14, fontWeight: 600 }}>회</span>
-              </div>
-              <p style={{ fontSize: 11.5, color: "#b0b8c1", margin: "6px 0 0", lineHeight: 1.4 }}>
-                방문 횟수는 <b style={{ color: "#8b95a1" }}>월간 현황</b> 달력의 출석 체크로 자동 집계돼요.
-              </p>
-            </label>
+            </div>
 
             <button
               onClick={() => setShowSettings(false)}

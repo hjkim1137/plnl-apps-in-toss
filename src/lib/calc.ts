@@ -104,3 +104,27 @@ export function todayChoice(stats: MonthStats): TodayChoice {
     projectedRateIfGo: round1(((stats.done + 1) / stats.target) * 100),
   };
 }
+
+/**
+ * 주 목표 횟수 → 해당 월 목표 횟수 자동 산정.
+ * 월~일 달력 주 기준으로, 그 달에 걸친 각 주의 실제 일수만큼 목표를 비례 적용한다.
+ * 예) 8월 마지막 주가 31일(월) 하루뿐이면 해당 주 기여분은 min(weeklyTarget, 1).
+ */
+export function calcMonthlyTargetFromWeekly(
+  weeklyTarget: number,
+  year: number,
+  month: number, // 0-based (JS Date 기준)
+): number {
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  let total = 0;
+  let d = 1;
+  while (d <= daysInMonth) {
+    const dow = new Date(year, month, d).getDay(); // 0=일, 6=토
+    const isoDay = dow === 0 ? 6 : dow - 1;       // 0=월, 6=일
+    const daysUntilSun = 6 - isoDay;
+    const slotSize = Math.min(daysUntilSun + 1, daysInMonth - d + 1);
+    total += Math.min(weeklyTarget, slotSize);
+    d += slotSize;
+  }
+  return total;
+}

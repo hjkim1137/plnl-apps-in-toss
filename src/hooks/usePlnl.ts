@@ -25,7 +25,7 @@ import {
   saveStoredSession,
   type Session,
 } from "../lib/auth";
-import { computeMonth, EMPTY_MONTH_STATS, todayChoice, type MonthStats } from "../lib/calc";
+import { calcMonthlyTargetFromWeekly, computeMonth, EMPTY_MONTH_STATS, todayChoice, type MonthStats } from "../lib/calc";
 import {
   headlineFor,
   MONTH_LABELS,
@@ -319,18 +319,20 @@ export function usePlnl() {
   }, []);
 
   const setSettings = useCallback(
-    (next: { fee?: number; target?: number; weeklyTarget?: number }) => {
-      // 편집은 현재 달만 — fee/target(현재 기본값)과 현재 달 스냅샷을 함께 갱신한다. 과거 달은
-      // 자기 스냅샷으로 동결돼 영향받지 않는다.
+    (next: { fee?: number; weeklyTarget?: number }) => {
+      // 편집은 현재 달만 — fee/weeklyTarget 변경 시 target 을 자동 산정해 스냅샷까지 갱신.
+      // 과거 달은 자기 스냅샷으로 동결돼 영향받지 않는다.
       setState((s) => {
         const fee = next.fee != null ? Math.max(0, next.fee) : s.fee;
-        const target = next.target != null ? Math.max(1, next.target) : s.target;
-        const weeklyTarget = next.weeklyTarget != null ? Math.max(1, next.weeklyTarget) : s.weeklyTarget;
+        const weeklyTarget = next.weeklyTarget != null
+          ? Math.max(1, Math.min(7, next.weeklyTarget))
+          : s.weeklyTarget;
+        const target = calcMonthlyTargetFromWeekly(weeklyTarget, curY, curM);
         return {
           ...s,
           fee,
-          target,
           weeklyTarget,
+          target,
           monthSettings: { ...s.monthSettings, [monthKey(curY, curM)]: { fee, target } },
         };
       });
