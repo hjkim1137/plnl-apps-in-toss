@@ -43,6 +43,7 @@ import {
   firstWeekday,
   monthIndex,
   monthKey,
+  monthPrefix,
   todayStr,
 } from "../lib/date";
 import { applyBuyFreeze, applyFreezeFromAd, canBuyFreeze } from "../lib/freeze";
@@ -340,6 +341,34 @@ export function usePlnl() {
     [curY, curM],
   );
 
+  /**
+   * 이번 달 운동 목표(운동비·주 목표) 확정 = 값 저장 + 그 달 잠금(settingsMonth). 월초 세팅 팝업이 사용.
+   * 확정 후엔 그 달 안엔 운동비·주 목표를 수정할 수 없다(달 최초 1회 입력).
+   */
+  const confirmMonthGoal = useCallback(
+    (next: { fee: number; weeklyTarget: number }) => {
+      setState((s) => {
+        const fee = Math.max(0, Math.floor(next.fee));
+        const weeklyTarget = Math.max(1, Math.floor(next.weeklyTarget));
+        const ym = monthKey(curY, curM);
+        const target = s.monthSettings[ym]?.target ?? s.target;
+        return {
+          ...s,
+          fee,
+          weeklyTarget,
+          settingsMonth: ym, // 잠금
+          monthSettings: { ...s.monthSettings, [ym]: { fee, target } },
+        };
+      });
+    },
+    [curY, curM],
+  );
+
+  /** 이번 달 설정 잠금만(⚙️ 설정에서 라이브 편집 후 '완료' 시). 값은 이미 setSettings 로 반영됨. */
+  const lockMonthGoal = useCallback(() => {
+    setState((s) => ({ ...s, settingsMonth: monthKey(curY, curM) }));
+  }, [curY, curM]);
+
   /** 스트릭 마일스톤 수령 — 전면형 광고 보고 포인트. */
   const claimMilestone = useCallback(async () => {
     const m = nextClaimableMilestone(
@@ -531,6 +560,16 @@ export function usePlnl() {
   // 현재 보는 달의 'YYYY-MM' 키 — 광고 열람(reportSeen/certSeen) 합성에 재사용.
   const viewMonthKey = monthKey(viewY, viewM);
 
+  // ── 이번 달 설정 잠금 + 월초 목표 세팅 팝업 (item 5·6) ─────────────────────
+  const curMonthKey = monthKey(curY, curM);
+  // 운동비·주 목표를 이번 달에 이미 확정했으면 잠금(그 달엔 수정 불가).
+  const settingsLocked = state.settingsMonth === curMonthKey;
+  const curPrefix = monthPrefix(curY, curM);
+  const hasCurrentMonthLog = Object.keys(state.logs).some((k) => k.startsWith(curPrefix));
+  const hasPriorLog = Object.keys(state.logs).some((k) => !k.startsWith(curPrefix));
+  // 세팅 팝업: 아직 이번 달 확정 안 함 + 이번 달 인증 기록 없음 + 지난 달 사용 이력 있음(재방문 유저).
+  const monthGoalNeedsSetup = !settingsLocked && !hasCurrentMonthLog && hasPriorLog;
+
   return {
     state,
     today: todayData,
@@ -554,11 +593,21 @@ export function usePlnl() {
     weeklyGoalAnnounce:
       !state.weeklyGoalAnnounceSeen &&
       (Object.keys(state.logs).length > 0 || state.checkins.length > 0 || state.points > 0),
+    // 이번 달 설정 잠금 상태(운동비·주 목표) — locked 면 그 달엔 수정 불가.
+    settings: { locked: settingsLocked },
+    // 월초 목표 세팅 팝업 — needsSetup 이면 노출. 디폴트는 이전(현재) 세팅값.
+    monthGoal: {
+      needsSetup: monthGoalNeedsSetup,
+      defaultFee: state.fee,
+      defaultWeeklyTarget: state.weeklyTarget,
+    },
     actions: {
       checkIn,
       cycleDay,
       clearMonth,
       setSettings,
+      confirmMonthGoal,
+      lockMonthGoal,
       claimMilestone,
       buyFreeze,
       watchFreezeAd,

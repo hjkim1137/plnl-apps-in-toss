@@ -129,6 +129,9 @@ export function mergeForLogin(local: PlnlState, remote: PlnlState): PlnlState {
     streakMilestoneSeen: local.streakMilestoneSeen,
     streakBrokenSeenOn: local.streakBrokenSeenOn,
     weeklyGoalAnnounceSeen: local.weeklyGoalAnnounceSeen,
+    // 주 목표·월 목표 잠금 마커도 기기 로컬 전용(서버 row 미저장) — 로그인해도 이 기기 값 유지.
+    weeklyTarget: local.weeklyTarget,
+    settingsMonth: local.settingsMonth,
     // 월별 설정 스냅샷도 기기 로컬 전용(서버 미저장) — 로컬 우선으로 병합해 재로그인해도 보존.
     monthSettings: { ...remote.monthSettings, ...local.monthSettings },
   };

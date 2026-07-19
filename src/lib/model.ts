@@ -73,6 +73,11 @@ export interface PlnlState {
    */
   weeklyGoalAnnounceSeen: boolean;
   /**
+   * 운동비·주 목표(weeklyTarget)를 확정(잠금)한 달('YYYY-MM'). 이 값이 현재 달과 같으면 그 달엔
+   * 수정 불가(달 최초 1회만 입력). 달이 바뀌면 다시 설정 가능. 기기 로컬 전용. ""=아직 확정 안 함.
+   */
+  settingsMonth: string;
+  /**
    * 월별 운동 설정 스냅샷 'YYYY-MM' → {fee, target}. 과거 달은 그 달에 설정한 값으로 동결되고,
    * 편집은 현재 달만 가능하다(usePlnl.setSettings). 통계(낸돈/회수/기부)는 이 값으로 계산.
    * 스냅샷이 없는 달은 현재 fee/target 으로 폴백.
@@ -99,8 +104,14 @@ export function createInitialState(): PlnlState {
     streakMilestoneSeen: [],
     streakBrokenSeenOn: "",
     weeklyGoalAnnounceSeen: false,
+    settingsMonth: "",
     monthSettings: {},
   };
+}
+
+/** 'YYYY-MM' 월 키 정규화 — 형식 맞으면 그대로, 아니면 "". */
+function sanitizeMonthKey(v: unknown): string {
+  return typeof v === "string" && /^\d{4}-\d{2}$/.test(v) ? v : "";
 }
 
 /** 날짜 마커('YYYY-MM-DD') 정규화 — 형식만 검사(범위 무관, 시계 오차에도 마커 보존). 아니면 "". */
@@ -212,6 +223,7 @@ export function normalizeState(
     streakMilestoneSeen: sanitizeClaimed(o.streakMilestoneSeen),
     streakBrokenSeenOn: sanitizeDayMarker(o.streakBrokenSeenOn),
     weeklyGoalAnnounceSeen: o.weeklyGoalAnnounceSeen === true,
+    settingsMonth: sanitizeMonthKey(o.settingsMonth),
     monthSettings: sanitizeMonthSettings(o.monthSettings),
   };
 }

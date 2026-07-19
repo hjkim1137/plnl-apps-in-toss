@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useToast } from "@toss/tds-mobile";
 
 import { usePlnl } from "./hooks/usePlnl";
 import { calcMonthlyTargetFromWeekly } from "./lib/calc";
@@ -9,6 +10,7 @@ import { MonthlyScreen } from "./screens/MonthlyScreen";
 import { StreakPopup } from "./components/StreakPopup";
 import { FreezeRepairPopup } from "./components/FreezeRepairPopup";
 import { WeeklyGoalAnnouncePopup } from "./components/WeeklyGoalAnnouncePopup";
+import { MonthGoalSetupPopup } from "./components/MonthGoalSetupPopup";
 
 // App 셸 — 환경 가드 + 탭 전환 + 로그인 배선.
 // 화면 상세(TDS 컴포넌트, 버텀시트, 광고 오버레이 등)는 인정(A) 담당.
@@ -16,6 +18,7 @@ import { WeeklyGoalAnnouncePopup } from "./components/WeeklyGoalAnnouncePopup";
 
 export default function App() {
   const plnl = usePlnl();
+  const { openToast } = useToast();
   const [tab, setTab] = useState<"today" | "monthly">("today");
   const [showSettings, setShowSettings] = useState(false);
   const [showLoginSheet, setShowLoginSheet] = useState(false);
@@ -26,6 +29,21 @@ export default function App() {
     now.getFullYear(),
     now.getMonth(),
   );
+  // 월초 목표 세팅 팝업 "나중에" — 이번 세션만 접기(재진입 시 조건 맞으면 다시 노출).
+  const [monthGoalDismissed, setMonthGoalDismissed] = useState(false);
+  // 운동비·주 목표는 달 최초 1회만 입력, 이후 그 달엔 잠금(item 5).
+  const settingsLocked = plnl.settings.locked;
+
+  // ── 팝업 전역 우선순위 (겹침 금지 · 순차 노출: 하나를 닫아야 다음이 뜬다) ──────────
+  // freeze-repair > streak > month-setup > announce.
+  // 낮은 우선순위 팝업은 자기보다 높은 팝업이 떠 있으면 렌더하지 않는다.
+  // (freeze-repair > streak 는 detectStreakStatusPopup 내부에서 이미 보장 — repair 중 streakPopup=null)
+  const freezePopupUp = plnl.repair != null;
+  const streakPopupUp = plnl.streakPopup != null;
+  const monthGoalPopupUp =
+    plnl.monthGoal.needsSetup && !monthGoalDismissed && !freezePopupUp && !streakPopupUp;
+  const announcePopupUp =
+    plnl.weeklyGoalAnnounce && !freezePopupUp && !streakPopupUp && !monthGoalPopupUp;
 
   const openLogin = () => setShowLoginSheet(true);
   const closeLogin = () => setShowLoginSheet(false);
@@ -146,16 +164,18 @@ export default function App() {
               <div style={{ position: "relative" }}>
                 <input
                   type="number"
+                  key={plnl.state.fee}
                   defaultValue={plnl.state.fee}
                   inputMode="numeric"
+                  disabled={settingsLocked}
                   onChange={(e) => plnl.actions.setSettings({ fee: Number(e.target.value) })}
                   style={{
-                    width: "100%", border: "none", background: "#f2f4f6", borderRadius: 12,
+                    width: "100%", border: "none", background: settingsLocked ? "#f7f8fa" : "#f2f4f6", borderRadius: 12,
                     padding: "13px 40px 13px 14px", fontSize: 16, fontWeight: 700,
-                    color: "#333d4b", outline: "none", boxSizing: "border-box", fontFamily: "inherit",
+                    color: settingsLocked ? "#b0b8c1" : "#333d4b", outline: "none", boxSizing: "border-box", fontFamily: "inherit",
                   }}
-                  onFocus={(e) => { e.target.style.background = "#edfadf"; e.target.style.outline = "2px solid #5DC528"; }}
-                  onBlur={(e) => { e.target.style.background = "#f2f4f6"; e.target.style.outline = "none"; }}
+                  onFocus={(e) => { if (settingsLocked) return; e.target.style.background = "#edfadf"; e.target.style.outline = "2px solid #5DC528"; }}
+                  onBlur={(e) => { if (settingsLocked) return; e.target.style.background = "#f2f4f6"; e.target.style.outline = "none"; }}
                 />
                 <span style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", color: "#8b95a1", fontSize: 14, fontWeight: 600 }}>원</span>
               </div>
@@ -174,24 +194,27 @@ export default function App() {
                       type="button"
                       role="radio"
                       aria-checked={active}
+                      disabled={settingsLocked}
                       onClick={() => {
+                        // item5 — 이번 달 확정(잠금) 후엔 주 목표 변경 불가.
+                        if (settingsLocked) return;
                         if (!active) {
                           const monthly = calcMonthlyTargetFromWeekly(n, now.getFullYear(), now.getMonth());
-                          window.alert(`이번 달 목표가 ${monthly}회로 자동 설정돼요.\n목표를 바꾸면 이번 달 회수율 계산에 바로 반영되니 신중하게 선택해주세요.`);
+                          openToast(`이번 달 목표가 ${monthly}회로 자동 설정됐어요`);
                         }
                         plnl.actions.setSettings({ weeklyTarget: n });
                       }}
                       style={{
                         flex: 1,
-                        border: active ? "2px solid #5DC528" : "2px solid transparent",
-                        background: active ? "#edfadf" : "#f2f4f6",
+                        border: active && !settingsLocked ? "2px solid #5DC528" : "2px solid transparent",
+                        background: settingsLocked ? "#f7f8fa" : active ? "#edfadf" : "#f2f4f6",
                         borderRadius: 12,
                         padding: "12px 0",
                         fontSize: 15,
                         fontWeight: 700,
-                        color: active ? "#3d9c1a" : "#333d4b",
+                        color: settingsLocked ? (active ? "#8b95a1" : "#b0b8c1") : active ? "#3d9c1a" : "#333d4b",
                         fontFamily: "inherit",
-                        cursor: "pointer",
+                        cursor: settingsLocked ? "default" : "pointer",
                       }}
                     >
                       {n}회
@@ -199,8 +222,10 @@ export default function App() {
                   );
                 })}
               </div>
-              <p style={{ fontSize: 11.5, color: "#b0b8c1", margin: "6px 0 0", lineHeight: 1.4 }}>
-                목표 운동 횟수는 한 달 동안 고정돼요.
+              <p style={{ fontSize: 11.5, color: settingsLocked ? "#8b95a1" : "#b0b8c1", margin: "6px 0 0", lineHeight: 1.4 }}>
+                {settingsLocked
+                  ? "운동비·주 목표는 이번 달엔 바꿀 수 없어요. 다음 달에 다시 정할 수 있어요."
+                  : "목표 운동 횟수는 한 달 동안 고정돼요."}
               </p>
             </label>
             {/* 자동 산정된 이번 달 목표 — 읽기 전용 안내 */}
@@ -212,8 +237,17 @@ export default function App() {
               </span>
             </div>
 
+            {!settingsLocked && (
+              <p style={{ fontSize: 11.5, color: "#b0b8c1", margin: "0 0 10px", lineHeight: 1.4, textAlign: "center" }}>
+                완료하면 이번 달엔 운동비·주 목표를 바꿀 수 없어요.
+              </p>
+            )}
             <button
-              onClick={() => setShowSettings(false)}
+              onClick={() => {
+                // 완료 = 이번 달 운동비·주 목표 확정(잠금). 값은 onChange 로 이미 저장됨.
+                if (!settingsLocked) plnl.actions.lockMonthGoal();
+                setShowSettings(false);
+              }}
               style={{ width: "100%", border: "none", background: "#5DC528", color: "#fff", fontSize: 16, fontWeight: 800, padding: 14, borderRadius: 14, cursor: "pointer", fontFamily: "inherit" }}
             >
               완료
@@ -405,12 +439,18 @@ export default function App() {
         </>
       )}
 
-      {/* 보호권 복구 제안 팝업 — 빠진 날을 보호권으로 메울 수 있을 때(진입 시) */}
+      {/* 팝업은 겹치지 않고 우선순위대로 하나씩 노출된다(위 freeze/streak/month/announce 불리언 참고).
+          앞 팝업을 닫으면 상태가 바뀌며 다음 팝업이 순차로 뜬다. */}
+      {/* 1) 보호권 복구 제안 — 최우선(진입 시 빈 날을 보호권으로 메울 수 있을 때). self-guard: plnl.repair */}
       <FreezeRepairPopup plnl={plnl} />
-      {/* 스트릭 상태 팝업(마일스톤 달성 / 끊김 위로) — 진입·체크인·복구 동의/거절 순간 노출 */}
+      {/* 2) 스트릭 상태(마일스톤/끊김) — 복구가 없을 때만(내부 보장). self-guard: plnl.streakPopup */}
       <StreakPopup plnl={plnl} />
-      {/* 주간 목표 신규 기능 안내 — 기존 사용자에게 최초 1회 노출 */}
-      <WeeklyGoalAnnouncePopup plnl={plnl} />
+      {/* 3) 월초 목표 세팅 — 복구·스트릭이 없을 때만 */}
+      {monthGoalPopupUp && (
+        <MonthGoalSetupPopup plnl={plnl} onDismiss={() => setMonthGoalDismissed(true)} />
+      )}
+      {/* 4) 주간 목표 신규 기능 안내 — 위 팝업이 모두 없을 때만(최하위) */}
+      {announcePopupUp && <WeeklyGoalAnnouncePopup plnl={plnl} />}
     </div>
   );
 }

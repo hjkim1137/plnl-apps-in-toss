@@ -43,7 +43,7 @@ export function WeeklyGoalAnnouncePopup({ plnl }: { plnl: PlnlController }) {
           borderRadius: 14,
           fontWeight: 800,
           fontSize: 15,
-          background: "#191f28",
+          background: "#5DC528",
           color: "#fff",
           cursor: "pointer",
           fontFamily: "inherit",
